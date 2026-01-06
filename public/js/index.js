@@ -31,6 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Reload events when page becomes visible (user returns to tab)
+// This ensures available slots are updated after registrations
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        loadEvents();
+    }
+});
+
 // Load all events
 async function loadEvents() {
     try {
