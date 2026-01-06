@@ -295,16 +295,16 @@ async function openEventDetailsModal(eventId) {
             throw new Error('Dados do evento inválidos ou incompletos');
         }
         
-        if (!event.title || !event.dateTime) {
+        if (!event.title || !event.description || !event.dateTime || event.totalSlots === undefined || event.availableSlots === undefined) {
             console.error('Missing required event fields:', event);
-            throw new Error('Dados do evento incompletos (título ou data ausente)');
+            throw new Error('Dados do evento incompletos');
         }
         
         currentEventId = eventId;
 
         // Populate form fields
-        document.getElementById('updateEventTitle').value = event.title || '';
-        document.getElementById('updateEventDescription').value = event.description || '';
+        document.getElementById('updateEventTitle').value = event.title;
+        document.getElementById('updateEventDescription').value = event.description;
         
         // Format date for datetime-local input
         const eventDate = new Date(event.dateTime);
