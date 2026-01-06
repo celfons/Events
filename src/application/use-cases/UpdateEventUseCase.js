@@ -83,7 +83,7 @@ class UpdateEventUseCase {
         // Calculate new availableSlots based on active participants
         // Using activeParticipantsCount ensures consistency with actual registrations
         const newAvailableSlots = updateData.totalSlots - activeParticipantsCount;
-        
+
         // Add availableSlots to the update data
         updateData.availableSlots = newAvailableSlots;
       }
