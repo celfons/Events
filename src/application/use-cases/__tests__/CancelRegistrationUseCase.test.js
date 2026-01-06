@@ -94,9 +94,9 @@ describe('CancelRegistrationUseCase', () => {
         mockRegistration.status = 'cancelled';
       });
 
-      // Mock the incrementSlots to update availableSlots
+      // Mock the incrementSlots to update availableSlots dynamically
       mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots = 11;
+        mockEvent.availableSlots += 1;
       });
 
       const result = await cancelRegistrationUseCase.execute('123');
@@ -138,7 +138,7 @@ describe('CancelRegistrationUseCase', () => {
       });
 
       mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots = 6;
+        mockEvent.availableSlots += 1;
       });
 
       const result = await cancelRegistrationUseCase.execute('789');
@@ -175,7 +175,7 @@ describe('CancelRegistrationUseCase', () => {
       });
 
       mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots = 26;
+        mockEvent.availableSlots += 1;
       });
 
       await cancelRegistrationUseCase.execute('111');

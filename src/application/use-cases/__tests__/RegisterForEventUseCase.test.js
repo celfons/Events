@@ -187,9 +187,9 @@ describe('RegisterForEventUseCase', () => {
       mockRegistrationRepository.create.mockResolvedValue(createdRegistration);
       mockEventRepository.update.mockResolvedValue(true);
 
-      // Mock the decrementSlots to update availableSlots
+      // Mock the decrementSlots to update availableSlots dynamically
       mockEvent.decrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots = 9;
+        mockEvent.availableSlots -= 1;
       });
 
       const result = await registerForEventUseCase.execute(registrationData);
@@ -242,7 +242,7 @@ describe('RegisterForEventUseCase', () => {
       mockEventRepository.update.mockResolvedValue(true);
 
       mockEvent.decrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots = 4;
+        mockEvent.availableSlots -= 1;
       });
 
       const result = await registerForEventUseCase.execute(registrationData);
