@@ -16,10 +16,66 @@ const registrationSuccess = document.getElementById('registrationSuccess');
 // Store registration ID
 let currentRegistrationId = null;
 
+// Storage key for registration data
+const STORAGE_KEY_PREFIX = 'event_registration_';
+
 // Load event details on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEventDetails();
+    restoreRegistrationState();
 });
+
+// Restore registration state from localStorage
+function restoreRegistrationState() {
+    const storageKey = STORAGE_KEY_PREFIX + eventId;
+    const storedData = localStorage.getItem(storageKey);
+    
+    if (storedData) {
+        try {
+            const registrationData = JSON.parse(storedData);
+            currentRegistrationId = registrationData.registrationId;
+            
+            // Restore form data
+            if (registrationData.name) {
+                document.getElementById('name').value = registrationData.name;
+            }
+            if (registrationData.email) {
+                document.getElementById('email').value = registrationData.email;
+            }
+            if (registrationData.phone) {
+                document.getElementById('phone').value = registrationData.phone;
+            }
+            
+            // Show cancellation button
+            registrationForm.classList.add('d-none');
+            registrationSuccess.classList.remove('d-none');
+        } catch (error) {
+            console.error('Error restoring registration state:', error);
+            // Clear invalid data
+            localStorage.removeItem(storageKey);
+        }
+    }
+}
+
+// Save registration state to localStorage
+function saveRegistrationState(registrationId, name, email, phone) {
+    const storageKey = STORAGE_KEY_PREFIX + eventId;
+    const registrationData = {
+        registrationId,
+        eventId,
+        name,
+        email,
+        phone,
+        timestamp: new Date().toISOString()
+    };
+    localStorage.setItem(storageKey, JSON.stringify(registrationData));
+}
+
+// Clear registration state from localStorage
+function clearRegistrationState() {
+    const storageKey = STORAGE_KEY_PREFIX + eventId;
+    localStorage.removeItem(storageKey);
+}
 
 // Load event details
 async function loadEventDetails() {
@@ -116,6 +172,10 @@ registerForm.addEventListener('submit', async (e) => {
 
         // Success
         currentRegistrationId = data.id;
+        
+        // Save registration state to localStorage
+        saveRegistrationState(data.id, name, email, phone);
+        
         registrationForm.classList.add('d-none');
         registrationSuccess.classList.remove('d-none');
         registrationError.classList.add('d-none');
@@ -164,6 +224,9 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
         registrationForm.classList.remove('d-none');
         registerForm.reset();
         currentRegistrationId = null;
+        
+        // Clear registration state from localStorage
+        clearRegistrationState();
 
         // Reload event details to update available slots
         await loadEventDetails();
