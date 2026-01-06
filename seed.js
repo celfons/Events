@@ -56,11 +56,35 @@ async function seedDatabase() {
     await GroupModel.deleteMany({});
     console.log('✅ Existing groups cleared');
 
-    console.log('🌱 Creating admin group...');
+    console.log('🌱 Creating super admin group...');
+    const superAdminGroup = await GroupModel.create({
+      name: 'Super Administradores',
+      description: 'Grupo de super administradores com acesso completo ao sistema',
+      permissions: [
+        // Event permissions
+        'events:create', 
+        'events:read', 
+        'events:update', 
+        'events:delete',
+        // User permissions
+        'users:create',
+        'users:read',
+        'users:update',
+        'users:delete',
+        // Group permissions
+        'groups:create',
+        'groups:read',
+        'groups:update',
+        'groups:delete'
+      ]
+    });
+    console.log('✅ Super admin group created successfully');
+
+    console.log('🌱 Creating regular admin group...');
     const adminGroup = await GroupModel.create({
       name: 'Administradores',
-      description: 'Grupo de administradores com acesso total ao sistema',
-      permissions: ['events:create', 'events:update', 'events:delete', 'users:manage', 'groups:manage']
+      description: 'Grupo de administradores com acesso a eventos',
+      permissions: ['events:create', 'events:read', 'events:update', 'events:delete']
     });
     console.log('✅ Admin group created successfully');
 
@@ -69,19 +93,35 @@ async function seedDatabase() {
     await UserModel.deleteMany({});
     console.log('✅ Existing users cleared');
 
-    console.log('🌱 Creating admin user...');
+    console.log('🌱 Creating super admin user...');
     const hashedPassword = await bcrypt.hash('admin123', 10);
     const adminUser = await UserModel.create({
       username: 'admin',
       email: 'admin@events.com',
       password: hashedPassword,
-      groups: [adminGroup._id],
+      groups: [superAdminGroup._id],
       isActive: true
     });
-    console.log('✅ Admin user created successfully');
+    console.log('✅ Super admin user created successfully');
     console.log(`   Username: admin`);
     console.log(`   Password: admin123`);
     console.log(`   Email: admin@events.com`);
+    console.log(`   Groups: Super Administradores`);
+
+    console.log('🌱 Creating regular user...');
+    const userPassword = await bcrypt.hash('user123', 10);
+    const regularUser = await UserModel.create({
+      username: 'user',
+      email: 'user@events.com',
+      password: userPassword,
+      groups: [adminGroup._id],
+      isActive: true
+    });
+    console.log('✅ Regular user created successfully');
+    console.log(`   Username: user`);
+    console.log(`   Password: user123`);
+    console.log(`   Email: user@events.com`);
+    console.log(`   Groups: Administradores`);
 
     // Seed Events
     console.log('🗑️  Clearing existing events...');
@@ -89,12 +129,16 @@ async function seedDatabase() {
     console.log('✅ Existing events cleared');
 
     console.log('🌱 Seeding sample events...');
-    // Add createdBy to each event
-    const eventsWithUser = sampleEvents.map(event => ({
+    // Add createdBy to each event - first 3 for admin, last 2 for regular user
+    const eventsWithAdmin = sampleEvents.slice(0, 3).map(event => ({
       ...event,
       createdBy: adminUser._id
     }));
-    await EventModel.insertMany(eventsWithUser);
+    const eventsWithUser = sampleEvents.slice(3).map(event => ({
+      ...event,
+      createdBy: regularUser._id
+    }));
+    await EventModel.insertMany([...eventsWithAdmin, ...eventsWithUser]);
     console.log('✅ Sample events created successfully');
 
     const count = await EventModel.countDocuments();
@@ -111,9 +155,15 @@ async function seedDatabase() {
 
     console.log('\n✨ Database seeded successfully!');
     console.log('\n🔐 Login Credentials:');
-    console.log('   Username: admin');
-    console.log('   Password: admin123');
-    console.log('   URL: http://localhost:3000/login');
+    console.log('\n   Super Admin (Full Permissions):');
+    console.log('   - Username: admin');
+    console.log('   - Password: admin123');
+    console.log('   - Permissions: All (users, groups, events)');
+    console.log('\n   Regular User (Event Permissions Only):');
+    console.log('   - Username: user');
+    console.log('   - Password: user123');
+    console.log('   - Permissions: Events only');
+    console.log('\n   URL: http://localhost:3000/login');
     console.log('\n🚀 You can now start the application with: npm start');
 
   } catch (error) {

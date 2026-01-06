@@ -1,5 +1,5 @@
 const express = require('express');
-const { isAuthenticated } = require('../middleware/authMiddleware');
+const { isAuthenticated, hasPermission } = require('../middleware/authMiddleware');
 
 function createUserRoutes(userController) {
   const router = express.Router();
@@ -28,8 +28,10 @@ function createUserRoutes(userController) {
    *         description: List of users
    *       401:
    *         description: Not authenticated
+   *       403:
+   *         description: Permission denied
    */
-  router.get('/', isAuthenticated, (req, res) => userController.list(req, res));
+  router.get('/', isAuthenticated, hasPermission('users:read'), (req, res) => userController.list(req, res));
 
   /**
    * @swagger
@@ -67,10 +69,12 @@ function createUserRoutes(userController) {
    *     responses:
    *       200:
    *         description: User updated
+   *       403:
+   *         description: Permission denied
    *       404:
    *         description: User not found
    */
-  router.put('/:id', isAuthenticated, (req, res) => userController.update(req, res));
+  router.put('/:id', isAuthenticated, hasPermission('users:update'), (req, res) => userController.update(req, res));
 
   /**
    * @swagger
@@ -89,10 +93,12 @@ function createUserRoutes(userController) {
    *     responses:
    *       200:
    *         description: User deleted
+   *       403:
+   *         description: Permission denied
    *       404:
    *         description: User not found
    */
-  router.delete('/:id', isAuthenticated, (req, res) => userController.delete(req, res));
+  router.delete('/:id', isAuthenticated, hasPermission('users:delete'), (req, res) => userController.delete(req, res));
 
   return router;
 }

@@ -1,5 +1,5 @@
 const express = require('express');
-const { isAuthenticated } = require('../middleware/authMiddleware');
+const { isAuthenticated, hasPermission } = require('../middleware/authMiddleware');
 
 function createGroupRoutes(groupController) {
   const router = express.Router();
@@ -28,8 +28,10 @@ function createGroupRoutes(groupController) {
    *         description: List of groups
    *       401:
    *         description: Not authenticated
+   *       403:
+   *         description: Permission denied
    */
-  router.get('/', isAuthenticated, (req, res) => groupController.list(req, res));
+  router.get('/', isAuthenticated, hasPermission('groups:read'), (req, res) => groupController.list(req, res));
 
   /**
    * @swagger
@@ -61,8 +63,10 @@ function createGroupRoutes(groupController) {
    *         description: Group created
    *       400:
    *         description: Invalid input
+   *       403:
+   *         description: Permission denied
    */
-  router.post('/', isAuthenticated, (req, res) => groupController.create(req, res));
+  router.post('/', isAuthenticated, hasPermission('groups:create'), (req, res) => groupController.create(req, res));
 
   /**
    * @swagger
@@ -96,10 +100,12 @@ function createGroupRoutes(groupController) {
    *     responses:
    *       200:
    *         description: Group updated
+   *       403:
+   *         description: Permission denied
    *       404:
    *         description: Group not found
    */
-  router.put('/:id', isAuthenticated, (req, res) => groupController.update(req, res));
+  router.put('/:id', isAuthenticated, hasPermission('groups:update'), (req, res) => groupController.update(req, res));
 
   /**
    * @swagger
@@ -118,10 +124,12 @@ function createGroupRoutes(groupController) {
    *     responses:
    *       200:
    *         description: Group deleted
+   *       403:
+   *         description: Permission denied
    *       404:
    *         description: Group not found
    */
-  router.delete('/:id', isAuthenticated, (req, res) => groupController.delete(req, res));
+  router.delete('/:id', isAuthenticated, hasPermission('groups:delete'), (req, res) => groupController.delete(req, res));
 
   return router;
 }

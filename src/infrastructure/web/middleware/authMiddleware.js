@@ -17,9 +17,7 @@ function isAuthenticated(req, res, next) {
 
 /**
  * Middleware to check if user has specific permission
- * Note: Basic implementation - checks if user is authenticated.
- * Full permission checking requires fetching user's groups and checking their permissions.
- * This can be enhanced in the future to implement granular permission-based access control.
+ * Fetches user's groups and verifies if any group has the required permission
  */
 function hasPermission(permission) {
   return async (req, res, next) => {
@@ -27,12 +25,39 @@ function hasPermission(permission) {
       return res.status(401).json({ error: 'Authentication required' });
     }
     
-    // Basic implementation: allow all authenticated users
-    // TODO: Implement full permission checking:
-    // 1. Fetch user from database with populated groups
-    // 2. Check if any of user's groups have the required permission
-    // 3. Return 403 if user doesn't have permission
-    next();
+    try {
+      // Import UserModel here to avoid circular dependencies
+      const UserModel = require('../../database/UserModel');
+      
+      // Fetch user with populated groups
+      const user = await UserModel.findById(req.session.userId).populate('groups');
+      
+      if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ error: 'User account is inactive' });
+      }
+
+      // Check if user has the required permission through any of their groups
+      const hasRequiredPermission = user.groups.some(group => 
+        group.permissions && group.permissions.includes(permission)
+      );
+
+      if (!hasRequiredPermission) {
+        return res.status(403).json({ 
+          error: 'Permission denied',
+          required: permission,
+          message: `You do not have the '${permission}' permission`
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Error checking permissions:', error);
+      return res.status(500).json({ error: 'Error checking permissions' });
+    }
   };
 }
 

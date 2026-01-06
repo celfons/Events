@@ -44,6 +44,21 @@ class User {
   removeGroup(groupId) {
     this.groups = this.groups.filter(g => g.toString() !== groupId.toString());
   }
+
+  /**
+   * Check if user has a specific permission through any of their groups
+   * @param {string} permission - Permission to check (e.g., 'events:create')
+   * @param {Array} populatedGroups - Array of populated group objects
+   * @returns {boolean}
+   */
+  hasPermission(permission, populatedGroups) {
+    if (!populatedGroups || populatedGroups.length === 0) {
+      return false;
+    }
+    return populatedGroups.some(group => 
+      group.permissions && group.permissions.includes(permission)
+    );
+  }
 }
 
 module.exports = User;
