@@ -26,6 +26,8 @@ describe('UpdateEventUseCase', () => {
         dateTime: new Date('2024-12-31'),
         totalSlots: 50,
         availableSlots: 30
+      ,
+        createdBy: 'user123'
       };
 
       const updateData = {
@@ -59,7 +61,7 @@ describe('UpdateEventUseCase', () => {
       ]); // 2 active participants
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, updateData);
+      const result = await updateEventUseCase.execute(eventId, updateData, "user123");
 
       expect(result.success).toBe(true);
       expect(result.data.title).toBe('New Title');
@@ -76,6 +78,8 @@ describe('UpdateEventUseCase', () => {
       const existingEvent = {
         id: eventId,
         title: 'Old Title'
+      ,
+        createdBy: 'user123'
       };
 
       const updateData = {
@@ -94,7 +98,7 @@ describe('UpdateEventUseCase', () => {
       mockEventRepository.findById.mockResolvedValue(existingEvent);
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, updateData);
+      const result = await updateEventUseCase.execute(eventId, updateData, "user123");
 
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
@@ -106,6 +110,8 @@ describe('UpdateEventUseCase', () => {
         id: eventId,
         totalSlots: 50,
         availableSlots: 30
+      ,
+        createdBy: 'user123'
       };
 
       const updateData = {
@@ -126,7 +132,7 @@ describe('UpdateEventUseCase', () => {
       mockEventRepository.findById.mockResolvedValue(existingEvent);
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, updateData);
+      const result = await updateEventUseCase.execute(eventId, updateData, "user123");
 
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
@@ -135,17 +141,34 @@ describe('UpdateEventUseCase', () => {
 
   describe('Validation', () => {
     it('should return error if event ID is not provided', async () => {
-      const result = await updateEventUseCase.execute('', { title: 'Test' });
+      const result = await updateEventUseCase.execute('', {}, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Event ID is required');
-      expect(mockEventRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('should return error if userId is not provided', async () => {
+      const result = await updateEventUseCase.execute('123', {});
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('User ID is required');
+    });
+
+    it('should return error if user is not the owner', async () => {
+      const existingEvent = { id: '123', title: 'Test', createdBy: 'owner123' };
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+
+      const result = await updateEventUseCase.execute('123', { title: 'New' }, 'user456');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('You do not have permission to update this event');
+      expect(mockEventRepository.update).not.toHaveBeenCalled();
     });
 
     it('should return error if event does not exist', async () => {
       mockEventRepository.findById.mockResolvedValue(null);
 
-      const result = await updateEventUseCase.execute('123', { title: 'Test' });
+      const result = await updateEventUseCase.execute('123', { title: 'Test' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Event not found');
@@ -153,10 +176,12 @@ describe('UpdateEventUseCase', () => {
     });
 
     it('should return error if title is empty string', async () => {
-      const existingEvent = { id: '123', title: 'Old Title' };
+      const existingEvent = { id: '123', title: 'Old Title' ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { title: '   ' });
+      const result = await updateEventUseCase.execute('123', { title: '   ' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Title is required');
@@ -164,10 +189,12 @@ describe('UpdateEventUseCase', () => {
     });
 
     it('should return error if description is empty string', async () => {
-      const existingEvent = { id: '123', description: 'Old Desc' };
+      const existingEvent = { id: '123', description: 'Old Desc' ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { description: '   ' });
+      const result = await updateEventUseCase.execute('123', { description: '   ' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Description is required');
@@ -175,10 +202,12 @@ describe('UpdateEventUseCase', () => {
     });
 
     it('should return error if dateTime is invalid', async () => {
-      const existingEvent = { id: '123', dateTime: new Date() };
+      const existingEvent = { id: '123', dateTime: new Date() ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { dateTime: 'invalid-date' });
+      const result = await updateEventUseCase.execute('123', { dateTime: 'invalid-date' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Invalid date format');
@@ -186,10 +215,12 @@ describe('UpdateEventUseCase', () => {
     });
 
     it('should return error if totalSlots is less than 1', async () => {
-      const existingEvent = { id: '123', totalSlots: 50 };
+      const existingEvent = { id: '123', totalSlots: 50 ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { totalSlots: 0 });
+      const result = await updateEventUseCase.execute('123', { totalSlots: 0 }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Total slots must be at least 1');
@@ -197,10 +228,12 @@ describe('UpdateEventUseCase', () => {
     });
 
     it('should return error if both totalSlots and availableSlots are provided', async () => {
-      const existingEvent = { id: '123', totalSlots: 50, availableSlots: 30 };
+      const existingEvent = { id: '123', totalSlots: 50, availableSlots: 30 ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { totalSlots: 100, availableSlots: 80 });
+      const result = await updateEventUseCase.execute('123', { totalSlots: 100, availableSlots: 80 }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Cannot manually set availableSlots when updating totalSlots. availableSlots will be calculated automatically.');
@@ -215,6 +248,8 @@ describe('UpdateEventUseCase', () => {
         id: eventId,
         totalSlots: 50,
         availableSlots: 30 // 20 occupied slots (but may not match actual participants)
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -236,7 +271,7 @@ describe('UpdateEventUseCase', () => {
 
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, { totalSlots: 100 });
+      const result = await updateEventUseCase.execute(eventId, { totalSlots: 100 }, 'user123');
 
       expect(result.success).toBe(true);
       expect(result.data.availableSlots).toBe(98);
@@ -252,6 +287,8 @@ describe('UpdateEventUseCase', () => {
         id: eventId,
         totalSlots: 100,
         availableSlots: 70 // 30 occupied slots (but may not match actual participants)
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -274,7 +311,7 @@ describe('UpdateEventUseCase', () => {
 
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, { totalSlots: 50 });
+      const result = await updateEventUseCase.execute(eventId, { totalSlots: 50 }, 'user123');
 
       expect(result.success).toBe(true);
       expect(result.data.availableSlots).toBe(47);
@@ -290,6 +327,8 @@ describe('UpdateEventUseCase', () => {
         id: eventId,
         totalSlots: 50,
         availableSlots: 30 // 20 occupied slots
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -301,7 +340,7 @@ describe('UpdateEventUseCase', () => {
         { id: '5', name: 'User 5' }
       ]); // 5 active participants
 
-      const result = await updateEventUseCase.execute(eventId, { totalSlots: 3 });
+      const result = await updateEventUseCase.execute(eventId, { totalSlots: 3 }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Cannot reduce total slots to 3. There are 5 active participants. Please remove 2 participant(s) first.');
@@ -314,6 +353,8 @@ describe('UpdateEventUseCase', () => {
         id: eventId,
         totalSlots: 50,
         availableSlots: 45 // 5 occupied slots (but actual participants may differ)
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -336,7 +377,7 @@ describe('UpdateEventUseCase', () => {
 
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, { totalSlots: 3 });
+      const result = await updateEventUseCase.execute(eventId, { totalSlots: 3 }, 'user123');
 
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
@@ -352,6 +393,8 @@ describe('UpdateEventUseCase', () => {
         title: 'Old Title',
         totalSlots: 50,
         availableSlots: 30
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -371,7 +414,7 @@ describe('UpdateEventUseCase', () => {
 
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, { title: 'New Title' });
+      const result = await updateEventUseCase.execute(eventId, { title: 'New Title' }, 'user123');
 
       expect(result.success).toBe(true);
       expect(mockRegistrationRepository.findByEventId).not.toHaveBeenCalled();
@@ -385,6 +428,8 @@ describe('UpdateEventUseCase', () => {
         title: 'Old Title',
         totalSlots: 50,
         availableSlots: 30
+      ,
+        createdBy: 'user123'
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -404,7 +449,7 @@ describe('UpdateEventUseCase', () => {
 
       mockEventRepository.update.mockResolvedValue(updatedEvent);
 
-      const result = await updateEventUseCase.execute(eventId, { title: 'New Title', totalSlots: 50 });
+      const result = await updateEventUseCase.execute(eventId, { title: 'New Title', totalSlots: 50 }, 'user123');
 
       expect(result.success).toBe(true);
       expect(mockRegistrationRepository.findByEventId).not.toHaveBeenCalled();
@@ -416,18 +461,20 @@ describe('UpdateEventUseCase', () => {
     it('should handle repository errors gracefully', async () => {
       mockEventRepository.findById.mockRejectedValue(new Error('Database connection error'));
 
-      const result = await updateEventUseCase.execute('123', { title: 'Test' });
+      const result = await updateEventUseCase.execute('123', { title: 'Test' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database connection error');
     });
 
     it('should handle update errors gracefully', async () => {
-      const existingEvent = { id: '123', title: 'Old Title' };
+      const existingEvent = { id: '123', title: 'Old Title' ,
+        createdBy: 'user123'
+      };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
       mockEventRepository.update.mockRejectedValue(new Error('Update failed'));
 
-      const result = await updateEventUseCase.execute('123', { title: 'New Title' });
+      const result = await updateEventUseCase.execute('123', { title: 'New Title' }, 'user123');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Update failed');

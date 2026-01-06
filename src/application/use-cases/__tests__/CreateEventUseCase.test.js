@@ -12,6 +12,21 @@ describe('CreateEventUseCase', () => {
   });
 
   describe('Validation', () => {
+    it('should return error when userId is missing', async () => {
+      const eventData = {
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: '2024-12-31T14:00:00',
+        totalSlots: 50
+      };
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('User ID is required');
+      expect(mockEventRepository.create).not.toHaveBeenCalled();
+    });
+
     it('should return error when title is missing', async () => {
       const eventData = {
         description: 'Test Description',
@@ -19,7 +34,7 @@ describe('CreateEventUseCase', () => {
         totalSlots: 50
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Missing required fields: title, description, dateTime, totalSlots');
@@ -33,7 +48,7 @@ describe('CreateEventUseCase', () => {
         totalSlots: 50
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Missing required fields: title, description, dateTime, totalSlots');
@@ -47,7 +62,7 @@ describe('CreateEventUseCase', () => {
         totalSlots: 50
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Missing required fields: title, description, dateTime, totalSlots');
@@ -61,7 +76,7 @@ describe('CreateEventUseCase', () => {
         dateTime: '2024-12-31T14:00:00'
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Missing required fields: title, description, dateTime, totalSlots');
@@ -76,7 +91,7 @@ describe('CreateEventUseCase', () => {
         totalSlots: 0
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       // 0 is falsy, so it's caught by the first validation
@@ -92,7 +107,7 @@ describe('CreateEventUseCase', () => {
         totalSlots: -5
       };
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Total slots must be at least 1');
@@ -128,7 +143,7 @@ describe('CreateEventUseCase', () => {
 
       mockEventRepository.create.mockResolvedValue(createdEvent);
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -165,7 +180,7 @@ describe('CreateEventUseCase', () => {
 
       mockEventRepository.create.mockResolvedValue(createdEvent);
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(true);
       expect(mockEventRepository.create).toHaveBeenCalledWith(
@@ -203,7 +218,7 @@ describe('CreateEventUseCase', () => {
 
       mockEventRepository.create.mockResolvedValue(createdEvent);
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(true);
       expect(result.data.availableSlots).toBe(100);
@@ -221,7 +236,7 @@ describe('CreateEventUseCase', () => {
 
       mockEventRepository.create.mockRejectedValue(new Error('Database connection error'));
 
-      const result = await createEventUseCase.execute(eventData);
+      const result = await createEventUseCase.execute(eventData, "user123");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database connection error');
