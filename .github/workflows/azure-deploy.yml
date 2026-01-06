@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   AZURE_WEBAPP_NAME: events-platform
   AZURE_WEBAPP_PACKAGE_PATH: '.'
