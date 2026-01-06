@@ -8,6 +8,7 @@
     "dev": "node src/server.js",
     "seed": "node seed.js",
     "create-superuser": "node create-superuser.js",
+    "create-default-user": "node create-default-user.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

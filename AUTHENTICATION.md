@@ -187,6 +187,24 @@ npm run create-superuser
 - The script requires SUPERUSER_PASSWORD to be set as an environment variable
 - Store credentials securely (e.g., password manager, secrets vault)
 
+### 3. (Optional) Create Default User for Development
+
+For development and testing purposes, you can create a default user:
+```bash
+npm run create-default-user
+```
+
+This creates a regular user with:
+- **Username**: user
+- **Email**: user@events.com
+- **Password**: user123
+- **Role**: user
+
+⚠️ **Important**: 
+- This is a development convenience only
+- Do not use in production environments
+- The default user has a simple password for easy testing
+
 ## Authentication Flow
 
 ### For Web/Mobile Applications

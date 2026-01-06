@@ -132,12 +132,27 @@ npm run create-superuser
 
 ⚠️ **Importante**: Use uma senha forte e segura!
 
-5. **Inicie o servidor**
+5. **(Opcional) Crie um usuário padrão para desenvolvimento**
+
+Para facilitar o desenvolvimento e testes, você pode criar um usuário padrão:
+```bash
+npm run create-default-user
+```
+
+Isso criará um usuário com as seguintes credenciais:
+- **Username**: user
+- **Email**: user@events.com
+- **Password**: user123
+- **Role**: user
+
+⚠️ **Atenção**: Este usuário é apenas para desenvolvimento. Não use em produção!
+
+6. **Inicie o servidor**
 ```bash
 npm start
 ```
 
-6. **Acesse a aplicação**
+7. **Acesse a aplicação**
 - Página Principal: http://localhost:3000
 - Painel Admin: http://localhost:3000/admin
 - Health Check: http://localhost:3000/health
