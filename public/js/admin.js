@@ -54,8 +54,12 @@ async function loadEvents() {
         noEventsElement.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events`);
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar eventos');
+        }
+        
         const events = await response.json();
-
         loadingElement.classList.add('d-none');
 
         if (!Array.isArray(events) || events.length === 0) {
@@ -225,11 +229,18 @@ submitCreateEventBtn.addEventListener('click', async () => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao criar evento');
+            let errorMessage = 'Erro ao criar evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         createEventForm.reset();
@@ -328,11 +339,18 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao atualizar evento');
+            let errorMessage = 'Erro ao atualizar evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         updateEventError.classList.add('d-none');
@@ -367,11 +385,18 @@ deleteEventBtn.addEventListener('click', async () => {
             method: 'DELETE'
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao excluir evento');
+            let errorMessage = 'Erro ao excluir evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal'));

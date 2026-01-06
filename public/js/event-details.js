@@ -243,11 +243,18 @@ registerForm.addEventListener('submit', async (e) => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao realizar inscrição');
+            let errorMessage = 'Erro ao realizar inscrição';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         currentRegistrationId = data.id;
@@ -292,11 +299,18 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
             }
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao cancelar inscrição');
+            let errorMessage = 'Erro ao cancelar inscrição';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         registrationSuccess.classList.add('d-none');
