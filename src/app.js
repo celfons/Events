@@ -1,0 +1,80 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+// Infrastructure
+const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
+const MongoRegistrationRepository = require('./infrastructure/database/MongoRegistrationRepository');
+
+// Use Cases
+const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
+const GetEventDetailsUseCase = require('./application/use-cases/GetEventDetailsUseCase');
+const CreateEventUseCase = require('./application/use-cases/CreateEventUseCase');
+const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
+const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
+
+// Controllers
+const EventController = require('./infrastructure/web/controllers/EventController');
+const RegistrationController = require('./infrastructure/web/controllers/RegistrationController');
+
+// Routes
+const createEventRoutes = require('./infrastructure/web/routes/eventRoutes');
+const createRegistrationRoutes = require('./infrastructure/web/routes/registrationRoutes');
+
+function createApp() {
+  const app = express();
+
+  // Middleware
+  app.use(cors());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.static(path.join(__dirname, '../public')));
+
+  // Dependency Injection
+  const eventRepository = new MongoEventRepository();
+  const registrationRepository = new MongoRegistrationRepository();
+
+  // Use Cases
+  const listEventsUseCase = new ListEventsUseCase(eventRepository);
+  const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository, registrationRepository);
+  const createEventUseCase = new CreateEventUseCase(eventRepository);
+  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, registrationRepository);
+  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, registrationRepository);
+
+  // Controllers
+  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase);
+  const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
+
+  // API Routes
+  app.use('/api/events', createEventRoutes(eventController));
+  app.use('/api/registrations', createRegistrationRoutes(registrationController));
+
+  // Serve HTML pages
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/index.html'));
+  });
+
+  app.get('/event/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/event-details.html'));
+  });
+
+  // Health check
+  app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  });
+
+  // 404 handler
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+  });
+
+  // Error handler
+  app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  });
+
+  return app;
+}
+
+module.exports = createApp;
