@@ -1,4 +1,5 @@
 const express = require('express');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -47,7 +48,9 @@ function createEventRoutes(eventController) {
    *   post:
    *     summary: Create a new event
    *     tags: [Events]
-   *     description: Create a new event with the provided details
+   *     security:
+   *       - bearerAuth: []
+   *     description: Create a new event with the provided details (authentication required)
    *     requestBody:
    *       required: true
    *       content:
@@ -67,6 +70,12 @@ function createEventRoutes(eventController) {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Internal server error
    *         content:
@@ -74,7 +83,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', (req, res) => eventController.createEvent(req, res));
+  router.post('/', authenticateToken, (req, res) => eventController.createEvent(req, res));
 
   /**
    * @swagger
@@ -156,7 +165,9 @@ function createEventRoutes(eventController) {
    *   put:
    *     summary: Update an event
    *     tags: [Events]
-   *     description: Update the details of an existing event
+   *     security:
+   *       - bearerAuth: []
+   *     description: Update the details of an existing event (only owner can update)
    *     parameters:
    *       - in: path
    *         name: id
@@ -183,6 +194,18 @@ function createEventRoutes(eventController) {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - Not the event owner
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Internal server error
    *         content:
@@ -190,7 +213,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.put('/:id', (req, res) => eventController.updateEvent(req, res));
+  router.put('/:id', authenticateToken, (req, res) => eventController.updateEvent(req, res));
 
   /**
    * @swagger
@@ -198,7 +221,9 @@ function createEventRoutes(eventController) {
    *   delete:
    *     summary: Delete an event
    *     tags: [Events]
-   *     description: Remove an event from the system
+   *     security:
+   *       - bearerAuth: []
+   *     description: Remove an event from the system (only owner can delete)
    *     parameters:
    *       - in: path
    *         name: id
@@ -219,6 +244,18 @@ function createEventRoutes(eventController) {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       403:
+   *         description: Forbidden - Not the event owner
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    *       500:
    *         description: Internal server error
    *         content:
@@ -226,7 +263,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.delete('/:id', (req, res) => eventController.deleteEvent(req, res));
+  router.delete('/:id', authenticateToken, (req, res) => eventController.deleteEvent(req, res));
 
   return router;
 }

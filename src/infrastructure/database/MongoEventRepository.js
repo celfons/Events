@@ -12,7 +12,8 @@ class MongoEventRepository extends EventRepository {
       dateTime: event.dateTime,
       totalSlots: event.totalSlots,
       availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots,
-      participants: []
+      participants: [],
+      userId: event.userId
     });
     
     const savedEvent = await eventModel.save();
@@ -190,7 +191,8 @@ class MongoEventRepository extends EventRepository {
         registeredAt: p.registeredAt,
         status: p.status
       })) : [],
-      createdAt: eventModel.createdAt
+      createdAt: eventModel.createdAt,
+      userId: eventModel.userId ? eventModel.userId.toString() : null
     });
   }
 }

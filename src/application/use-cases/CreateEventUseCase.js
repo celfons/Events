@@ -5,7 +5,7 @@ class CreateEventUseCase {
     this.eventRepository = eventRepository;
   }
 
-  async execute(eventData) {
+  async execute(eventData, userId = null) {
     try {
       // Validate input data
       if (!eventData.title || !eventData.description || !eventData.dateTime || !eventData.totalSlots) {
@@ -27,7 +27,8 @@ class CreateEventUseCase {
         description: eventData.description,
         dateTime: new Date(eventData.dateTime),
         totalSlots: parseInt(eventData.totalSlots),
-        availableSlots: parseInt(eventData.totalSlots)
+        availableSlots: parseInt(eventData.totalSlots),
+        userId: userId
       });
 
       const createdEvent = await this.eventRepository.create(event);
