@@ -27,54 +27,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Restore registration state from localStorage
 function restoreRegistrationState() {
-    const storageKey = STORAGE_KEY_PREFIX + eventId;
-    const storedData = localStorage.getItem(storageKey);
-    
-    if (storedData) {
-        try {
-            const registrationData = JSON.parse(storedData);
-            currentRegistrationId = registrationData.registrationId;
-            
-            // Restore form data
-            if (registrationData.name) {
-                document.getElementById('name').value = registrationData.name;
+    try {
+        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        const storedData = localStorage.getItem(storageKey);
+        
+        if (storedData) {
+            try {
+                const registrationData = JSON.parse(storedData);
+                currentRegistrationId = registrationData.registrationId;
+                
+                // Restore form data - check elements exist before setting values
+                const nameInput = document.getElementById('name');
+                const emailInput = document.getElementById('email');
+                const phoneInput = document.getElementById('phone');
+                
+                if (nameInput && registrationData.name) {
+                    nameInput.value = registrationData.name;
+                }
+                if (emailInput && registrationData.email) {
+                    emailInput.value = registrationData.email;
+                }
+                if (phoneInput && registrationData.phone) {
+                    phoneInput.value = registrationData.phone;
+                }
+                
+                // Show cancellation button
+                registrationForm.classList.add('d-none');
+                registrationSuccess.classList.remove('d-none');
+            } catch (parseError) {
+                console.error('Error parsing registration data:', parseError);
+                // Clear invalid data
+                try {
+                    localStorage.removeItem(storageKey);
+                } catch (removeError) {
+                    console.error('Error removing invalid data:', removeError);
+                }
             }
-            if (registrationData.email) {
-                document.getElementById('email').value = registrationData.email;
-            }
-            if (registrationData.phone) {
-                document.getElementById('phone').value = registrationData.phone;
-            }
-            
-            // Show cancellation button
-            registrationForm.classList.add('d-none');
-            registrationSuccess.classList.remove('d-none');
-        } catch (error) {
-            console.error('Error restoring registration state:', error);
-            // Clear invalid data
-            localStorage.removeItem(storageKey);
         }
+    } catch (error) {
+        // Handle localStorage access errors (disabled, private mode, etc.)
+        console.error('Error accessing localStorage:', error);
     }
 }
 
 // Save registration state to localStorage
 function saveRegistrationState(registrationId, name, email, phone) {
-    const storageKey = STORAGE_KEY_PREFIX + eventId;
-    const registrationData = {
-        registrationId,
-        eventId,
-        name,
-        email,
-        phone,
-        timestamp: new Date().toISOString()
-    };
-    localStorage.setItem(storageKey, JSON.stringify(registrationData));
+    try {
+        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        const registrationData = {
+            registrationId,
+            eventId,
+            name,
+            email,
+            phone,
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(storageKey, JSON.stringify(registrationData));
+    } catch (error) {
+        // Handle localStorage errors (quota exceeded, disabled, etc.)
+        console.error('Error saving registration state:', error);
+        // Continue execution - the app still works without persistence
+    }
 }
 
 // Clear registration state from localStorage
 function clearRegistrationState() {
-    const storageKey = STORAGE_KEY_PREFIX + eventId;
-    localStorage.removeItem(storageKey);
+    try {
+        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        localStorage.removeItem(storageKey);
+    } catch (error) {
+        // Handle localStorage errors
+        console.error('Error clearing registration state:', error);
+        // Continue execution - not critical if clear fails
+    }
 }
 
 // Load event details
