@@ -255,12 +255,14 @@ submitCreateEventBtn.addEventListener('click', async () => {
 async function openEventDetailsModal(eventId) {
     try {
         const response = await fetch(`${API_URL}/api/events/${eventId}`);
-        const event = await response.json();
-
+        
         if (!response.ok) {
-            throw new Error(event.error || 'Erro ao carregar detalhes do evento');
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao carregar detalhes do evento');
         }
 
+        const data = await response.json();
+        const event = data.event || data; // Handle both wrapped and unwrapped responses
         currentEventId = eventId;
 
         // Populate form fields
@@ -399,13 +401,15 @@ async function openParticipantsModal(eventId) {
         noParticipants.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events/${eventId}/participants`);
-        const participants = await response.json();
 
         participantsLoading.classList.add('d-none');
 
         if (!response.ok) {
-            throw new Error(participants.error || 'Erro ao carregar participantes');
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao carregar participantes');
         }
+
+        const participants = await response.json();
 
         if (!Array.isArray(participants) || participants.length === 0) {
             noParticipants.classList.remove('d-none');

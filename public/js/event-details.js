@@ -156,12 +156,13 @@ async function loadEventDetails() {
         errorContainer.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events/${eventId}`);
-        const data = await response.json();
-
+        
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao carregar detalhes do evento');
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao carregar detalhes do evento');
         }
 
+        const data = await response.json();
         displayEventDetails(data.event);
         loadingElement.classList.add('d-none');
         eventDetailsContainer.classList.remove('d-none');
