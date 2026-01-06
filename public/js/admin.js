@@ -54,8 +54,19 @@ async function loadEvents() {
         noEventsElement.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events`);
+        
+        if (!response.ok) {
+            let errorMessage = 'Erro ao carregar eventos';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
+        }
+        
         const events = await response.json();
-
         loadingElement.classList.add('d-none');
 
         if (!Array.isArray(events) || events.length === 0) {
@@ -225,11 +236,18 @@ submitCreateEventBtn.addEventListener('click', async () => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao criar evento');
+            let errorMessage = 'Erro ao criar evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         createEventForm.reset();
@@ -255,12 +273,33 @@ submitCreateEventBtn.addEventListener('click', async () => {
 async function openEventDetailsModal(eventId) {
     try {
         const response = await fetch(`${API_URL}/api/events/${eventId}`);
-        const event = await response.json();
-
+        
         if (!response.ok) {
-            throw new Error(event.error || 'Erro ao carregar detalhes do evento');
+            let errorMessage = 'Erro ao carregar detalhes do evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
 
+        const data = await response.json();
+        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
+        const event = data.event || data;
+        
+        // Validate event data
+        if (!event || typeof event !== 'object') {
+            console.error('Invalid event data structure:', data);
+            throw new Error('Dados do evento inválidos ou incompletos');
+        }
+        
+        if (!event.title || !event.description || !event.dateTime || event.totalSlots === undefined || event.availableSlots === undefined) {
+            console.error('Missing required event fields:', event);
+            throw new Error('Dados do evento incompletos');
+        }
+        
         currentEventId = eventId;
 
         // Populate form fields
@@ -269,6 +308,10 @@ async function openEventDetailsModal(eventId) {
         
         // Format date for datetime-local input
         const eventDate = new Date(event.dateTime);
+        if (isNaN(eventDate.getTime())) {
+            console.error('Invalid event dateTime:', event.dateTime);
+            throw new Error(`Data do evento inválida: ${event.dateTime}`);
+        }
         const formattedDateTime = eventDate.toISOString().slice(0, 16);
         document.getElementById('updateEventDateTime').value = formattedDateTime;
         
@@ -319,11 +362,18 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao atualizar evento');
+            let errorMessage = 'Erro ao atualizar evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         updateEventError.classList.add('d-none');
@@ -358,11 +408,18 @@ deleteEventBtn.addEventListener('click', async () => {
             method: 'DELETE'
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao excluir evento');
+            let errorMessage = 'Erro ao excluir evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal'));
@@ -399,13 +456,21 @@ async function openParticipantsModal(eventId) {
         noParticipants.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events/${eventId}/participants`);
-        const participants = await response.json();
-
-        participantsLoading.classList.add('d-none');
 
         if (!response.ok) {
-            throw new Error(participants.error || 'Erro ao carregar participantes');
+            participantsLoading.classList.add('d-none');
+            let errorMessage = 'Erro ao carregar participantes';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const participants = await response.json();
+        participantsLoading.classList.add('d-none');
 
         if (!Array.isArray(participants) || participants.length === 0) {
             noParticipants.classList.remove('d-none');

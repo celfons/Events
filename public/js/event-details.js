@@ -156,13 +156,21 @@ async function loadEventDetails() {
         errorContainer.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events/${eventId}`);
-        const data = await response.json();
-
+        
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao carregar detalhes do evento');
+            let errorMessage = 'Erro ao carregar detalhes do evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
 
-        displayEventDetails(data.event);
+        const data = await response.json();
+        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
+        displayEventDetails(data.event || data);
         loadingElement.classList.add('d-none');
         eventDetailsContainer.classList.remove('d-none');
     } catch (error) {
@@ -235,11 +243,18 @@ registerForm.addEventListener('submit', async (e) => {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao realizar inscrição');
+            let errorMessage = 'Erro ao realizar inscrição';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         currentRegistrationId = data.id;
@@ -284,11 +299,18 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
             }
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.error || 'Erro ao cancelar inscrição');
+            let errorMessage = 'Erro ao cancelar inscrição';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
+
+        const data = await response.json();
 
         // Success
         registrationSuccess.classList.add('d-none');
