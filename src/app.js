@@ -4,7 +4,7 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const { default: MongoStore } = require('connect-mongo');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./infrastructure/web/swagger');
 
@@ -99,12 +99,16 @@ function createApp() {
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: MONGODB_URI,
-      touchAfter: 24 * 3600 // lazy session update
+      touchAfter: 24 * 3600, // lazy session update
+      crypto: {
+        secret: SESSION_SECRET
+      }
     }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production' // HTTPS only in production
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'lax'
     }
   }));
   

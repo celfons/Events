@@ -1,6 +1,9 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const EventModel = require('./src/infrastructure/database/EventModel');
+const UserModel = require('./src/infrastructure/database/UserModel');
+const GroupModel = require('./src/infrastructure/database/GroupModel');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/events';
 
@@ -48,6 +51,39 @@ async function seedDatabase() {
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
+    // Seed Admin Group
+    console.log('🗑️  Clearing existing groups...');
+    await GroupModel.deleteMany({});
+    console.log('✅ Existing groups cleared');
+
+    console.log('🌱 Creating admin group...');
+    const adminGroup = await GroupModel.create({
+      name: 'Administradores',
+      description: 'Grupo de administradores com acesso total ao sistema',
+      permissions: ['events:create', 'events:update', 'events:delete', 'users:manage', 'groups:manage']
+    });
+    console.log('✅ Admin group created successfully');
+
+    // Seed Admin User
+    console.log('🗑️  Clearing existing users...');
+    await UserModel.deleteMany({});
+    console.log('✅ Existing users cleared');
+
+    console.log('🌱 Creating admin user...');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const adminUser = await UserModel.create({
+      username: 'admin',
+      email: 'admin@events.com',
+      password: hashedPassword,
+      groups: [adminGroup._id],
+      isActive: true
+    });
+    console.log('✅ Admin user created successfully');
+    console.log(`   Username: admin`);
+    console.log(`   Password: admin123`);
+    console.log(`   Email: admin@events.com`);
+
+    // Seed Events
     console.log('🗑️  Clearing existing events...');
     await EventModel.deleteMany({});
     console.log('✅ Existing events cleared');
@@ -69,7 +105,11 @@ async function seedDatabase() {
     });
 
     console.log('\n✨ Database seeded successfully!');
-    console.log('🚀 You can now start the application with: npm start');
+    console.log('\n🔐 Login Credentials:');
+    console.log('   Username: admin');
+    console.log('   Password: admin123');
+    console.log('   URL: http://localhost:3000/login');
+    console.log('\n🚀 You can now start the application with: npm start');
 
   } catch (error) {
     console.error('❌ Error seeding database:', error);
