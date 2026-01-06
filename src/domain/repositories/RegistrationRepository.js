@@ -15,6 +15,10 @@ class RegistrationRepository {
     throw new Error('Method not implemented');
   }
 
+  async findByEventAndEmail(eventId, email) {
+    throw new Error('Method not implemented');
+  }
+
   async update(id, registration) {
     throw new Error('Method not implemented');
   }
