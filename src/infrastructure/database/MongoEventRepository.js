@@ -9,7 +9,8 @@ class MongoEventRepository extends EventRepository {
       description: event.description,
       dateTime: event.dateTime,
       totalSlots: event.totalSlots,
-      availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots
+      availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots,
+      createdBy: event.createdBy
     });
     
     const savedEvent = await eventModel.save();
@@ -24,6 +25,11 @@ class MongoEventRepository extends EventRepository {
 
   async findAll() {
     const events = await EventModel.find().sort({ dateTime: 1 });
+    return events.map(event => this._toDomain(event));
+  }
+
+  async findByUserId(userId) {
+    const events = await EventModel.find({ createdBy: userId }).sort({ dateTime: 1 });
     return events.map(event => this._toDomain(event));
   }
 
@@ -70,7 +76,8 @@ class MongoEventRepository extends EventRepository {
       dateTime: eventModel.dateTime,
       totalSlots: eventModel.totalSlots,
       availableSlots: eventModel.availableSlots,
-      createdAt: eventModel.createdAt
+      createdAt: eventModel.createdAt,
+      createdBy: eventModel.createdBy ? eventModel.createdBy.toString() : null
     });
   }
 }

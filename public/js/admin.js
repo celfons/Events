@@ -54,7 +54,8 @@ async function loadEvents() {
         eventsTableContainer.classList.add('d-none');
         noEventsElement.classList.add('d-none');
 
-        const response = await fetch(`${API_URL}/api/events`);
+        // Call the /my endpoint to get only user's events
+        const response = await fetch(`${API_URL}/api/events/my`);
         
         if (!response.ok) {
             let errorMessage = 'Erro ao carregar eventos';
@@ -71,6 +72,7 @@ async function loadEvents() {
         loadingElement.classList.add('d-none');
 
         if (!Array.isArray(events) || events.length === 0) {
+            noEventsElement.textContent = 'Você ainda não criou nenhum evento.';
             noEventsElement.classList.remove('d-none');
             return;
         }

@@ -4,7 +4,7 @@ class UpdateEventUseCase {
     this.registrationRepository = registrationRepository;
   }
 
-  async execute(id, eventData) {
+  async execute(id, eventData, userId) {
     try {
       // Validate input
       if (!id) {
@@ -14,12 +14,27 @@ class UpdateEventUseCase {
         };
       }
 
+      if (!userId) {
+        return {
+          success: false,
+          error: 'User ID is required'
+        };
+      }
+
       // Check if event exists
       const existingEvent = await this.eventRepository.findById(id);
       if (!existingEvent) {
         return {
           success: false,
           error: 'Event not found'
+        };
+      }
+
+      // Check ownership
+      if (existingEvent.createdBy !== userId) {
+        return {
+          success: false,
+          error: 'You do not have permission to update this event'
         };
       }
 

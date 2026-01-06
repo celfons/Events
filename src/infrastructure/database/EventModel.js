@@ -30,10 +30,18 @@ const eventSchema = new mongoose.Schema({
       message: 'Available slots cannot exceed total slots'
     }
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+// Index for faster queries by user
+eventSchema.index({ createdBy: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);

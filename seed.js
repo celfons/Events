@@ -89,7 +89,12 @@ async function seedDatabase() {
     console.log('✅ Existing events cleared');
 
     console.log('🌱 Seeding sample events...');
-    await EventModel.insertMany(sampleEvents);
+    // Add createdBy to each event
+    const eventsWithUser = sampleEvents.map(event => ({
+      ...event,
+      createdBy: adminUser._id
+    }));
+    await EventModel.insertMany(eventsWithUser);
     console.log('✅ Sample events created successfully');
 
     const count = await EventModel.countDocuments();

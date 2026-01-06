@@ -1,5 +1,5 @@
 class Event {
-  constructor({ id, title, description, dateTime, totalSlots, availableSlots, createdAt }) {
+  constructor({ id, title, description, dateTime, totalSlots, availableSlots, createdAt, createdBy }) {
     this.id = id;
     this.title = title;
     this.description = description;
@@ -7,6 +7,7 @@ class Event {
     this.totalSlots = totalSlots;
     this.availableSlots = availableSlots !== undefined ? availableSlots : totalSlots;
     this.createdAt = createdAt || new Date();
+    this.createdBy = createdBy; // User ID who created the event
   }
 
   hasAvailableSlots() {
@@ -37,7 +38,8 @@ class Event {
       dateTime: this.dateTime,
       totalSlots: this.totalSlots,
       availableSlots: this.availableSlots,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
+      createdBy: this.createdBy
     };
   }
 }

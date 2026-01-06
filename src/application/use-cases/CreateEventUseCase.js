@@ -5,13 +5,20 @@ class CreateEventUseCase {
     this.eventRepository = eventRepository;
   }
 
-  async execute(eventData) {
+  async execute(eventData, userId) {
     try {
       // Validate input data
       if (!eventData.title || !eventData.description || !eventData.dateTime || !eventData.totalSlots) {
         return {
           success: false,
           error: 'Missing required fields: title, description, dateTime, totalSlots'
+        };
+      }
+
+      if (!userId) {
+        return {
+          success: false,
+          error: 'User ID is required'
         };
       }
 
@@ -27,7 +34,8 @@ class CreateEventUseCase {
         description: eventData.description,
         dateTime: new Date(eventData.dateTime),
         totalSlots: parseInt(eventData.totalSlots),
-        availableSlots: parseInt(eventData.totalSlots)
+        availableSlots: parseInt(eventData.totalSlots),
+        createdBy: userId
       });
 
       const createdEvent = await this.eventRepository.create(event);

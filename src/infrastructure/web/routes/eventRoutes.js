@@ -1,4 +1,5 @@
 const express = require('express');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -43,11 +44,32 @@ function createEventRoutes(eventController) {
 
   /**
    * @swagger
+   * /api/events/my:
+   *   get:
+   *     summary: List my events
+   *     tags: [Events]
+   *     security:
+   *       - sessionAuth: []
+   *     description: Retrieve a list of events created by the authenticated user
+   *     responses:
+   *       200:
+   *         description: List of user's events retrieved successfully
+   *       401:
+   *         description: Not authenticated
+   *       500:
+   *         description: Internal server error
+   */
+  router.get('/my', isAuthenticated, (req, res) => eventController.listMyEvents(req, res));
+
+  /**
+   * @swagger
    * /api/events:
    *   post:
    *     summary: Create a new event
    *     tags: [Events]
-   *     description: Create a new event with the provided details
+   *     security:
+   *       - sessionAuth: []
+   *     description: Create a new event with the provided details (requires authentication)
    *     requestBody:
    *       required: true
    *       content:
@@ -67,6 +89,8 @@ function createEventRoutes(eventController) {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Not authenticated
    *       500:
    *         description: Internal server error
    *         content:
@@ -74,7 +98,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', (req, res) => eventController.createEvent(req, res));
+  router.post('/', isAuthenticated, (req, res) => eventController.createEvent(req, res));
 
   /**
    * @swagger
@@ -156,7 +180,9 @@ function createEventRoutes(eventController) {
    *   put:
    *     summary: Update an event
    *     tags: [Events]
-   *     description: Update the details of an existing event
+   *     security:
+   *       - sessionAuth: []
+   *     description: Update the details of an existing event (only owner can update)
    *     parameters:
    *       - in: path
    *         name: id
@@ -178,11 +204,13 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Event'
    *       400:
-   *         description: Bad request - Invalid input data
+   *         description: Bad request - Invalid input data or not owner
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Not authenticated
    *       500:
    *         description: Internal server error
    *         content:
@@ -190,7 +218,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.put('/:id', (req, res) => eventController.updateEvent(req, res));
+  router.put('/:id', isAuthenticated, (req, res) => eventController.updateEvent(req, res));
 
   /**
    * @swagger
@@ -198,7 +226,9 @@ function createEventRoutes(eventController) {
    *   delete:
    *     summary: Delete an event
    *     tags: [Events]
-   *     description: Remove an event from the system
+   *     security:
+   *       - sessionAuth: []
+   *     description: Remove an event from the system (only owner can delete)
    *     parameters:
    *       - in: path
    *         name: id
@@ -214,11 +244,13 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/SuccessMessage'
    *       400:
-   *         description: Bad request
+   *         description: Bad request or not owner
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Not authenticated
    *       500:
    *         description: Internal server error
    *         content:
@@ -226,7 +258,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.delete('/:id', (req, res) => eventController.deleteEvent(req, res));
+  router.delete('/:id', isAuthenticated, (req, res) => eventController.deleteEvent(req, res));
 
   return router;
 }
