@@ -1,6 +1,7 @@
 class UpdateEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, registrationRepository) {
     this.eventRepository = eventRepository;
+    this.registrationRepository = registrationRepository;
   }
 
   async execute(id, eventData) {
@@ -52,6 +53,28 @@ class UpdateEventUseCase {
           success: false,
           error: 'Total slots must be at least 1'
         };
+      }
+
+      // If updating totalSlots, validate against active participants and update availableSlots
+      if (eventData.totalSlots !== undefined && eventData.totalSlots !== existingEvent.totalSlots) {
+        // Get active participants count
+        const activeParticipants = await this.registrationRepository.findByEventId(id);
+        const activeParticipantsCount = activeParticipants.length;
+
+        // Validate that new totalSlots is not less than active participants
+        if (eventData.totalSlots < activeParticipantsCount) {
+          return {
+            success: false,
+            error: `Cannot reduce total slots to ${eventData.totalSlots}. There are ${activeParticipantsCount} active participants. Please remove ${activeParticipantsCount - eventData.totalSlots} participant(s) first.`
+          };
+        }
+
+        // Calculate new availableSlots proportionally
+        const currentOccupiedSlots = existingEvent.totalSlots - existingEvent.availableSlots;
+        const newAvailableSlots = eventData.totalSlots - currentOccupiedSlots;
+        
+        // Add availableSlots to the update data
+        eventData.availableSlots = newAvailableSlots;
       }
 
       // Update only provided fields
