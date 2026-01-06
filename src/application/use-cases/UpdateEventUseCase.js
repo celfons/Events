@@ -80,9 +80,9 @@ class UpdateEventUseCase {
           };
         }
 
-        // Calculate new availableSlots proportionally
-        const currentOccupiedSlots = existingEvent.totalSlots - existingEvent.availableSlots;
-        const newAvailableSlots = Math.max(0, updateData.totalSlots - currentOccupiedSlots);
+        // Calculate new availableSlots based on active participants
+        // Using activeParticipantsCount ensures consistency with actual registrations
+        const newAvailableSlots = updateData.totalSlots - activeParticipantsCount;
         
         // Add availableSlots to the update data
         updateData.availableSlots = newAvailableSlots;

@@ -41,14 +41,14 @@ describe('UpdateEventUseCase', () => {
         description: 'New Description',
         dateTime: new Date('2024-12-31'),
         totalSlots: 100,
-        availableSlots: 80, // Should be updated: (100 - (50 - 30)) = 80
+        availableSlots: 98, // 100 - 2 active participants
         toJSON: jest.fn().mockReturnValue({
           id: eventId,
           title: 'New Title',
           description: 'New Description',
           dateTime: new Date('2024-12-31'),
           totalSlots: 100,
-          availableSlots: 80
+          availableSlots: 98
         })
       };
 
@@ -67,7 +67,7 @@ describe('UpdateEventUseCase', () => {
       // Check that availableSlots was added to the update data
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
         ...updateData,
-        availableSlots: 80
+        availableSlots: 98 // 100 - 2 active participants
       });
     });
 
@@ -209,28 +209,28 @@ describe('UpdateEventUseCase', () => {
   });
 
   describe('Total Slots Update with Participant Validation', () => {
-    it('should update totalSlots and availableSlots proportionally when no participants exceed new limit', async () => {
+    it('should update totalSlots and availableSlots based on active participants', async () => {
       const eventId = '123';
       const existingEvent = {
         id: eventId,
         totalSlots: 50,
-        availableSlots: 30 // 20 occupied slots
+        availableSlots: 30 // 20 occupied slots (but may not match actual participants)
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
       mockRegistrationRepository.findByEventId.mockResolvedValue([
         { id: '1', name: 'User 1' },
         { id: '2', name: 'User 2' }
-      ]); // 2 active participants (less than 20 occupied)
+      ]); // 2 active participants
 
       const updatedEvent = {
         id: eventId,
         totalSlots: 100,
-        availableSlots: 80, // 100 - 20 = 80
+        availableSlots: 98, // 100 - 2 active participants
         toJSON: jest.fn().mockReturnValue({
           id: eventId,
           totalSlots: 100,
-          availableSlots: 80
+          availableSlots: 98
         })
       };
 
@@ -239,10 +239,10 @@ describe('UpdateEventUseCase', () => {
       const result = await updateEventUseCase.execute(eventId, { totalSlots: 100 });
 
       expect(result.success).toBe(true);
-      expect(result.data.availableSlots).toBe(80);
+      expect(result.data.availableSlots).toBe(98);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
         totalSlots: 100,
-        availableSlots: 80
+        availableSlots: 98
       });
     });
 
@@ -251,7 +251,7 @@ describe('UpdateEventUseCase', () => {
       const existingEvent = {
         id: eventId,
         totalSlots: 100,
-        availableSlots: 70 // 30 occupied slots
+        availableSlots: 70 // 30 occupied slots (but may not match actual participants)
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -264,11 +264,11 @@ describe('UpdateEventUseCase', () => {
       const updatedEvent = {
         id: eventId,
         totalSlots: 50,
-        availableSlots: 20, // 50 - 30 = 20
+        availableSlots: 47, // 50 - 3 active participants
         toJSON: jest.fn().mockReturnValue({
           id: eventId,
           totalSlots: 50,
-          availableSlots: 20
+          availableSlots: 47
         })
       };
 
@@ -277,10 +277,10 @@ describe('UpdateEventUseCase', () => {
       const result = await updateEventUseCase.execute(eventId, { totalSlots: 50 });
 
       expect(result.success).toBe(true);
-      expect(result.data.availableSlots).toBe(20);
+      expect(result.data.availableSlots).toBe(47);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
         totalSlots: 50,
-        availableSlots: 20
+        availableSlots: 47
       });
     });
 
@@ -313,7 +313,7 @@ describe('UpdateEventUseCase', () => {
       const existingEvent = {
         id: eventId,
         totalSlots: 50,
-        availableSlots: 45 // 5 occupied slots
+        availableSlots: 45 // 5 occupied slots (but actual participants may differ)
       };
 
       mockEventRepository.findById.mockResolvedValue(existingEvent);
@@ -326,7 +326,7 @@ describe('UpdateEventUseCase', () => {
       const updatedEvent = {
         id: eventId,
         totalSlots: 3,
-        availableSlots: 0, // Clamped to 0 (3 - 5 = -2, but min is 0)
+        availableSlots: 0, // 3 - 3 active participants = 0
         toJSON: jest.fn().mockReturnValue({
           id: eventId,
           totalSlots: 3,
@@ -341,7 +341,7 @@ describe('UpdateEventUseCase', () => {
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
         totalSlots: 3,
-        availableSlots: 0 // Clamped to 0 instead of -2
+        availableSlots: 0 // 3 - 3 active participants
       });
     });
 
