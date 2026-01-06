@@ -170,10 +170,26 @@ POST /api/registrations/:id/cancel
 
 ## 🧪 Testes
 
-Para adicionar testes no futuro:
+Este projeto possui cobertura completa de testes unitários para validar as regras de negócio.
+
+### Executar Testes
 ```bash
+# Executar todos os testes
 npm test
+
+# Executar testes com cobertura
+npm run test:coverage
+
+# Executar testes em modo watch
+npm run test:watch
 ```
+
+### Cobertura de Testes
+- **Entidades de Domínio**: 100% de cobertura
+- **Casos de Uso**: 100% de cobertura
+- **Total de Testes**: 57 testes passando
+
+Para mais detalhes sobre os testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
 
 ## 🚢 Deploy no Azure
 

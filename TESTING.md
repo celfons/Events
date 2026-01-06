@@ -1,5 +1,40 @@
 # Events Platform - Testing Guide
 
+## Automated Testing
+
+### Unit Tests
+
+O projeto possui cobertura completa de testes unitários para validar as regras de negócio.
+
+#### Executar Testes Unitários
+```bash
+# Executar todos os testes
+npm test
+
+# Executar testes com cobertura
+npm run test:coverage
+
+# Executar testes em modo watch (desenvolvimento)
+npm run test:watch
+```
+
+#### Cobertura de Testes
+- **Entidades de Domínio**: 100% de cobertura
+  - Event.js: Todas as regras de gerenciamento de vagas
+  - Registration.js: Todas as regras de status de inscrição
+- **Casos de Uso**: 100% de cobertura
+  - CreateEventUseCase: Validações e criação
+  - RegisterForEventUseCase: Regras de inscrição e controle de vagas
+  - CancelRegistrationUseCase: Cancelamento e restauração de vagas
+  - ListEventsUseCase: Listagem de eventos
+  - GetEventDetailsUseCase: Detalhes e contagem de inscrições
+
+**Total**: 57 testes, 7 suites de teste
+
+Para documentação detalhada dos testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
+
+---
+
 ## Manual Testing Steps
 
 ### Prerequisites
