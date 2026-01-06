@@ -7,6 +7,8 @@ const noEventsElement = document.getElementById('noEvents');
 const eventsTableContainer = document.getElementById('eventsTableContainer');
 const eventsTableBody = document.getElementById('eventsTableBody');
 const paginationElement = document.getElementById('pagination');
+const searchInput = document.getElementById('searchInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
 const createEventForm = document.getElementById('createEventForm');
 const submitCreateEventBtn = document.getElementById('submitCreateEvent');
 const createEventError = document.getElementById('createEventError');
@@ -20,16 +22,28 @@ const updateEventError = document.getElementById('updateEventError');
 let currentPage = 1;
 const eventsPerPage = 10;
 let allEvents = [];
+let filteredEvents = [];
 let currentEventId = null;
 
 // Participants pagination
 let currentParticipantsPage = 1;
 const participantsPerPage = 10;
 let allParticipants = [];
+let filteredParticipants = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEvents();
+    
+    // Event search functionality
+    searchInput.addEventListener('input', () => {
+        filterAndDisplayEvents();
+    });
+    
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterAndDisplayEvents();
+    });
 });
 
 // Load all events
@@ -51,13 +65,35 @@ async function loadEvents() {
 
         allEvents = events;
         eventsTableContainer.classList.remove('d-none');
-        displayPage(1);
+        filterAndDisplayEvents();
     } catch (error) {
         console.error('Error loading events:', error);
         loadingElement.classList.add('d-none');
         showError(noEventsElement, 'Erro ao carregar eventos. Tente novamente mais tarde.');
         noEventsElement.classList.remove('d-none');
     }
+}
+
+// Filter events based on search query
+function filterAndDisplayEvents() {
+    const searchQuery = searchInput.value.toLowerCase().trim();
+    
+    if (searchQuery === '') {
+        filteredEvents = allEvents;
+    } else {
+        filteredEvents = allEvents.filter(event => 
+            event.title.toLowerCase().includes(searchQuery)
+        );
+    }
+    
+    if (filteredEvents.length === 0) {
+        eventsTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum evento encontrado.</td></tr>';
+        paginationElement.innerHTML = '';
+        return;
+    }
+    
+    currentPage = 1; // Reset to first page when filtering
+    displayPage(currentPage);
 }
 
 // Display a specific page of events
@@ -67,7 +103,7 @@ function displayPage(page) {
 
     const startIndex = (page - 1) * eventsPerPage;
     const endIndex = startIndex + eventsPerPage;
-    const pageEvents = allEvents.slice(startIndex, endIndex);
+    const pageEvents = filteredEvents.slice(startIndex, endIndex);
 
     pageEvents.forEach(event => {
         const row = createEventRow(event);
@@ -111,7 +147,7 @@ function createEventRow(event) {
 
 // Render pagination controls
 function renderPagination() {
-    const totalPages = Math.ceil(allEvents.length / eventsPerPage);
+    const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
     paginationElement.innerHTML = '';
 
     if (totalPages <= 1) {
@@ -355,6 +391,8 @@ async function openParticipantsModal(eventId) {
         const participantsLoading = document.getElementById('participantsLoading');
         const participantsContainer = document.getElementById('participantsContainer');
         const noParticipants = document.getElementById('noParticipants');
+        const participantsSearchInput = document.getElementById('participantsSearchInput');
+        const clearParticipantsSearchBtn = document.getElementById('clearParticipantsSearchBtn');
 
         participantsLoading.classList.remove('d-none');
         participantsContainer.classList.add('d-none');
@@ -373,7 +411,19 @@ async function openParticipantsModal(eventId) {
             noParticipants.classList.remove('d-none');
         } else {
             allParticipants = participants;
+            filteredParticipants = participants;
             participantsContainer.classList.remove('d-none');
+            
+            // Clear previous search
+            participantsSearchInput.value = '';
+            
+            // Setup search functionality
+            participantsSearchInput.removeEventListener('input', handleParticipantsSearch);
+            participantsSearchInput.addEventListener('input', handleParticipantsSearch);
+            
+            clearParticipantsSearchBtn.removeEventListener('click', handleClearParticipantsSearch);
+            clearParticipantsSearchBtn.addEventListener('click', handleClearParticipantsSearch);
+            
             displayParticipantsPage(1);
         }
 
@@ -385,6 +435,45 @@ async function openParticipantsModal(eventId) {
     }
 }
 
+// Handle participants search
+function handleParticipantsSearch() {
+    filterAndDisplayParticipants();
+}
+
+// Handle clear participants search
+function handleClearParticipantsSearch() {
+    const participantsSearchInput = document.getElementById('participantsSearchInput');
+    participantsSearchInput.value = '';
+    filterAndDisplayParticipants();
+}
+
+// Filter participants based on search query
+function filterAndDisplayParticipants() {
+    const participantsSearchInput = document.getElementById('participantsSearchInput');
+    const searchQuery = participantsSearchInput.value.toLowerCase().trim();
+    
+    if (searchQuery === '') {
+        filteredParticipants = allParticipants;
+    } else {
+        filteredParticipants = allParticipants.filter(participant => 
+            participant.name.toLowerCase().includes(searchQuery) ||
+            participant.email.toLowerCase().includes(searchQuery) ||
+            participant.phone.toLowerCase().includes(searchQuery)
+        );
+    }
+    
+    if (filteredParticipants.length === 0) {
+        const participantsTableBody = document.getElementById('participantsTableBody');
+        participantsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum participante encontrado.</td></tr>';
+        const participantsPagination = document.getElementById('participantsPagination');
+        participantsPagination.innerHTML = '';
+        return;
+    }
+    
+    currentParticipantsPage = 1; // Reset to first page when filtering
+    displayParticipantsPage(currentParticipantsPage);
+}
+
 // Display participants page
 function displayParticipantsPage(page) {
     currentParticipantsPage = page;
@@ -393,7 +482,7 @@ function displayParticipantsPage(page) {
 
     const startIndex = (page - 1) * participantsPerPage;
     const endIndex = startIndex + participantsPerPage;
-    const pageParticipants = allParticipants.slice(startIndex, endIndex);
+    const pageParticipants = filteredParticipants.slice(startIndex, endIndex);
 
     pageParticipants.forEach(participant => {
         const row = document.createElement('tr');
@@ -422,7 +511,7 @@ function displayParticipantsPage(page) {
 
 // Render participants pagination
 function renderParticipantsPagination() {
-    const totalPages = Math.ceil(allParticipants.length / participantsPerPage);
+    const totalPages = Math.ceil(filteredParticipants.length / participantsPerPage);
     const participantsPagination = document.getElementById('participantsPagination');
     participantsPagination.innerHTML = '';
 

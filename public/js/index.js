@@ -6,16 +6,29 @@ const eventsContainer = document.getElementById('eventsContainer');
 const loadingElement = document.getElementById('loading');
 const noEventsElement = document.getElementById('noEvents');
 const paginationElement = document.getElementById('pagination');
+const searchInput = document.getElementById('searchInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
 
 // Pagination state
 let currentPage = 1;
 const eventsPerPage = 5;
 let allEvents = [];
 let futureEvents = [];
+let filteredEvents = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEvents();
+    
+    // Search functionality
+    searchInput.addEventListener('input', () => {
+        filterAndDisplayEvents();
+    });
+    
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterAndDisplayEvents();
+    });
 });
 
 // Load all events
@@ -41,13 +54,37 @@ async function loadEvents() {
         const now = new Date();
         futureEvents = events.filter(event => new Date(event.dateTime) > now);
 
-        if (futureEvents.length === 0) {
-            noEventsElement.classList.remove('d-none');
-            paginationElement.innerHTML = '';
-            return;
-        }
+        filterAndDisplayEvents();
+    } catch (error) {
+        console.error('Error loading events:', error);
+        loadingElement.classList.add('d-none');
+        eventsContainer.innerHTML = '<div class="alert alert-danger">Erro ao carregar eventos. Tente novamente mais tarde.</div>';
+    }
+}
 
-        displayPage(currentPage);
+// Filter events based on search query
+function filterAndDisplayEvents() {
+    const searchQuery = searchInput.value.toLowerCase().trim();
+    
+    if (searchQuery === '') {
+        filteredEvents = futureEvents;
+    } else {
+        filteredEvents = futureEvents.filter(event => 
+            event.title.toLowerCase().includes(searchQuery)
+        );
+    }
+    
+    if (filteredEvents.length === 0) {
+        eventsContainer.innerHTML = '';
+        noEventsElement.classList.remove('d-none');
+        paginationElement.innerHTML = '';
+        return;
+    }
+    
+    noEventsElement.classList.add('d-none');
+    currentPage = 1; // Reset to first page when filtering
+    displayPage(currentPage);
+}
     } catch (error) {
         console.error('Error loading events:', error);
         loadingElement.classList.add('d-none');
@@ -62,7 +99,7 @@ function displayPage(page) {
 
     const startIndex = (page - 1) * eventsPerPage;
     const endIndex = startIndex + eventsPerPage;
-    const pageEvents = futureEvents.slice(startIndex, endIndex);
+    const pageEvents = filteredEvents.slice(startIndex, endIndex);
 
     pageEvents.forEach(event => {
         eventsContainer.appendChild(createEventCard(event));
@@ -73,7 +110,7 @@ function displayPage(page) {
 
 // Render pagination controls
 function renderPagination() {
-    const totalPages = Math.ceil(futureEvents.length / eventsPerPage);
+    const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
     paginationElement.innerHTML = '';
 
     if (totalPages <= 1) {
