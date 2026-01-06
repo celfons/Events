@@ -283,7 +283,7 @@ describe('UpdateEventUseCase', () => {
       const updatedEvent = {
         id: eventId,
         totalSlots: 3,
-        availableSlots: 0, // 3 - 5 = -2, but should be 0 (no available slots)
+        availableSlots: 0, // Clamped to 0 (3 - 5 = -2, but min is 0)
         toJSON: jest.fn().mockReturnValue({
           id: eventId,
           totalSlots: 3,
@@ -298,7 +298,7 @@ describe('UpdateEventUseCase', () => {
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, {
         totalSlots: 3,
-        availableSlots: -2 // This will be calculated as 3 - 5 = -2
+        availableSlots: 0 // Clamped to 0 instead of -2
       });
     });
 

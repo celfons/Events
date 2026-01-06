@@ -71,7 +71,7 @@ class UpdateEventUseCase {
 
         // Calculate new availableSlots proportionally
         const currentOccupiedSlots = existingEvent.totalSlots - existingEvent.availableSlots;
-        const newAvailableSlots = eventData.totalSlots - currentOccupiedSlots;
+        const newAvailableSlots = Math.max(0, eventData.totalSlots - currentOccupiedSlots);
         
         // Add availableSlots to the update data
         eventData.availableSlots = newAvailableSlots;
