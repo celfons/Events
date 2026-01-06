@@ -337,6 +337,25 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
     }
 });
 
+// Handle back button clicks
+document.getElementById('backButton')?.addEventListener('click', () => {
+    // Use browser history to go back, or fallback to home page
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+});
+
+document.getElementById('backButtonSuccess')?.addEventListener('click', () => {
+    // Use browser history to go back, or fallback to home page
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+});
+
 // Helper function
 function showError(element, message) {
     element.textContent = message;
