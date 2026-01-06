@@ -33,6 +33,7 @@ let filteredParticipants = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
     loadEvents();
     
     // Event search functionality
@@ -681,3 +682,43 @@ function escapeHtml(text) {
     };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
+
+// Check authentication status
+async function checkAuthStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/me`);
+        const usernameDisplay = document.getElementById('usernameDisplay');
+
+        if (response.ok) {
+            const data = await response.json();
+            usernameDisplay.textContent = data.username;
+        } else {
+            // Not authenticated, redirect to login
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Error checking auth status:', error);
+        window.location.href = '/login';
+    }
+}
+
+// Handle logout
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        try {
+            const response = await fetch(`${API_URL}/api/auth/logout`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                window.location.href = '/login';
+            }
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    });
+}
+

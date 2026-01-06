@@ -18,6 +18,7 @@ let filteredEvents = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
     loadEvents();
     
     // Search functionality
@@ -29,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = '';
         filterAndDisplayEvents();
     });
+
+    // Logout functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
 });
 
 // Reload events when page becomes visible (user returns to tab)
@@ -214,3 +221,48 @@ function escapeHtml(text) {
     };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
+
+// Check authentication status
+async function checkAuthStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/me`);
+        const loginNavItem = document.getElementById('loginNavItem');
+        const userNavItem = document.getElementById('userNavItem');
+        const logoutNavItem = document.getElementById('logoutNavItem');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+
+        if (response.ok) {
+            const data = await response.json();
+            // User is logged in
+            loginNavItem.classList.add('d-none');
+            userNavItem.classList.remove('d-none');
+            logoutNavItem.classList.remove('d-none');
+            usernameDisplay.textContent = data.username;
+        } else {
+            // User is not logged in
+            loginNavItem.classList.remove('d-none');
+            userNavItem.classList.add('d-none');
+            logoutNavItem.classList.add('d-none');
+        }
+    } catch (error) {
+        console.error('Error checking auth status:', error);
+    }
+}
+
+// Handle logout
+async function handleLogout(e) {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch(`${API_URL}/api/auth/logout`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+}
+

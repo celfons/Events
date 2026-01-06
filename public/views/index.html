@@ -26,8 +26,23 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/">Eventos</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="adminNavItem">
                         <a class="nav-link" href="/admin">Admin</a>
+                    </li>
+                    <li class="nav-item" id="loginNavItem">
+                        <a class="nav-link" href="/login">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="userNavItem">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle"></i> <span id="usernameDisplay"></span>
+                        </span>
+                    </li>
+                    <li class="nav-item d-none" id="logoutNavItem">
+                        <a class="nav-link" href="#" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </a>
                     </li>
                 </ul>
             </div>
