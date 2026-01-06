@@ -52,8 +52,10 @@ function restoreRegistrationState() {
                 }
                 
                 // Show cancellation button
-                registrationForm.classList.add('d-none');
-                registrationSuccess.classList.remove('d-none');
+                if (registrationForm && registrationSuccess) {
+                    registrationForm.classList.add('d-none');
+                    registrationSuccess.classList.remove('d-none');
+                }
             } catch (parseError) {
                 console.error('Error parsing registration data:', parseError);
                 // Clear invalid data
