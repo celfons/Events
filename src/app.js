@@ -3,6 +3,8 @@ const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./infrastructure/web/swagger');
 
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
@@ -87,6 +89,12 @@ function createApp() {
   // API Routes
   app.use('/api/events', createEventRoutes(eventController));
   app.use('/api/registrations', createRegistrationRoutes(registrationController));
+
+  // Swagger API Documentation
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Events Platform API Documentation'
+  }));
 
   // Serve HTML pages
   app.get('/', (req, res) => {

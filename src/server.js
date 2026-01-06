@@ -16,6 +16,7 @@ async function start() {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📋 Events page: http://localhost:${PORT}`);
       console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+      console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
