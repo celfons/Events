@@ -112,6 +112,20 @@ npm start
 - Página Principal: http://localhost:3000
 - Painel Admin: http://localhost:3000/admin
 - Health Check: http://localhost:3000/health
+- **Documentação da API (Swagger)**: http://localhost:3000/api-docs
+
+## 📚 Documentação da API
+
+A documentação interativa da API está disponível através do Swagger UI. Acesse http://localhost:3000/api-docs para:
+
+- Visualizar todos os endpoints disponíveis
+- Entender os parâmetros de entrada e saída
+- Testar as APIs diretamente pelo navegador
+- Ver exemplos de requisições e respostas
+
+### Tecnologias de Documentação
+- **Swagger UI**: Interface interativa para documentação
+- **OpenAPI 3.0**: Especificação padrão para APIs REST
 
 ## 🔌 API Endpoints
 
