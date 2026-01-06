@@ -55,30 +55,41 @@ class UpdateEventUseCase {
         };
       }
 
+      // Prevent manual availableSlots update when totalSlots is being updated
+      if (eventData.totalSlots !== undefined && eventData.availableSlots !== undefined) {
+        return {
+          success: false,
+          error: 'Cannot manually set availableSlots when updating totalSlots. availableSlots will be calculated automatically.'
+        };
+      }
+
+      // Prepare update data (avoid mutating input parameter)
+      const updateData = { ...eventData };
+
       // If updating totalSlots, validate against active participants and update availableSlots
-      if (eventData.totalSlots !== undefined && eventData.totalSlots !== existingEvent.totalSlots) {
+      if (updateData.totalSlots !== undefined && updateData.totalSlots !== existingEvent.totalSlots) {
         // Get active participants count
         const activeParticipants = await this.registrationRepository.findByEventId(id);
         const activeParticipantsCount = activeParticipants.length;
 
         // Validate that new totalSlots is not less than active participants
-        if (eventData.totalSlots < activeParticipantsCount) {
+        if (updateData.totalSlots < activeParticipantsCount) {
           return {
             success: false,
-            error: `Cannot reduce total slots to ${eventData.totalSlots}. There are ${activeParticipantsCount} active participants. Please remove ${activeParticipantsCount - eventData.totalSlots} participant(s) first.`
+            error: `Cannot reduce total slots to ${updateData.totalSlots}. There are ${activeParticipantsCount} active participants. Please remove ${activeParticipantsCount - updateData.totalSlots} participant(s) first.`
           };
         }
 
         // Calculate new availableSlots proportionally
         const currentOccupiedSlots = existingEvent.totalSlots - existingEvent.availableSlots;
-        const newAvailableSlots = Math.max(0, eventData.totalSlots - currentOccupiedSlots);
+        const newAvailableSlots = Math.max(0, updateData.totalSlots - currentOccupiedSlots);
         
         // Add availableSlots to the update data
-        eventData.availableSlots = newAvailableSlots;
+        updateData.availableSlots = newAvailableSlots;
       }
 
       // Update only provided fields
-      const updatedEvent = await this.eventRepository.update(id, eventData);
+      const updatedEvent = await this.eventRepository.update(id, updateData);
 
       return {
         success: true,
