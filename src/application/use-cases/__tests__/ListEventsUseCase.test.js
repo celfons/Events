@@ -90,6 +90,40 @@ describe('ListEventsUseCase', () => {
       expect(mockEvents[0].toJSON).toHaveBeenCalled();
       expect(mockEvents[1].toJSON).toHaveBeenCalled();
     });
+
+    it('should return events in the order provided by repository', async () => {
+      const mockEvents = [
+        {
+          id: '1',
+          title: 'Newer Event',
+          dateTime: new Date('2025-01-15'),
+          toJSON: jest.fn().mockReturnValue({
+            id: '1',
+            title: 'Newer Event',
+            dateTime: new Date('2025-01-15')
+          })
+        },
+        {
+          id: '2',
+          title: 'Older Event',
+          dateTime: new Date('2025-01-10'),
+          toJSON: jest.fn().mockReturnValue({
+            id: '2',
+            title: 'Older Event',
+            dateTime: new Date('2025-01-10')
+          })
+        }
+      ];
+
+      mockEventRepository.findAll.mockResolvedValue(mockEvents);
+
+      const result = await listEventsUseCase.execute();
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0].title).toBe('Newer Event');
+      expect(result.data[1].title).toBe('Older Event');
+    });
   });
 
   describe('Error Handling', () => {
