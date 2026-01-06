@@ -3,7 +3,7 @@ class DeleteEventUseCase {
     this.eventRepository = eventRepository;
   }
 
-  async execute(id) {
+  async execute(id, userId = null) {
     try {
       // Validate input
       if (!id) {
@@ -19,6 +19,14 @@ class DeleteEventUseCase {
         return {
           success: false,
           error: 'Event not found'
+        };
+      }
+
+      // Check ownership if userId is provided
+      if (userId && existingEvent.userId && existingEvent.userId !== userId) {
+        return {
+          success: false,
+          error: 'You do not have permission to delete this event'
         };
       }
 

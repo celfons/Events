@@ -8,6 +8,7 @@ const swaggerSpec = require('./infrastructure/web/swagger');
 
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
+const MongoUserRepository = require('./infrastructure/database/MongoUserRepository');
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
@@ -18,14 +19,23 @@ const DeleteEventUseCase = require('./application/use-cases/DeleteEventUseCase')
 const GetEventParticipantsUseCase = require('./application/use-cases/GetEventParticipantsUseCase');
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
+const LoginUseCase = require('./application/use-cases/LoginUseCase');
+const RegisterUseCase = require('./application/use-cases/RegisterUseCase');
+const ListUsersUseCase = require('./application/use-cases/ListUsersUseCase');
+const UpdateUserUseCase = require('./application/use-cases/UpdateUserUseCase');
+const DeleteUserUseCase = require('./application/use-cases/DeleteUserUseCase');
 
 // Controllers
 const EventController = require('./infrastructure/web/controllers/EventController');
 const RegistrationController = require('./infrastructure/web/controllers/RegistrationController');
+const AuthController = require('./infrastructure/web/controllers/AuthController');
+const UserController = require('./infrastructure/web/controllers/UserController');
 
 // Routes
 const createEventRoutes = require('./infrastructure/web/routes/eventRoutes');
 const createRegistrationRoutes = require('./infrastructure/web/routes/registrationRoutes');
+const createAuthRoutes = require('./infrastructure/web/routes/authRoutes');
+const createUserRoutes = require('./infrastructure/web/routes/userRoutes');
 
 function createApp() {
   const app = express();
@@ -69,6 +79,7 @@ function createApp() {
 
   // Dependency Injection
   const eventRepository = new MongoEventRepository();
+  const userRepository = new MongoUserRepository();
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
@@ -79,12 +90,21 @@ function createApp() {
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
+  const loginUseCase = new LoginUseCase(userRepository);
+  const registerUseCase = new RegisterUseCase(userRepository);
+  const listUsersUseCase = new ListUsersUseCase(userRepository);
+  const updateUserUseCase = new UpdateUserUseCase(userRepository);
+  const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 
   // Controllers
   const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase);
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
+  const authController = new AuthController(loginUseCase, registerUseCase);
+  const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase);
 
   // API Routes
+  app.use('/api/auth', createAuthRoutes(authController));
+  app.use('/api/users', createUserRoutes(userController));
   app.use('/api/events', createEventRoutes(eventController));
   app.use('/api/registrations', createRegistrationRoutes(registrationController));
 

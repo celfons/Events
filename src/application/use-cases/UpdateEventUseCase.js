@@ -3,7 +3,7 @@ class UpdateEventUseCase {
     this.eventRepository = eventRepository;
   }
 
-  async execute(id, eventData) {
+  async execute(id, eventData, userId = null) {
     try {
       // Validate input
       if (!id) {
@@ -19,6 +19,14 @@ class UpdateEventUseCase {
         return {
           success: false,
           error: 'Event not found'
+        };
+      }
+
+      // Check ownership if userId is provided
+      if (userId && existingEvent.userId && existingEvent.userId !== userId) {
+        return {
+          success: false,
+          error: 'You do not have permission to update this event'
         };
       }
 

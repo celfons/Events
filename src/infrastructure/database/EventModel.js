@@ -59,6 +59,11 @@ const eventSchema = new mongoose.Schema({
     }
   },
   participants: [participantSchema],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
