@@ -1,5 +1,14 @@
 const jwt = require('jsonwebtoken');
 
+// Get JWT secret from environment
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set. Please configure it in your .env file.');
+  }
+  return secret;
+};
+
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -10,7 +19,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, getJwtSecret());
     req.user = decoded; // { userId, email, role }
     next();
   } catch (error) {
@@ -41,7 +50,7 @@ const optionalAuth = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, getJwtSecret());
     req.user = decoded;
   } catch (error) {
     // Token is invalid but we don't fail - just continue without user

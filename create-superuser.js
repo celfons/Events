@@ -20,11 +20,28 @@ async function createSuperuser() {
       return;
     }
 
+    // Get password from environment variable or prompt for it
+    const password = process.env.SUPERUSER_PASSWORD;
+    
+    if (!password) {
+      console.error('Error: SUPERUSER_PASSWORD environment variable is not set.');
+      console.error('Please set it before running this script:');
+      console.error('  SUPERUSER_PASSWORD=your_password npm run create-superuser');
+      await mongoose.disconnect();
+      process.exit(1);
+    }
+
+    if (password.length < 6) {
+      console.error('Error: Password must be at least 6 characters long.');
+      await mongoose.disconnect();
+      process.exit(1);
+    }
+
     // Create superuser
     const superuser = new UserModel({
-      username: 'admin',
-      email: 'admin@events.com',
-      password: 'admin123', // This will be hashed automatically by the pre-save hook
+      username: process.env.SUPERUSER_USERNAME || 'admin',
+      email: process.env.SUPERUSER_EMAIL || 'admin@events.com',
+      password: password, // This will be hashed automatically by the pre-save hook
       role: 'superuser'
     });
 
@@ -33,8 +50,7 @@ async function createSuperuser() {
     console.log('Superuser created successfully:');
     console.log(`  Username: ${superuser.username}`);
     console.log(`  Email: ${superuser.email}`);
-    console.log(`  Password: admin123`);
-    console.log('\nIMPORTANT: Please change the password after first login!');
+    console.log('\nIMPORTANT: Keep your password secure and do not share it!');
 
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');

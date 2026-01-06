@@ -154,24 +154,38 @@ Authorization: Bearer SUPERUSER_JWT_TOKEN
 
 Add to your `.env` file:
 ```env
-JWT_SECRET=your-secret-key-change-this-in-production
+JWT_SECRET=your-strong-random-secret-key
 ```
 
-⚠️ **Important**: Use a strong, random secret key in production!
+⚠️ **Important**: 
+- Use a strong, random secret key in production (at least 32 characters)
+- Never commit the `.env` file to version control
+- The application will fail to start if JWT_SECRET is not set (security by default)
+
+You can generate a secure secret key using:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
 ### 2. Create Initial Superuser
 
-Run the following command to create the first superuser:
+Set the superuser credentials via environment variables:
+```bash
+export SUPERUSER_USERNAME="admin"
+export SUPERUSER_EMAIL="admin@example.com"
+export SUPERUSER_PASSWORD="YourSecurePassword123!"
+```
+
+Then run:
 ```bash
 npm run create-superuser
 ```
 
-This creates a superuser with:
-- **Username**: admin
-- **Email**: admin@events.com
-- **Password**: admin123
-
-⚠️ **Important**: Change the password immediately after first login!
+⚠️ **Security Best Practices**:
+- Use a strong password (minimum 6 characters, recommended 12+)
+- Never use default passwords like "admin123"
+- The script requires SUPERUSER_PASSWORD to be set as an environment variable
+- Store credentials securely (e.g., password manager, secrets vault)
 
 ## Authentication Flow
 
@@ -222,15 +236,17 @@ console.log('Event created:', event);
 ## Security Considerations
 
 ### Password Security
-- Passwords are hashed using bcrypt with salt rounds
+- Passwords are hashed using bcrypt with 10 salt rounds
 - Never store plain text passwords
-- Minimum password length: 6 characters (configurable)
+- Minimum password length: 6 characters (recommended 12+)
+- No default passwords in production
 
 ### Token Security
 - Tokens expire after 24 hours
 - Use HTTPS in production to prevent token interception
 - Store tokens securely on the client side
-- Never expose JWT_SECRET
+- JWT_SECRET must be set in environment variables (application fails if not set)
+- Never expose JWT_SECRET in client code
 
 ### Authorization
 - Every protected route validates the token

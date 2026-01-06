@@ -3,12 +3,21 @@ const LoginUseCase = require('../LoginUseCase');
 describe('LoginUseCase', () => {
   let loginUseCase;
   let mockUserRepository;
+  const originalEnv = process.env.JWT_SECRET;
 
   beforeEach(() => {
+    // Set JWT_SECRET for tests
+    process.env.JWT_SECRET = 'test-secret-key';
+    
     mockUserRepository = {
       findModelByEmail: jest.fn()
     };
     loginUseCase = new LoginUseCase(mockUserRepository);
+  });
+
+  afterEach(() => {
+    // Restore original JWT_SECRET
+    process.env.JWT_SECRET = originalEnv;
   });
 
   describe('execute', () => {
@@ -83,6 +92,28 @@ describe('LoginUseCase', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database error');
+    });
+
+    it('should return error when JWT_SECRET is not set', async () => {
+      // Temporarily unset JWT_SECRET
+      delete process.env.JWT_SECRET;
+
+      const mockUser = {
+        _id: '123',
+        username: 'testuser',
+        email: 'user@example.com',
+        role: 'user',
+        comparePassword: jest.fn().mockResolvedValue(true)
+      };
+      mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
+
+      const result = await loginUseCase.execute('user@example.com', 'password123');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('JWT_SECRET environment variable is not set');
+
+      // Restore JWT_SECRET
+      process.env.JWT_SECRET = 'test-secret-key';
     });
   });
 });

@@ -113,20 +113,24 @@ Edite o arquivo `.env` com suas configurações:
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
 NODE_ENV=development
-JWT_SECRET=your-secret-key-change-this-in-production
+JWT_SECRET=your-strong-random-secret-key  # Use: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 4. **Crie o superusuário inicial**
+
+Configure as credenciais do superusuário:
+```bash
+export SUPERUSER_USERNAME="admin"
+export SUPERUSER_EMAIL="admin@example.com"
+export SUPERUSER_PASSWORD="YourSecurePassword123!"
+```
+
+Execute o script:
 ```bash
 npm run create-superuser
 ```
 
-Isso criará um superusuário com as credenciais padrão:
-- **Username**: admin
-- **Email**: admin@events.com
-- **Password**: admin123
-
-⚠️ **Importante**: Altere a senha após o primeiro login!
+⚠️ **Importante**: Use uma senha forte e segura!
 
 5. **Inicie o servidor**
 ```bash
