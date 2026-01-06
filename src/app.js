@@ -74,7 +74,7 @@ function createApp() {
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
   const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository, registrationRepository);
   const createEventUseCase = new CreateEventUseCase(eventRepository);
-  const updateEventUseCase = new UpdateEventUseCase(eventRepository);
+  const updateEventUseCase = new UpdateEventUseCase(eventRepository, registrationRepository);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository, registrationRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, registrationRepository);
