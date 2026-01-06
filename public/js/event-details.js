@@ -205,10 +205,14 @@ function displayEventDetails(event) {
     document.getElementById('eventSlots').className = `badge bg-${slotsColor}`;
     document.getElementById('eventSlots').innerHTML = `<i class="bi bi-people"></i> ${slotsText}`;
 
-    // Disable registration if no slots available
+    // Update registration button state based on available slots
+    const registerButton = document.getElementById('registerButton');
     if (event.availableSlots === 0) {
-        document.getElementById('registerButton').disabled = true;
-        document.getElementById('registerButton').innerHTML = '<i class="bi bi-x-circle"></i> Vagas Esgotadas';
+        registerButton.disabled = true;
+        registerButton.innerHTML = '<i class="bi bi-x-circle"></i> Vagas Esgotadas';
+    } else {
+        registerButton.disabled = false;
+        registerButton.innerHTML = '<i class="bi bi-check-circle"></i> Inscrever-se';
     }
 }
 
