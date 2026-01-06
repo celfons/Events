@@ -101,8 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('login') === 'required') {
         // Open login modal automatically
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
+        const loginModalElement = document.getElementById('loginModal');
+        if (loginModalElement) {
+            const loginModal = new bootstrap.Modal(loginModalElement);
+            loginModal.show();
+        }
         
         // Remove the query parameter from URL without reloading
         const newUrl = window.location.pathname;
