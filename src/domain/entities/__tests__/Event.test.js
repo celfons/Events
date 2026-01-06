@@ -37,6 +37,21 @@ describe('Event Entity', () => {
       expect(event.availableSlots).toBe(50);
     });
 
+    it('should preserve availableSlots when explicitly set to 0', () => {
+      const eventData = {
+        title: 'Fully Booked Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 0
+      };
+
+      const event = new Event(eventData);
+
+      expect(event.availableSlots).toBe(0);
+      expect(event.totalSlots).toBe(50);
+    });
+
     it('should set createdAt to current date when not provided', () => {
       const beforeCreation = new Date();
       const event = new Event({

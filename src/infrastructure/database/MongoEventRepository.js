@@ -9,7 +9,7 @@ class MongoEventRepository extends EventRepository {
       description: event.description,
       dateTime: event.dateTime,
       totalSlots: event.totalSlots,
-      availableSlots: event.availableSlots || event.totalSlots
+      availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots
     });
     
     const savedEvent = await eventModel.save();
