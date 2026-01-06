@@ -2,261 +2,143 @@ const CancelRegistrationUseCase = require('../CancelRegistrationUseCase');
 
 describe('CancelRegistrationUseCase', () => {
   let mockEventRepository;
-  let mockRegistrationRepository;
   let cancelRegistrationUseCase;
 
   beforeEach(() => {
     mockEventRepository = {
       findById: jest.fn(),
-      update: jest.fn(),
-      incrementAvailableSlots: jest.fn(),
-      decrementAvailableSlots: jest.fn()
-    };
-    mockRegistrationRepository = {
-      findById: jest.fn(),
-      update: jest.fn()
+      cancelParticipant: jest.fn()
     };
     cancelRegistrationUseCase = new CancelRegistrationUseCase(
-      mockEventRepository,
-      mockRegistrationRepository
+      mockEventRepository
     );
   });
 
   describe('Validation', () => {
-    it('should return error when registration is not found', async () => {
-      mockRegistrationRepository.findById.mockResolvedValue(null);
-
-      const result = await cancelRegistrationUseCase.execute('123');
+    it('should return error when event ID is missing', async () => {
+      const result = await cancelRegistrationUseCase.execute(null, '123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Registration not found');
-      expect(mockRegistrationRepository.findById).toHaveBeenCalledWith('123');
+      expect(result.error).toBe('Event ID and Participant ID are required');
     });
 
-    it('should return error when registration is already cancelled', async () => {
-      const mockRegistration = {
-        id: '123',
-        eventId: '456',
-        status: 'cancelled',
-        isActive: jest.fn().mockReturnValue(false)
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
-
-      const result = await cancelRegistrationUseCase.execute('123');
+    it('should return error when participant ID is missing', async () => {
+      const result = await cancelRegistrationUseCase.execute('event123', null);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Registration is already cancelled');
-      expect(mockRegistration.isActive).toHaveBeenCalled();
+      expect(result.error).toBe('Event ID and Participant ID are required');
     });
+  });
 
-    it('should return error when event is not found', async () => {
-      const mockRegistration = {
-        id: '123',
-        eventId: '456',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
+  describe('Business Rules', () => {
+    it('should return error when event does not exist', async () => {
       mockEventRepository.findById.mockResolvedValue(null);
 
-      const result = await cancelRegistrationUseCase.execute('123');
+      const result = await cancelRegistrationUseCase.execute('event123', 'participant456');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Event not found');
-      expect(mockEventRepository.findById).toHaveBeenCalledWith('456');
+      expect(mockEventRepository.findById).toHaveBeenCalledWith('event123');
+    });
+
+    it('should return error when registration does not exist', async () => {
+      const mockEvent = {
+        id: '222',
+        title: 'Test Event',
+        participants: []
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+
+      const result = await cancelRegistrationUseCase.execute('222', '999');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Active registration not found');
+    });
+
+    it('should return error when registration is already cancelled', async () => {
+      const mockEvent = {
+        id: '333',
+        title: 'Test Event',
+        participants: [
+          { id: '555', name: 'John', email: 'john@test.com', status: 'cancelled' }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+
+      const result = await cancelRegistrationUseCase.execute('333', '555');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Active registration not found');
     });
   });
 
   describe('Successful Cancellation', () => {
-    it('should cancel registration successfully and atomically increment available slots', async () => {
-      const mockRegistration = {
-        id: '123',
-        eventId: '456',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
+    it('should cancel registration and restore available slots', async () => {
       const mockEvent = {
-        id: '456',
-        availableSlots: 10
+        id: '222',
+        title: 'Test Event',
+        availableSlots: 5,
+        totalSlots: 10,
+        participants: [
+          { id: '111', name: 'John', email: 'john@test.com', status: 'active' }
+        ]
       };
 
-      const updatedEvent = {
-        id: '456',
-        availableSlots: 11
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
 
-      // Mock the cancel method to update status
-      mockRegistration.cancel.mockImplementation(() => {
-        mockRegistration.status = 'cancelled';
-      });
-
-      const result = await cancelRegistrationUseCase.execute('123');
+      const result = await cancelRegistrationUseCase.execute('222', '111');
 
       expect(result.success).toBe(true);
       expect(result.message).toBe('Registration cancelled successfully');
-      expect(mockRegistration.cancel).toHaveBeenCalled();
-      expect(mockRegistrationRepository.update).toHaveBeenCalledWith('123', {
-        status: 'cancelled'
-      });
-      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('456');
+      expect(mockEventRepository.cancelParticipant).toHaveBeenCalledWith('222', '111');
     });
 
-    it('should properly update registration status to cancelled', async () => {
-      const mockRegistration = {
-        id: '789',
-        eventId: '456',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
+    it('should properly cancel registration', async () => {
       const mockEvent = {
-        id: '456',
-        availableSlots: 5
+        id: '123',
+        participants: [
+          { id: '789', name: 'Maria', email: 'maria@test.com', status: 'active' }
+        ]
       };
 
-      const updatedEvent = {
-        id: '456',
-        availableSlots: 6
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
 
-      mockRegistration.cancel.mockImplementation(() => {
-        mockRegistration.status = 'cancelled';
-      });
-
-      const result = await cancelRegistrationUseCase.execute('789');
+      const result = await cancelRegistrationUseCase.execute('123', '789');
 
       expect(result.success).toBe(true);
-      expect(mockRegistrationRepository.update).toHaveBeenCalledWith('789', {
-        status: 'cancelled'
-      });
-    });
-
-    it('should restore available slots when cancelling', async () => {
-      const mockRegistration = {
-        id: '111',
-        eventId: '222',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
-      const mockEvent = {
-        id: '222',
-        totalSlots: 50,
-        availableSlots: 25
-      };
-
-      const updatedEvent = {
-        id: '222',
-        totalSlots: 50,
-        availableSlots: 26
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
-      mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
-
-      mockRegistration.cancel.mockImplementation(() => {
-        mockRegistration.status = 'cancelled';
-      });
-
-      await cancelRegistrationUseCase.execute('111');
-
-      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('222');
+      expect(mockEventRepository.cancelParticipant).toHaveBeenCalledWith('123', '789');
     });
   });
 
   describe('Error Handling', () => {
     it('should handle repository errors gracefully', async () => {
-      mockRegistrationRepository.findById.mockRejectedValue(new Error('Database connection error'));
+      mockEventRepository.findById.mockRejectedValue(new Error('Database connection error'));
 
-      const result = await cancelRegistrationUseCase.execute('123');
+      const result = await cancelRegistrationUseCase.execute('123', '456');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database connection error');
     });
 
     it('should handle errors during cancellation process', async () => {
-      const mockRegistration = {
-        id: '123',
-        eventId: '456',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
       const mockEvent = {
-        id: '456',
-        availableSlots: 10
+        id: '123',
+        participants: [
+          { id: '456', name: 'John', email: 'john@test.com', status: 'active' }
+        ]
       };
 
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistration.cancel.mockImplementation(() => {
-        throw new Error('Cannot cancel registration');
-      });
+      mockEventRepository.cancelParticipant.mockResolvedValue(false);
 
-      const result = await cancelRegistrationUseCase.execute('123');
+      const result = await cancelRegistrationUseCase.execute('123', '456');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Cannot cancel registration');
-    });
-
-    it('should handle data inconsistency gracefully when event is at full capacity', async () => {
-      // Bug scenario: Event shows full capacity but user has active registration
-      const mockRegistration = {
-        id: '999',
-        eventId: '888',
-        status: 'active',
-        isActive: jest.fn().mockReturnValue(true),
-        cancel: jest.fn()
-      };
-
-      const mockEvent = {
-        id: '888',
-        totalSlots: 50,
-        availableSlots: 50 // Data inconsistency: full capacity but registration exists
-      };
-
-      const updatedEvent = {
-        id: '888',
-        totalSlots: 50,
-        availableSlots: 50 // MongoDB will enforce max constraint
-      };
-
-      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
-      mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
-
-      mockRegistration.cancel.mockImplementation(() => {
-        mockRegistration.status = 'cancelled';
-      });
-
-      const result = await cancelRegistrationUseCase.execute('999');
-
-      // Should succeed despite data inconsistency
-      expect(result.success).toBe(true);
-      expect(result.message).toBe('Registration cancelled successfully');
-      expect(mockRegistration.cancel).toHaveBeenCalled();
-      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('888');
+      expect(result.error).toBe('Failed to cancel registration');
     });
   });
 });

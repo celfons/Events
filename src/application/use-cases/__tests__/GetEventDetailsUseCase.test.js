@@ -2,19 +2,14 @@ const GetEventDetailsUseCase = require('../GetEventDetailsUseCase');
 
 describe('GetEventDetailsUseCase', () => {
   let mockEventRepository;
-  let mockRegistrationRepository;
   let getEventDetailsUseCase;
 
   beforeEach(() => {
     mockEventRepository = {
       findById: jest.fn()
     };
-    mockRegistrationRepository = {
-      findByEventId: jest.fn()
-    };
     getEventDetailsUseCase = new GetEventDetailsUseCase(
-      mockEventRepository,
-      mockRegistrationRepository
+      mockEventRepository
     );
   });
 
@@ -23,28 +18,29 @@ describe('GetEventDetailsUseCase', () => {
       const mockEvent = {
         id: '123',
         title: 'Test Event',
-        description: 'Test Description',
-        dateTime: new Date('2024-12-31'),
+        description: 'Description',
+        dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 30,
+        availableSlots: 47,
+        participants: [
+          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+        ],
         toJSON: jest.fn().mockReturnValue({
           id: '123',
           title: 'Test Event',
-          description: 'Test Description',
-          dateTime: new Date('2024-12-31'),
+          availableSlots: 47,
           totalSlots: 50,
-          availableSlots: 30
+          participants: [
+            { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
+            { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
+            { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+          ]
         })
       };
 
-      const mockRegistrations = [
-        { id: '1', eventId: '123', name: 'User 1' },
-        { id: '2', eventId: '123', name: 'User 2' },
-        { id: '3', eventId: '123', name: 'User 3' }
-      ];
-
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.findByEventId.mockResolvedValue(mockRegistrations);
 
       const result = await getEventDetailsUseCase.execute('123');
 
@@ -52,30 +48,21 @@ describe('GetEventDetailsUseCase', () => {
       expect(result.data.event).toBeDefined();
       expect(result.data.event.title).toBe('Test Event');
       expect(result.data.registrationsCount).toBe(3);
-      expect(mockEventRepository.findById).toHaveBeenCalledWith('123');
-      expect(mockRegistrationRepository.findByEventId).toHaveBeenCalledWith('123');
     });
 
     it('should return event with zero registrations', async () => {
       const mockEvent = {
         id: '456',
         title: 'New Event',
-        description: 'New Description',
-        dateTime: new Date('2024-12-25'),
-        totalSlots: 100,
-        availableSlots: 100,
+        participants: [],
         toJSON: jest.fn().mockReturnValue({
           id: '456',
           title: 'New Event',
-          description: 'New Description',
-          dateTime: new Date('2024-12-25'),
-          totalSlots: 100,
-          availableSlots: 100
+          participants: []
         })
       };
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.findByEventId.mockResolvedValue([]);
 
       const result = await getEventDetailsUseCase.execute('456');
 
@@ -87,12 +74,16 @@ describe('GetEventDetailsUseCase', () => {
     it('should call toJSON on the event', async () => {
       const mockEvent = {
         id: '789',
-        title: 'Event with JSON',
-        toJSON: jest.fn().mockReturnValue({ id: '789', title: 'Event with JSON' })
+        title: 'Another Event',
+        participants: [],
+        toJSON: jest.fn().mockReturnValue({
+          id: '789',
+          title: 'Another Event',
+          participants: []
+        })
       };
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.findByEventId.mockResolvedValue([]);
 
       await getEventDetailsUseCase.execute('789');
 
@@ -100,43 +91,25 @@ describe('GetEventDetailsUseCase', () => {
     });
   });
 
-  describe('Validation', () => {
-    it('should return error when event is not found', async () => {
+  describe('Error Cases', () => {
+    it('should return error when event does not exist', async () => {
       mockEventRepository.findById.mockResolvedValue(null);
 
       const result = await getEventDetailsUseCase.execute('999');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Event not found');
-      expect(mockEventRepository.findById).toHaveBeenCalledWith('999');
-      expect(mockRegistrationRepository.findByEventId).not.toHaveBeenCalled();
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle repository errors gracefully', async () => {
-      mockEventRepository.findById.mockRejectedValue(new Error('Database connection error'));
+    it('should handle errors when fetching event', async () => {
+      mockEventRepository.findById.mockRejectedValue(new Error('Database error'));
 
       const result = await getEventDetailsUseCase.execute('123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Database connection error');
-    });
-
-    it('should handle errors when fetching registrations', async () => {
-      const mockEvent = {
-        id: '123',
-        title: 'Test Event',
-        toJSON: jest.fn().mockReturnValue({ id: '123', title: 'Test Event' })
-      };
-
-      mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockRegistrationRepository.findByEventId.mockRejectedValue(new Error('Registration fetch error'));
-
-      const result = await getEventDetailsUseCase.execute('123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Registration fetch error');
+      expect(result.error).toBe('Database error');
     });
   });
 });
