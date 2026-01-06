@@ -12,6 +12,13 @@ function checkAuthentication() {
     return true;
 }
 
+// Handle authentication failure
+function handleAuthFailure() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+}
+
 // Get auth token for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -103,9 +110,7 @@ async function loadEvents() {
             let errorMessage = 'Erro ao carregar eventos';
             if (response.status === 401 || response.status === 403) {
                 // Authentication failed, redirect to home
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/';
+                handleAuthFailure();
                 return;
             }
             try {

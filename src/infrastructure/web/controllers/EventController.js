@@ -102,12 +102,7 @@ class EventController {
 
   async listUserEvents(req, res) {
     try {
-      const userId = req.user ? req.user.userId : null;
-      
-      if (!userId) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-
+      const userId = req.user.userId;
       const result = await this.listUserEventsUseCase.execute(userId);
       
       if (!result.success) {
