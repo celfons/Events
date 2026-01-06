@@ -18,6 +18,10 @@ class EventRepository {
   async delete(id) {
     throw new Error('Method not implemented');
   }
+
+  async findUpcomingEvents(startTime, endTime) {
+    throw new Error('Method not implemented');
+  }
 }
 
 module.exports = EventRepository;

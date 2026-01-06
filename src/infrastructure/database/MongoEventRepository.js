@@ -42,6 +42,17 @@ class MongoEventRepository extends EventRepository {
     return !!result;
   }
 
+  async findUpcomingEvents(startTime, endTime) {
+    const events = await EventModel.find({
+      dateTime: {
+        $gte: startTime,
+        $lte: endTime
+      }
+    }).sort({ dateTime: 1 });
+    
+    return events.map(event => this._toDomain(event));
+  }
+
   _toDomain(eventModel) {
     return new Event({
       id: eventModel._id.toString(),

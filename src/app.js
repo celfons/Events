@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
 const MongoRegistrationRepository = require('./infrastructure/database/MongoRegistrationRepository');
+const TwilioWhatsAppService = require('./infrastructure/messaging/TwilioWhatsAppService');
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
@@ -16,14 +17,17 @@ const DeleteEventUseCase = require('./application/use-cases/DeleteEventUseCase')
 const GetEventParticipantsUseCase = require('./application/use-cases/GetEventParticipantsUseCase');
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
+const SendEventRemindersUseCase = require('./application/use-cases/SendEventRemindersUseCase');
 
 // Controllers
 const EventController = require('./infrastructure/web/controllers/EventController');
 const RegistrationController = require('./infrastructure/web/controllers/RegistrationController');
+const NotificationController = require('./infrastructure/web/controllers/NotificationController');
 
 // Routes
 const createEventRoutes = require('./infrastructure/web/routes/eventRoutes');
 const createRegistrationRoutes = require('./infrastructure/web/routes/registrationRoutes');
+const createNotificationRoutes = require('./infrastructure/web/routes/notificationRoutes');
 
 function createApp() {
   const app = express();
@@ -45,6 +49,13 @@ function createApp() {
   // Dependency Injection
   const eventRepository = new MongoEventRepository();
   const registrationRepository = new MongoRegistrationRepository();
+  
+  // WhatsApp Service (uses environment variables)
+  const whatsAppService = new TwilioWhatsAppService(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN,
+    process.env.TWILIO_WHATSAPP_NUMBER
+  );
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
@@ -55,14 +66,17 @@ function createApp() {
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository, registrationRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, registrationRepository);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, registrationRepository);
+  const sendEventRemindersUseCase = new SendEventRemindersUseCase(eventRepository, registrationRepository, whatsAppService);
 
   // Controllers
   const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase);
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
+  const notificationController = new NotificationController(sendEventRemindersUseCase);
 
   // API Routes
   app.use('/api/events', createEventRoutes(eventController));
   app.use('/api/registrations', createRegistrationRoutes(registrationController));
+  app.use('/api/notifications', createNotificationRoutes(notificationController));
 
   // Serve HTML pages
   app.get('/', (req, res) => {
