@@ -56,7 +56,14 @@ async function loadEvents() {
         const response = await fetch(`${API_URL}/api/events`);
         
         if (!response.ok) {
-            throw new Error('Erro ao carregar eventos');
+            let errorMessage = 'Erro ao carregar eventos';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
         
         const events = await response.json();
