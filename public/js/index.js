@@ -1,6 +1,82 @@
 // API Base URL
 const API_URL = window.location.origin;
 
+// Check authentication status and update UI
+function updateAuthUI() {
+    const token = getToken();
+    const user = getUser();
+    
+    const loginItem = document.getElementById('loginItem');
+    const logoutItem = document.getElementById('logoutItem');
+    const userInfoItem = document.getElementById('userInfoItem');
+    const userInfo = document.getElementById('userInfo');
+    const adminLink = document.getElementById('adminLink');
+    
+    if (token && user && user.username) {
+        // User is logged in
+        loginItem.classList.add('d-none');
+        logoutItem.classList.remove('d-none');
+        userInfoItem.classList.remove('d-none');
+        userInfo.textContent = `Olá, ${user.username}`;
+        
+        // Show Users link only for superusers
+        if (user.role === 'superuser') {
+            // Create users link if it doesn't exist
+            let usersLink = document.getElementById('usersLink');
+            if (!usersLink) {
+                const navList = document.querySelector('.navbar-nav');
+                const adminItem = adminLink.parentElement;
+                const usersItem = document.createElement('li');
+                usersItem.className = 'nav-item';
+                usersItem.innerHTML = '<a class="nav-link" href="/users" id="usersLink">Usuários</a>';
+                navList.insertBefore(usersItem, adminItem.nextSibling);
+            }
+        }
+    } else {
+        // User is not logged in or token expired
+        loginItem.classList.remove('d-none');
+        logoutItem.classList.add('d-none');
+        userInfoItem.classList.add('d-none');
+        
+        // Remove users link if it exists
+        const usersLink = document.getElementById('usersLink');
+        if (usersLink) {
+            usersLink.parentElement.remove();
+        }
+    }
+}
+
+// Login functionality
+async function login(email, password) {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao fazer login');
+        }
+        
+        const data = await response.json();
+        saveToken(data.token, data.user);
+        
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Logout functionality
+function logout() {
+    clearAuthData();
+    updateAuthUI();
+}
+
 // DOM Elements
 const eventsContainer = document.getElementById('eventsContainer');
 const loadingElement = document.getElementById('loading');
@@ -18,6 +94,75 @@ let filteredEvents = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Update auth UI
+    updateAuthUI();
+    
+    // Check if login is required (redirected from protected page)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'required') {
+        // Open login modal automatically
+        const loginModalElement = document.getElementById('loginModal');
+        if (loginModalElement) {
+            const loginModal = new bootstrap.Modal(loginModalElement);
+            loginModal.show();
+        }
+        
+        // Remove the query parameter from URL without reloading
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            logout();
+        });
+    }
+    
+    // Setup login form
+    const submitLoginBtn = document.getElementById('submitLogin');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    
+    if (submitLoginBtn && loginForm) {
+        submitLoginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                loginError.textContent = 'Todos os campos são obrigatórios';
+                loginError.classList.remove('d-none');
+                return;
+            }
+            
+            submitLoginBtn.disabled = true;
+            submitLoginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
+            
+            const result = await login(email, password);
+            
+            if (result.success) {
+                loginError.classList.add('d-none');
+                loginForm.reset();
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                modal.hide();
+                
+                // Update UI
+                updateAuthUI();
+                
+                alert('Login realizado com sucesso!');
+            } else {
+                loginError.textContent = result.error;
+                loginError.classList.remove('d-none');
+            }
+            
+            submitLoginBtn.disabled = false;
+            submitLoginBtn.innerHTML = 'Entrar';
+        });
+    }
+    
     loadEvents();
     
     // Search functionality

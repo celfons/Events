@@ -35,6 +35,46 @@ function createUserRoutes(userController) {
 
   /**
    * @swagger
+   * /api/users:
+   *   post:
+   *     summary: Create a new user (superuser only)
+   *     tags: [Users]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - username
+   *               - email
+   *               - password
+   *             properties:
+   *               username:
+   *                 type: string
+   *               email:
+   *                 type: string
+   *               password:
+   *                 type: string
+   *               role:
+   *                 type: string
+   *                 enum: [user, superuser]
+   *     responses:
+   *       201:
+   *         description: User created successfully
+   *       400:
+   *         description: Bad request - validation error
+   *       401:
+   *         description: Not authenticated
+   *       403:
+   *         description: Not authorized (superuser only)
+   */
+  router.post('/', (req, res) => userController.createUser(req, res));
+
+  /**
+   * @swagger
    * /api/users/{id}:
    *   put:
    *     summary: Update a user

@@ -44,6 +44,39 @@ function createEventRoutes(eventController) {
 
   /**
    * @swagger
+   * /api/events/my-events:
+   *   get:
+   *     summary: List events for the authenticated user
+   *     tags: [Events]
+   *     security:
+   *       - bearerAuth: []
+   *     description: Retrieve a list of events created by the authenticated user
+   *     responses:
+   *       200:
+   *         description: List of user events retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Event'
+   *       401:
+   *         description: Unauthorized - Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.get('/my-events', authenticateToken, (req, res) => eventController.listUserEvents(req, res));
+
+  /**
+   * @swagger
    * /api/events:
    *   post:
    *     summary: Create a new event

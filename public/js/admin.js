@@ -1,6 +1,32 @@
 // API Base URL
 const API_URL = window.location.origin;
 
+// Check authentication on page load
+function checkAuthentication() {
+    const token = getToken();
+    if (!token) {
+        // Redirect to home page with login prompt
+        window.location.href = '/?login=required';
+        return false;
+    }
+    return true;
+}
+
+// Handle authentication failure
+function handleAuthFailure() {
+    clearAuthData();
+    window.location.href = '/?login=required';
+}
+
+// Get auth token for API requests
+function getAuthHeaders() {
+    const token = getToken();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
+
 // DOM Elements
 const loadingElement = document.getElementById('loading');
 const noEventsElement = document.getElementById('noEvents');
@@ -33,6 +59,35 @@ let filteredParticipants = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is authenticated
+    if (!checkAuthentication()) {
+        return;
+    }
+    
+    // Display user info
+    const user = getUser();
+    const userInfoElement = document.getElementById('userInfo');
+    if (userInfoElement && user && user.username) {
+        userInfoElement.textContent = `Olá, ${user.username}`;
+    }
+    
+    // Show Users link for superusers
+    if (user && user.role === 'superuser') {
+        const usersNavItem = document.getElementById('usersNavItem');
+        if (usersNavItem) {
+            usersNavItem.style.display = 'block';
+        }
+    }
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            clearAuthData();
+            window.location.href = '/';
+        });
+    }
+    
     loadEvents();
     
     // Event search functionality
@@ -53,10 +108,17 @@ async function loadEvents() {
         eventsTableContainer.classList.add('d-none');
         noEventsElement.classList.add('d-none');
 
-        const response = await fetch(`${API_URL}/api/events`);
+        const response = await fetch(`${API_URL}/api/events/my-events`, {
+            headers: getAuthHeaders()
+        });
         
         if (!response.ok) {
             let errorMessage = 'Erro ao carregar eventos';
+            if (response.status === 401 || response.status === 403) {
+                // Authentication failed, redirect to home
+                handleAuthFailure();
+                return;
+            }
             try {
                 const error = await response.json();
                 errorMessage = error.error || errorMessage;
@@ -225,9 +287,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
 
         const response = await fetch(`${API_URL}/api/events`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 title,
                 description,
@@ -272,7 +332,9 @@ submitCreateEventBtn.addEventListener('click', async () => {
 // Open event details modal
 async function openEventDetailsModal(eventId) {
     try {
-        const response = await fetch(`${API_URL}/api/events/${eventId}`);
+        const response = await fetch(`${API_URL}/api/events/${eventId}`, {
+            headers: getAuthHeaders()
+        });
         
         if (!response.ok) {
             let errorMessage = 'Erro ao carregar detalhes do evento';
@@ -351,9 +413,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
 
         const response = await fetch(`${API_URL}/api/events/${currentEventId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 title,
                 description,
@@ -405,7 +465,8 @@ deleteEventBtn.addEventListener('click', async () => {
         deleteEventBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Excluindo...';
 
         const response = await fetch(`${API_URL}/api/events/${currentEventId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -455,7 +516,9 @@ async function openParticipantsModal(eventId) {
         participantsContainer.classList.add('d-none');
         noParticipants.classList.add('d-none');
 
-        const response = await fetch(`${API_URL}/api/events/${eventId}/participants`);
+        const response = await fetch(`${API_URL}/api/events/${eventId}/participants`, {
+            headers: getAuthHeaders()
+        });
 
         if (!response.ok) {
             participantsLoading.classList.add('d-none');
@@ -641,9 +704,7 @@ async function removeParticipant(registrationId, participantName) {
     try {
         const response = await fetch(`${API_URL}/api/registrations/${registrationId}/cancel`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 eventId: currentEventId
             })
