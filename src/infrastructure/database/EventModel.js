@@ -22,7 +22,13 @@ const eventSchema = new mongoose.Schema({
   availableSlots: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
+    validate: {
+      validator: function(value) {
+        return value <= this.totalSlots;
+      },
+      message: 'Available slots cannot exceed total slots'
+    }
   },
   createdAt: {
     type: Date,

@@ -8,7 +8,9 @@ describe('CancelRegistrationUseCase', () => {
   beforeEach(() => {
     mockEventRepository = {
       findById: jest.fn(),
-      update: jest.fn()
+      update: jest.fn(),
+      incrementAvailableSlots: jest.fn(),
+      decrementAvailableSlots: jest.fn()
     };
     mockRegistrationRepository = {
       findById: jest.fn(),
@@ -69,7 +71,7 @@ describe('CancelRegistrationUseCase', () => {
   });
 
   describe('Successful Cancellation', () => {
-    it('should cancel registration successfully and increment available slots', async () => {
+    it('should cancel registration successfully and atomically increment available slots', async () => {
       const mockRegistration = {
         id: '123',
         eventId: '456',
@@ -80,23 +82,22 @@ describe('CancelRegistrationUseCase', () => {
 
       const mockEvent = {
         id: '456',
-        availableSlots: 10,
-        incrementSlots: jest.fn()
+        availableSlots: 10
+      };
+
+      const updatedEvent = {
+        id: '456',
+        availableSlots: 11
       };
 
       mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.update.mockResolvedValue(true);
+      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       // Mock the cancel method to update status
       mockRegistration.cancel.mockImplementation(() => {
         mockRegistration.status = 'cancelled';
-      });
-
-      // Mock the incrementSlots to update availableSlots dynamically
-      mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots += 1;
       });
 
       const result = await cancelRegistrationUseCase.execute('123');
@@ -107,10 +108,7 @@ describe('CancelRegistrationUseCase', () => {
       expect(mockRegistrationRepository.update).toHaveBeenCalledWith('123', {
         status: 'cancelled'
       });
-      expect(mockEvent.incrementSlots).toHaveBeenCalled();
-      expect(mockEventRepository.update).toHaveBeenCalledWith('456', {
-        availableSlots: 11
-      });
+      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('456');
     });
 
     it('should properly update registration status to cancelled', async () => {
@@ -124,21 +122,21 @@ describe('CancelRegistrationUseCase', () => {
 
       const mockEvent = {
         id: '456',
-        availableSlots: 5,
-        incrementSlots: jest.fn()
+        availableSlots: 5
+      };
+
+      const updatedEvent = {
+        id: '456',
+        availableSlots: 6
       };
 
       mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.update.mockResolvedValue(true);
+      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       mockRegistration.cancel.mockImplementation(() => {
         mockRegistration.status = 'cancelled';
-      });
-
-      mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots += 1;
       });
 
       const result = await cancelRegistrationUseCase.execute('789');
@@ -161,29 +159,27 @@ describe('CancelRegistrationUseCase', () => {
       const mockEvent = {
         id: '222',
         totalSlots: 50,
-        availableSlots: 25,
-        incrementSlots: jest.fn()
+        availableSlots: 25
+      };
+
+      const updatedEvent = {
+        id: '222',
+        totalSlots: 50,
+        availableSlots: 26
       };
 
       mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.update.mockResolvedValue(true);
+      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       mockRegistration.cancel.mockImplementation(() => {
         mockRegistration.status = 'cancelled';
       });
 
-      mockEvent.incrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots += 1;
-      });
-
       await cancelRegistrationUseCase.execute('111');
 
-      expect(mockEvent.incrementSlots).toHaveBeenCalled();
-      expect(mockEventRepository.update).toHaveBeenCalledWith('222', {
-        availableSlots: 26
-      });
+      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('222');
     });
   });
 
@@ -208,8 +204,7 @@ describe('CancelRegistrationUseCase', () => {
 
       const mockEvent = {
         id: '456',
-        availableSlots: 10,
-        incrementSlots: jest.fn()
+        availableSlots: 10
       };
 
       mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
@@ -237,25 +232,22 @@ describe('CancelRegistrationUseCase', () => {
       const mockEvent = {
         id: '888',
         totalSlots: 50,
-        availableSlots: 50, // Data inconsistency: full capacity but registration exists
-        incrementSlots: jest.fn()
+        availableSlots: 50 // Data inconsistency: full capacity but registration exists
+      };
+
+      const updatedEvent = {
+        id: '888',
+        totalSlots: 50,
+        availableSlots: 50 // MongoDB will enforce max constraint
       };
 
       mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.update.mockResolvedValue(true);
-      mockEventRepository.update.mockResolvedValue(true);
+      mockEventRepository.incrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       mockRegistration.cancel.mockImplementation(() => {
         mockRegistration.status = 'cancelled';
-      });
-
-      // incrementSlots should not throw error even when at capacity
-      mockEvent.incrementSlots.mockImplementation(() => {
-        // Silently skip increment when already at capacity
-        if (mockEvent.availableSlots < mockEvent.totalSlots) {
-          mockEvent.availableSlots += 1;
-        }
       });
 
       const result = await cancelRegistrationUseCase.execute('999');
@@ -264,9 +256,7 @@ describe('CancelRegistrationUseCase', () => {
       expect(result.success).toBe(true);
       expect(result.message).toBe('Registration cancelled successfully');
       expect(mockRegistration.cancel).toHaveBeenCalled();
-      expect(mockEvent.incrementSlots).toHaveBeenCalled();
-      // availableSlots should remain at 50 (not error out)
-      expect(mockEvent.availableSlots).toBe(50);
+      expect(mockEventRepository.incrementAvailableSlots).toHaveBeenCalledWith('888');
     });
   });
 });

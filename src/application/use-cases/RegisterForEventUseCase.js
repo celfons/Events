@@ -56,11 +56,17 @@ class RegisterForEventUseCase {
 
       const createdRegistration = await this.registrationRepository.create(registration);
 
-      // Decrement available slots
-      event.decrementSlots();
-      await this.eventRepository.update(event.id, {
-        availableSlots: event.availableSlots
-      });
+      // Atomically decrement available slots in the database
+      const updatedEvent = await this.eventRepository.decrementAvailableSlots(event.id);
+      
+      if (!updatedEvent) {
+        // Event was deleted during registration - rollback
+        await this.registrationRepository.delete(createdRegistration.id);
+        return {
+          success: false,
+          error: 'Event was deleted during registration'
+        };
+      }
 
       return {
         success: true,

@@ -8,11 +8,14 @@ describe('RegisterForEventUseCase', () => {
   beforeEach(() => {
     mockEventRepository = {
       findById: jest.fn(),
-      update: jest.fn()
+      update: jest.fn(),
+      decrementAvailableSlots: jest.fn(),
+      incrementAvailableSlots: jest.fn()
     };
     mockRegistrationRepository = {
       create: jest.fn(),
-      findByEventAndEmail: jest.fn()
+      findByEventAndEmail: jest.fn(),
+      delete: jest.fn()
     };
     registerForEventUseCase = new RegisterForEventUseCase(
       mockEventRepository,
@@ -150,7 +153,7 @@ describe('RegisterForEventUseCase', () => {
   });
 
   describe('Successful Registration', () => {
-    it('should register user successfully and decrement available slots', async () => {
+    it('should register user successfully and atomically decrement available slots', async () => {
       const registrationData = {
         eventId: '123',
         name: 'John Doe',
@@ -162,8 +165,13 @@ describe('RegisterForEventUseCase', () => {
         id: '123',
         title: 'Test Event',
         availableSlots: 10,
-        hasAvailableSlots: jest.fn().mockReturnValue(true),
-        decrementSlots: jest.fn()
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const updatedEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 9
       };
 
       const createdRegistration = {
@@ -185,12 +193,7 @@ describe('RegisterForEventUseCase', () => {
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.findByEventAndEmail.mockResolvedValue(null);
       mockRegistrationRepository.create.mockResolvedValue(createdRegistration);
-      mockEventRepository.update.mockResolvedValue(true);
-
-      // Mock the decrementSlots to update availableSlots dynamically
-      mockEvent.decrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots -= 1;
-      });
+      mockEventRepository.decrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       const result = await registerForEventUseCase.execute(registrationData);
 
@@ -199,10 +202,7 @@ describe('RegisterForEventUseCase', () => {
       expect(result.data.name).toBe('John Doe');
       expect(result.data.email).toBe('john@example.com');
       expect(mockRegistrationRepository.create).toHaveBeenCalledTimes(1);
-      expect(mockEvent.decrementSlots).toHaveBeenCalled();
-      expect(mockEventRepository.update).toHaveBeenCalledWith('123', {
-        availableSlots: 9
-      });
+      expect(mockEventRepository.decrementAvailableSlots).toHaveBeenCalledWith('123');
     });
 
     it('should create registration with correct data', async () => {
@@ -216,8 +216,12 @@ describe('RegisterForEventUseCase', () => {
       const mockEvent = {
         id: '123',
         availableSlots: 5,
-        hasAvailableSlots: jest.fn().mockReturnValue(true),
-        decrementSlots: jest.fn()
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const updatedEvent = {
+        id: '123',
+        availableSlots: 4
       };
 
       const createdRegistration = {
@@ -239,11 +243,7 @@ describe('RegisterForEventUseCase', () => {
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockRegistrationRepository.findByEventAndEmail.mockResolvedValue(null);
       mockRegistrationRepository.create.mockResolvedValue(createdRegistration);
-      mockEventRepository.update.mockResolvedValue(true);
-
-      mockEvent.decrementSlots.mockImplementation(() => {
-        mockEvent.availableSlots -= 1;
-      });
+      mockEventRepository.decrementAvailableSlots.mockResolvedValue(updatedEvent);
 
       const result = await registerForEventUseCase.execute(registrationData);
 
@@ -251,6 +251,43 @@ describe('RegisterForEventUseCase', () => {
       expect(result.data.name).toBe('Maria Silva');
       expect(result.data.email).toBe('maria@example.com');
       expect(result.data.phone).toBe('(21) 99999-8888');
+    });
+
+    it('should rollback registration if event is deleted during registration', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        toJSON: jest.fn()
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockRegistrationRepository.findByEventAndEmail.mockResolvedValue(null);
+      mockRegistrationRepository.create.mockResolvedValue(createdRegistration);
+      mockEventRepository.decrementAvailableSlots.mockResolvedValue(null); // Event was deleted
+      mockRegistrationRepository.delete.mockResolvedValue(true);
+
+      const result = await registerForEventUseCase.execute(registrationData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Event was deleted during registration');
+      expect(mockRegistrationRepository.delete).toHaveBeenCalledWith('456');
     });
   });
 
