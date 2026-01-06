@@ -16,6 +16,7 @@ Este documento resume todas as alterações implementadas para adicionar pagina�
 - ✅ Implementado filtro para exibir apenas eventos futuros (data > data atual)
 - ✅ Adicionado link "Gerenciar Eventos" para acessar o painel admin
 - ✅ Adicionado link "Admin" na barra de navegação
+- ✅ **NOVO: Busca em tempo real por nome do evento**
 
 **Funcionalidades JavaScript:**
 ```javascript
@@ -23,6 +24,8 @@ Este documento resume todas as alterações implementadas para adicionar pagina�
 - Paginação com navegação (anterior/próximo)
 - Scroll suave ao mudar de página
 - Carregamento assíncrono de eventos
+- Busca instantânea por nome do evento
+- Botão de limpar busca
 ```
 
 ### 2. Painel Administrativo
@@ -31,6 +34,7 @@ Este documento resume todas as alterações implementadas para adicionar pagina�
 **Funcionalidades Implementadas:**
 - ✅ Página dedicada para gerenciamento de eventos (`/admin`)
 - ✅ Tabela paginada com todos os eventos (10 por página)
+- ✅ **NOVO: Busca em tempo real por nome do evento**
 - ✅ Botão "Criar Evento" com modal
 - ✅ Modal de detalhes do evento com:
   - Formulário de edição completo
@@ -38,6 +42,7 @@ Este documento resume todas as alterações implementadas para adicionar pagina�
   - Botão de exclusão (com confirmação)
   - Botão para visualizar participantes
 - ✅ Modal de participantes com:
+  - **NOVO: Busca em tempo real por nome, email ou telefone**
   - Lista paginada (10 participantes por página)
   - Informações completas (nome, email, telefone, data de inscrição)
   - Navegação de páginas
@@ -232,18 +237,22 @@ Event Details:    http://localhost:3000/event/:id
 ## ✨ Destaques da Implementação
 
 1. **Paginação Eficiente**: Implementada no frontend e backend
-2. **UX Melhorada**: Navegação clara e feedback visual
-3. **Código Limpo**: Seguindo padrões existentes
-4. **Testes Abrangentes**: 79 testes cobrindo toda lógica de negócio
-5. **Segurança**: Sem vulnerabilidades detectadas
-6. **Documentação**: README completo e atualizado
+2. **Busca em Tempo Real**: Filtragem instantânea por nome, email e telefone
+3. **UX Melhorada**: Navegação clara e feedback visual
+4. **Código Limpo**: Seguindo padrões existentes
+5. **Testes Abrangentes**: 79 testes cobrindo toda lógica de negócio
+6. **Segurança**: Sem vulnerabilidades detectadas
+7. **Documentação**: README completo e atualizado
 
 ## 🎯 Objetivos Alcançados
 
 - ✅ Home page com paginação (5 eventos por página)
 - ✅ Filtro de eventos futuros na home page
+- ✅ **Busca por nome do evento na home page**
 - ✅ Painel administrativo completo com CRUD
+- ✅ **Busca por nome do evento na página admin**
 - ✅ Listagem de participantes paginada (10 por página)
+- ✅ **Busca de participantes por nome, email ou telefone**
 - ✅ Testes para novos use cases
 - ✅ Documentação atualizada
 - ✅ Code review aprovado
