@@ -262,7 +262,8 @@ async function openEventDetailsModal(eventId) {
         }
 
         const data = await response.json();
-        const event = data.event || data; // Handle both wrapped and unwrapped responses
+        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
+        const event = data.event || data;
         currentEventId = eventId;
 
         // Populate form fields
@@ -402,14 +403,14 @@ async function openParticipantsModal(eventId) {
 
         const response = await fetch(`${API_URL}/api/events/${eventId}/participants`);
 
-        participantsLoading.classList.add('d-none');
-
         if (!response.ok) {
+            participantsLoading.classList.add('d-none');
             const error = await response.json();
             throw new Error(error.error || 'Erro ao carregar participantes');
         }
 
         const participants = await response.json();
+        participantsLoading.classList.add('d-none');
 
         if (!Array.isArray(participants) || participants.length === 0) {
             noParticipants.classList.remove('d-none');

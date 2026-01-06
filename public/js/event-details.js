@@ -163,7 +163,8 @@ async function loadEventDetails() {
         }
 
         const data = await response.json();
-        displayEventDetails(data.event);
+        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
+        displayEventDetails(data.event || data);
         loadingElement.classList.add('d-none');
         eventDetailsContainer.classList.remove('d-none');
     } catch (error) {
