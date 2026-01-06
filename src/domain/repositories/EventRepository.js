@@ -18,6 +18,26 @@ class EventRepository {
   async delete(id) {
     throw new Error('Method not implemented');
   }
+
+  async addParticipant(eventId, participantData) {
+    throw new Error('Method not implemented');
+  }
+
+  async removeParticipant(eventId, participantId) {
+    throw new Error('Method not implemented');
+  }
+
+  async findParticipantByEmail(eventId, email) {
+    throw new Error('Method not implemented');
+  }
+
+  async cancelParticipant(eventId, participantId) {
+    throw new Error('Method not implemented');
+  }
+
+  async getParticipants(eventId) {
+    throw new Error('Method not implemented');
+  }
 }
 
 module.exports = EventRepository;

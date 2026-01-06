@@ -8,7 +8,6 @@ const swaggerSpec = require('./infrastructure/web/swagger');
 
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
-const MongoRegistrationRepository = require('./infrastructure/database/MongoRegistrationRepository');
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
@@ -70,17 +69,16 @@ function createApp() {
 
   // Dependency Injection
   const eventRepository = new MongoEventRepository();
-  const registrationRepository = new MongoRegistrationRepository();
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
-  const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository, registrationRepository);
+  const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository);
   const createEventUseCase = new CreateEventUseCase(eventRepository);
-  const updateEventUseCase = new UpdateEventUseCase(eventRepository, registrationRepository);
+  const updateEventUseCase = new UpdateEventUseCase(eventRepository);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
-  const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository, registrationRepository);
-  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, registrationRepository);
-  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, registrationRepository);
+  const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
+  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository);
+  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
 
   // Controllers
   const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase);

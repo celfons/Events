@@ -1,7 +1,6 @@
 class UpdateEventUseCase {
-  constructor(eventRepository, registrationRepository) {
+  constructor(eventRepository) {
     this.eventRepository = eventRepository;
-    this.registrationRepository = registrationRepository;
   }
 
   async execute(id, eventData) {
@@ -68,9 +67,8 @@ class UpdateEventUseCase {
 
       // If updating totalSlots, validate against active participants and update availableSlots
       if (updateData.totalSlots !== undefined && updateData.totalSlots !== existingEvent.totalSlots) {
-        // Get active participants count
-        const activeParticipants = await this.registrationRepository.findByEventId(id);
-        const activeParticipantsCount = activeParticipants.length;
+        // Get active participants count from embedded participants
+        const activeParticipantsCount = existingEvent.participants.filter(p => p.status === 'active').length;
 
         // Validate that new totalSlots is not less than active participants
         if (updateData.totalSlots < activeParticipantsCount) {
