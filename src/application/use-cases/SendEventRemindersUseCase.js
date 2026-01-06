@@ -7,6 +7,14 @@ class SendEventRemindersUseCase {
 
   async execute({ hoursAhead = 24 } = {}) {
     try {
+      // Validate input
+      if (typeof hoursAhead !== 'number' || hoursAhead < 0) {
+        return {
+          success: false,
+          error: 'hoursAhead must be a positive number'
+        };
+      }
+
       // Calculate time window for upcoming events
       const now = new Date();
       const startTime = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);

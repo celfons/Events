@@ -180,6 +180,22 @@ describe('SendEventRemindersUseCase', () => {
       );
     });
 
+    it('should reject negative hoursAhead values', async () => {
+      const result = await useCase.execute({ hoursAhead: -5 });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('hoursAhead must be a positive number');
+      expect(mockEventRepository.findUpcomingEvents).not.toHaveBeenCalled();
+    });
+
+    it('should reject non-numeric hoursAhead values', async () => {
+      const result = await useCase.execute({ hoursAhead: 'invalid' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('hoursAhead must be a positive number');
+      expect(mockEventRepository.findUpcomingEvents).not.toHaveBeenCalled();
+    });
+
     it('should handle repository errors', async () => {
       mockEventRepository.findUpcomingEvents.mockRejectedValue(
         new Error('Database error')

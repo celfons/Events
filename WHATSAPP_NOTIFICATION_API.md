@@ -199,7 +199,7 @@ npm test
 
 ## Dependências Adicionadas
 
-- `twilio`: ^5.3.5 - SDK oficial do Twilio para Node.js
+- `twilio`: ^5.11.1 - SDK oficial do Twilio para Node.js
 
 ## Casos de Uso
 

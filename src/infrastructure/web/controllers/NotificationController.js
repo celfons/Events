@@ -9,7 +9,13 @@ class NotificationController {
       
       const params = {};
       if (hoursAhead) {
-        params.hoursAhead = parseInt(hoursAhead, 10);
+        const parsedHours = parseInt(hoursAhead, 10);
+        if (isNaN(parsedHours) || parsedHours < 0) {
+          return res.status(400).json({ 
+            error: 'Invalid hoursAhead parameter. Must be a positive number.' 
+          });
+        }
+        params.hoursAhead = parsedHours;
       }
 
       const result = await this.sendEventRemindersUseCase.execute(params);
