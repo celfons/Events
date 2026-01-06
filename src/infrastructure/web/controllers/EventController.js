@@ -1,11 +1,12 @@
 class EventController {
-  constructor(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase) {
+  constructor(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase) {
     this.listEventsUseCase = listEventsUseCase;
     this.getEventDetailsUseCase = getEventDetailsUseCase;
     this.createEventUseCase = createEventUseCase;
     this.updateEventUseCase = updateEventUseCase;
     this.deleteEventUseCase = deleteEventUseCase;
     this.getEventParticipantsUseCase = getEventParticipantsUseCase;
+    this.listUserEventsUseCase = listUserEventsUseCase;
   }
 
   async listEvents(req, res) {
@@ -91,6 +92,26 @@ class EventController {
       
       if (!result.success) {
         return res.status(404).json({ error: result.error });
+      }
+
+      return res.status(200).json(result.data);
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async listUserEvents(req, res) {
+    try {
+      const userId = req.user ? req.user.userId : null;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const result = await this.listUserEventsUseCase.execute(userId);
+      
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
       }
 
       return res.status(200).json(result.data);

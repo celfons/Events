@@ -12,6 +12,7 @@ const MongoUserRepository = require('./infrastructure/database/MongoUserReposito
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
+const ListUserEventsUseCase = require('./application/use-cases/ListUserEventsUseCase');
 const GetEventDetailsUseCase = require('./application/use-cases/GetEventDetailsUseCase');
 const CreateEventUseCase = require('./application/use-cases/CreateEventUseCase');
 const UpdateEventUseCase = require('./application/use-cases/UpdateEventUseCase');
@@ -83,6 +84,7 @@ function createApp() {
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
+  const listUserEventsUseCase = new ListUserEventsUseCase(eventRepository);
   const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository);
   const createEventUseCase = new CreateEventUseCase(eventRepository);
   const updateEventUseCase = new UpdateEventUseCase(eventRepository);
@@ -97,7 +99,7 @@ function createApp() {
   const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 
   // Controllers
-  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase);
+  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase);
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
   const authController = new AuthController(loginUseCase, registerUseCase);
   const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase);

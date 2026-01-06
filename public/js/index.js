@@ -1,6 +1,63 @@
 // API Base URL
 const API_URL = window.location.origin;
 
+// Check authentication status and update UI
+function updateAuthUI() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    const loginItem = document.getElementById('loginItem');
+    const logoutItem = document.getElementById('logoutItem');
+    const userInfoItem = document.getElementById('userInfoItem');
+    const userInfo = document.getElementById('userInfo');
+    
+    if (token && user.username) {
+        // User is logged in
+        loginItem.classList.add('d-none');
+        logoutItem.classList.remove('d-none');
+        userInfoItem.classList.remove('d-none');
+        userInfo.textContent = `Olá, ${user.username}`;
+    } else {
+        // User is not logged in
+        loginItem.classList.remove('d-none');
+        logoutItem.classList.add('d-none');
+        userInfoItem.classList.add('d-none');
+    }
+}
+
+// Login functionality
+async function login(email, password) {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao fazer login');
+        }
+        
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Logout functionality
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    updateAuthUI();
+}
+
 // DOM Elements
 const eventsContainer = document.getElementById('eventsContainer');
 const loadingElement = document.getElementById('loading');
@@ -18,6 +75,60 @@ let filteredEvents = [];
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Update auth UI
+    updateAuthUI();
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            logout();
+        });
+    }
+    
+    // Setup login form
+    const submitLoginBtn = document.getElementById('submitLogin');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    
+    if (submitLoginBtn && loginForm) {
+        submitLoginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                loginError.textContent = 'Todos os campos são obrigatórios';
+                loginError.classList.remove('d-none');
+                return;
+            }
+            
+            submitLoginBtn.disabled = true;
+            submitLoginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
+            
+            const result = await login(email, password);
+            
+            if (result.success) {
+                loginError.classList.add('d-none');
+                loginForm.reset();
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                modal.hide();
+                
+                // Update UI
+                updateAuthUI();
+                
+                alert('Login realizado com sucesso!');
+            } else {
+                loginError.textContent = result.error;
+                loginError.classList.remove('d-none');
+            }
+            
+            submitLoginBtn.disabled = false;
+            submitLoginBtn.innerHTML = 'Entrar';
+        });
+    }
+    
     loadEvents();
     
     // Search functionality

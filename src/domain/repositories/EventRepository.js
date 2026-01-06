@@ -38,6 +38,10 @@ class EventRepository {
   async getParticipants(eventId) {
     throw new Error('Method not implemented');
   }
+
+  async findByUserId(userId) {
+    throw new Error('Method not implemented');
+  }
 }
 
 module.exports = EventRepository;
