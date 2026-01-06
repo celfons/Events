@@ -7,7 +7,24 @@
     "start": "node src/server.js",
     "dev": "node src/server.js",
     "seed": "node seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js",
+      "!src/app.js",
+      "!src/infrastructure/database/connection.js",
+      "!src/infrastructure/web/**/*.js"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/?(*.)+(spec|test).js"
+    ]
   },
   "keywords": [
     "events",
@@ -28,5 +45,8 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "mongoose": "^9.1.2"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }
