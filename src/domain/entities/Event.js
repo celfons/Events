@@ -5,7 +5,7 @@ class Event {
     this.description = description;
     this.dateTime = dateTime;
     this.totalSlots = totalSlots;
-    this.availableSlots = availableSlots || totalSlots;
+    this.availableSlots = availableSlots !== undefined ? availableSlots : totalSlots;
     this.createdAt = createdAt || new Date();
   }
 
