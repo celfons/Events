@@ -3,25 +3,46 @@ const API_URL = window.location.origin;
 
 // Check authentication status and update UI
 function updateAuthUI() {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = getToken();
+    const user = getUser();
     
     const loginItem = document.getElementById('loginItem');
     const logoutItem = document.getElementById('logoutItem');
     const userInfoItem = document.getElementById('userInfoItem');
     const userInfo = document.getElementById('userInfo');
+    const adminLink = document.getElementById('adminLink');
     
-    if (token && user.username) {
+    if (token && user && user.username) {
         // User is logged in
         loginItem.classList.add('d-none');
         logoutItem.classList.remove('d-none');
         userInfoItem.classList.remove('d-none');
         userInfo.textContent = `Olá, ${user.username}`;
+        
+        // Show Users link only for superusers
+        if (user.role === 'superuser') {
+            // Create users link if it doesn't exist
+            let usersLink = document.getElementById('usersLink');
+            if (!usersLink) {
+                const navList = document.querySelector('.navbar-nav');
+                const adminItem = adminLink.parentElement;
+                const usersItem = document.createElement('li');
+                usersItem.className = 'nav-item';
+                usersItem.innerHTML = '<a class="nav-link" href="/users" id="usersLink">Usuários</a>';
+                navList.insertBefore(usersItem, adminItem.nextSibling);
+            }
+        }
     } else {
-        // User is not logged in
+        // User is not logged in or token expired
         loginItem.classList.remove('d-none');
         logoutItem.classList.add('d-none');
         userInfoItem.classList.add('d-none');
+        
+        // Remove users link if it exists
+        const usersLink = document.getElementById('usersLink');
+        if (usersLink) {
+            usersLink.parentElement.remove();
+        }
     }
 }
 
@@ -42,8 +63,7 @@ async function login(email, password) {
         }
         
         const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        saveToken(data.token, data.user);
         
         return { success: true };
     } catch (error) {
@@ -53,8 +73,7 @@ async function login(email, password) {
 
 // Logout functionality
 function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthData();
     updateAuthUI();
 }
 

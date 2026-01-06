@@ -102,7 +102,7 @@ function createApp() {
   const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase);
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
   const authController = new AuthController(loginUseCase, registerUseCase);
-  const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase);
+  const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase, registerUseCase);
 
   // API Routes
   app.use('/api/auth', createAuthRoutes(authController));
@@ -123,6 +123,10 @@ function createApp() {
 
   app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/views/admin.html'));
+  });
+
+  app.get('/users', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/users.html'));
   });
 
   app.get('/event/:id', (req, res) => {

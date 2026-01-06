@@ -10,36 +10,8 @@ const express = require('express');
 function createAuthRoutes(authController) {
   const router = express.Router();
 
-  /**
-   * @swagger
-   * /api/auth/register:
-   *   post:
-   *     summary: Register a new user
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - username
-   *               - email
-   *               - password
-   *             properties:
-   *               username:
-   *                 type: string
-   *               email:
-   *                 type: string
-   *               password:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: User registered successfully
-   *       400:
-   *         description: Bad request - validation error
-   */
-  router.post('/register', (req, res) => authController.register(req, res));
+  // Note: User registration has been removed from public auth endpoints
+  // User creation is now only available to superusers via /api/users endpoint
 
   /**
    * @swagger

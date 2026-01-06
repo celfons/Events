@@ -3,7 +3,7 @@ const API_URL = window.location.origin;
 
 // Check authentication on page load
 function checkAuthentication() {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
         // Redirect to home page or show login modal
         window.location.href = '/';
@@ -14,14 +14,13 @@ function checkAuthentication() {
 
 // Handle authentication failure
 function handleAuthFailure() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthData();
     window.location.href = '/';
 }
 
 // Get auth token for API requests
 function getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -66,18 +65,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Display user info
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = getUser();
     const userInfoElement = document.getElementById('userInfo');
-    if (userInfoElement && user.username) {
+    if (userInfoElement && user && user.username) {
         userInfoElement.textContent = `Olá, ${user.username}`;
+    }
+    
+    // Show Users link for superusers
+    if (user && user.role === 'superuser') {
+        const usersNavItem = document.getElementById('usersNavItem');
+        if (usersNavItem) {
+            usersNavItem.style.display = 'block';
+        }
     }
     
     // Setup logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthData();
             window.location.href = '/';
         });
     }
