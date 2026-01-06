@@ -53,8 +53,8 @@ class MongoEventRepository extends EventRepository {
   }
 
   async incrementAvailableSlots(id) {
-    const updatedEvent = await EventModel.findByIdAndUpdate(
-      id,
+    const updatedEvent = await EventModel.findOneAndUpdate(
+      { _id: id, $expr: { $lt: ['$availableSlots', '$totalSlots'] } },
       { $inc: { availableSlots: 1 } },
       { new: true, runValidators: true }
     );
