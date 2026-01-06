@@ -50,9 +50,11 @@ async function loadEvents() {
 
         allEvents = events;
         
-        // Filter only future events (dateTime > current date)
+        // Filter events from today onwards (exclude only past events)
+        // Get start of current day to include all events happening today
         const now = new Date();
-        futureEvents = events.filter(event => new Date(event.dateTime) > now);
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        futureEvents = events.filter(event => new Date(event.dateTime) >= startOfToday);
 
         filterAndDisplayEvents();
     } catch (error) {
