@@ -85,12 +85,6 @@ function filterAndDisplayEvents() {
     currentPage = 1; // Reset to first page when filtering
     displayPage(currentPage);
 }
-    } catch (error) {
-        console.error('Error loading events:', error);
-        loadingElement.classList.add('d-none');
-        eventsContainer.innerHTML = '<div class="alert alert-danger">Erro ao carregar eventos. Tente novamente mais tarde.</div>';
-    }
-}
 
 // Display a specific page of events
 function displayPage(page) {
