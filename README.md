@@ -252,6 +252,29 @@ az webapp config appsettings set --resource-group events-rg --name events-platfo
 git push azure main
 ```
 
+## 🔄 CI/CD
+
+### GitHub Actions
+
+O projeto utiliza GitHub Actions para automação de build, testes e deploy:
+
+#### Pull Request Checks
+- **Workflow**: `.github/workflows/pr-check.yml`
+- **Trigger**: Pull requests para a branch `main`
+- **Validações**:
+  - Instalação de dependências
+  - Execução de build (se disponível)
+  - Execução de todos os testes unitários (79 testes)
+- **Requisito**: Todos os checks devem passar antes do merge para `main`
+
+#### Deploy Automático
+- **Workflow**: `.github/workflows/main_celfons.yml`
+- **Trigger**: Push para a branch `main`
+- **Etapas**:
+  - Build da aplicação
+  - Execução de testes
+  - Deploy automático no Azure Web App
+
 ## 📝 Estrutura de Dados
 
 ### Event Schema
