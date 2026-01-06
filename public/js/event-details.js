@@ -337,24 +337,19 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
     }
 });
 
-// Handle back button clicks
-document.getElementById('backButton')?.addEventListener('click', () => {
+// Helper function for back navigation
+function handleBackNavigation() {
     // Use browser history to go back, or fallback to home page
     if (window.history.length > 1) {
         window.history.back();
     } else {
         window.location.href = '/';
     }
-});
+}
 
-document.getElementById('backButtonSuccess')?.addEventListener('click', () => {
-    // Use browser history to go back, or fallback to home page
-    if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        window.location.href = '/';
-    }
-});
+// Handle back button clicks
+document.getElementById('backButton')?.addEventListener('click', handleBackNavigation);
+document.getElementById('backButtonSuccess')?.addEventListener('click', handleBackNavigation);
 
 // Helper function
 function showError(element, message) {
