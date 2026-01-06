@@ -4,29 +4,40 @@ Plataforma de gerenciamento de eventos desenvolvida com **Node.js**, **MongoDB**
 
 ## 🚀 Funcionalidades
 
-### 1. Listagem de Eventos (Home Page)
+### 1. Autenticação e Autorização 🔐
+- **Sistema de Login**: Autenticação segura com sessões persistentes
+- **Registro de Usuários**: Criação de novas contas
+- **Gerenciamento de Usuários**: CRUD completo de usuários (username, email, senha, status)
+- **Gerenciamento de Grupos**: Criação e gerenciamento de grupos com permissões
+- **Proteção de Rotas**: Páginas administrativas requerem autenticação
+- **Sessões Seguras**: Cookies httpOnly com MongoDB store
+
+Veja [AUTH_GUIDE.md](./AUTH_GUIDE.md) para documentação completa do sistema de autenticação.
+
+### 2. Listagem de Eventos (Home Page)
 - Visualização dos próximos eventos (apenas eventos futuros)
 - Paginação com até 5 eventos por página
 - Informações de data, horário e número de vagas
 - Interface responsiva com Bootstrap 5
 
-### 2. Detalhes do Evento
+### 3. Detalhes do Evento
 - Visualização completa dos detalhes do evento
 - Formulário de inscrição integrado
 - Indicação visual de vagas disponíveis
 
-### 3. Sistema de Inscrições
+### 4. Sistema de Inscrições
 - **Inscrição**: Formulário para cadastro em eventos
 - **Validação**: Verificação de vagas disponíveis e inscrições duplicadas
 - **Cancelamento**: Botão para desistir da inscrição
 - **Persistência**: Dados salvos no MongoDB
 
-### 4. Painel Administrativo (Admin Page)
+### 5. Painel Administrativo (Admin Page) 🔒
 - **Gerenciamento de Eventos**: CRUD completo de eventos
 - **Listagem Paginada**: Visualização de todos os eventos (10 por página)
 - **Edição de Eventos**: Modal para atualizar informações
 - **Exclusão de Eventos**: Remoção de eventos com confirmação
 - **Visualização de Participantes**: Lista paginada (10 por página) dos inscritos em cada evento
+- **Acesso Protegido**: Requer autenticação para acessar
 
 ## 🏗️ Arquitetura
 
@@ -35,7 +46,7 @@ O projeto segue **Clean Architecture** com separação clara de responsabilidade
 ```
 src/
 ├── domain/
-│   ├── entities/           # Entidades de domínio (Event, Registration)
+│   ├── entities/           # Entidades de domínio (Event, Registration, User, Group)
 │   └── repositories/       # Interfaces de repositório
 ├── application/
 │   └── use-cases/          # Casos de uso (lógica de negócio)
@@ -43,6 +54,7 @@ src/
 │   ├── database/           # Implementações MongoDB
 │   └── web/
 │       ├── controllers/    # Controladores HTTP
+│       ├── middleware/     # Middlewares (auth, etc)
 │       └── routes/         # Definição de rotas
 ├── app.js                  # Configuração da aplicação
 └── server.js               # Ponto de entrada
@@ -63,8 +75,12 @@ src/
 - **Express**: Framework web
 - **MongoDB**: Banco de dados NoSQL
 - **Mongoose**: ODM para MongoDB
+- **Express Session**: Gerenciamento de sessões
+- **Bcrypt**: Hash seguro de senhas
+- **Connect-Mongo**: Store de sessões no MongoDB
 - **dotenv**: Gerenciamento de variáveis de ambiente
 - **CORS**: Controle de acesso
+- **Helmet**: Segurança HTTP headers
 
 ### Frontend
 - **HTML5**: Estrutura
@@ -101,16 +117,30 @@ Edite o arquivo `.env` com suas configurações:
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
 NODE_ENV=development
+SESSION_SECRET=your-secret-key-change-in-production
 ```
 
-4. **Inicie o servidor**
+4. **Execute o seed para criar dados iniciais e usuário admin**
+```bash
+npm run seed
+```
+
+Isso criará:
+- Eventos de exemplo
+- Grupo "Administradores"
+- Usuário admin (username: `admin`, password: `admin123`)
+
+5. **Inicie o servidor**
 ```bash
 npm start
 ```
 
-5. **Acesse a aplicação**
+6. **Acesse a aplicação**
 - Página Principal: http://localhost:3000
-- Painel Admin: http://localhost:3000/admin
+- Login: http://localhost:3000/login
+- Painel Admin: http://localhost:3000/admin (requer login)
+- Gerenciar Usuários: http://localhost:3000/users (requer login)
+- Gerenciar Grupos: http://localhost:3000/groups (requer login)
 - Health Check: http://localhost:3000/health
 - **Documentação da API (Swagger)**: http://localhost:3000/api-docs
 
@@ -197,20 +227,140 @@ Content-Type: application/json
 POST /api/registrations/:id/cancel
 ```
 
+### Autenticação 🔐
+
+#### Login
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+#### Registro
+```
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "joao",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+#### Logout
+```
+POST /api/auth/logout
+```
+
+#### Usuário atual
+```
+GET /api/auth/me
+```
+
+### Usuários (Requer Autenticação)
+
+#### Listar usuários
+```
+GET /api/users?page=1&limit=10
+```
+
+#### Atualizar usuário
+```
+PUT /api/users/:id
+Content-Type: application/json
+
+{
+  "username": "joao_silva",
+  "email": "joao@example.com",
+  "isActive": true
+}
+```
+
+#### Deletar usuário
+```
+DELETE /api/users/:id
+```
+
+### Grupos (Requer Autenticação)
+
+#### Listar grupos
+```
+GET /api/groups?page=1&limit=10
+```
+
+#### Criar grupo
+```
+POST /api/groups
+Content-Type: application/json
+
+{
+  "name": "Administradores",
+  "description": "Grupo admin",
+  "permissions": ["events:create", "events:delete"]
+}
+```
+
+#### Atualizar grupo
+```
+PUT /api/groups/:id
+Content-Type: application/json
+
+{
+  "name": "Moderadores",
+  "description": "Grupo de moderadores",
+  "permissions": ["events:create"]
+}
+```
+
+#### Deletar grupo
+```
+DELETE /api/groups/:id
+```
+
+Para mais detalhes sobre autenticação, veja [AUTH_GUIDE.md](./AUTH_GUIDE.md).
+
 ## 🎨 Interface do Usuário
+
+### Página de Login (/login) 🆕
+- Formulário de login com username e senha
+- Modal para registro de novos usuários
+- Validação de campos
+- Feedback de erros
 
 ### Página Principal (/)
 - Lista de eventos futuros em cards responsivos
 - Paginação com até 5 eventos por página
-- Link para painel administrativo
-- Navegação intuitiva
+- Menu de navegação com opções de login/logout
+- Exibe usuário logado quando autenticado
 
-### Painel Administrativo (/admin)
+### Painel Administrativo (/admin) 🔒
+- **Requer autenticação**
 - Tabela paginada com todos os eventos
 - Botão para criar novos eventos
 - Modal para visualizar e editar detalhes de eventos
 - Modal para visualizar participantes inscritos
 - Funcionalidade de exclusão de eventos
+- Links para gerenciar usuários e grupos
+
+### Gerenciamento de Usuários (/users) 🔒 🆕
+- **Requer autenticação**
+- Lista paginada de todos os usuários
+- Editar informações de usuários
+- Ativar/Desativar contas
+- Excluir usuários
+- Visualizar grupos do usuário
+
+### Gerenciamento de Grupos (/groups) 🔒 🆕
+- **Requer autenticação**
+- Lista paginada de todos os grupos
+- Criar novos grupos
+- Editar grupos (nome, descrição, permissões)
+- Excluir grupos
 
 ### Página de Detalhes (/event/:id)
 - Informações completas do evento
@@ -241,7 +391,7 @@ npm run test:watch
 ### Cobertura de Testes
 - **Entidades de Domínio**: 100% de cobertura
 - **Casos de Uso**: 100% de cobertura
-- **Total de Testes**: 79 testes passando
+- **Total de Testes**: 96 testes passando ✅
 
 Para mais detalhes sobre os testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
 
@@ -315,13 +465,48 @@ O projeto utiliza GitHub Actions para automação de build, testes e deploy:
 }
 ```
 
+### User Schema 🆕
+```javascript
+{
+  username: String,
+  email: String,
+  password: String, // Hashed with bcrypt
+  groups: [ObjectId],
+  isActive: Boolean,
+  createdAt: Date
+}
+```
+
+### Group Schema 🆕
+```javascript
+{
+  name: String,
+  description: String,
+  permissions: [String], // e.g., ['events:create', 'events:delete']
+  createdAt: Date
+}
+```
+```
+
 ## 🔒 Segurança
 
-- Validação de entrada de dados
-- Sanitização de HTML para prevenção de XSS
-- CORS configurado
-- Variáveis de ambiente para secrets
-- Mongoose para prevenção de NoSQL injection
+### Implementações de Segurança 🆕
+- **Autenticação**: Sistema completo com sessões seguras
+- **Senhas**: Bcrypt hash com salt de 10 rounds
+- **Sessões**: 
+  - Cookies httpOnly (previne XSS)
+  - SameSite: lax (previne CSRF)
+  - Secure em produção (HTTPS only)
+  - Armazenamento no MongoDB
+- **Validação de Entrada**: Validação rigorosa em todos os endpoints
+- **Sanitização de HTML**: Prevenção de XSS
+- **CORS**: Configurado e controlado
+- **Rate Limiting**: 100 requisições por 15 minutos
+- **Helmet**: Headers de segurança HTTP
+- **Mongoose**: Prevenção de NoSQL injection
+- **Proteção de Rotas**: Middleware de autenticação
+
+Para detalhes sobre segurança de autenticação, veja [AUTH_GUIDE.md](./AUTH_GUIDE.md).
 
 ## 🤝 Contribuindo
 
