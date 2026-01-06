@@ -1,0 +1,82 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+const EventModel = require('./src/infrastructure/database/EventModel');
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/events';
+
+const sampleEvents = [
+  {
+    title: 'Workshop: Introdução ao Node.js',
+    description: 'Aprenda os fundamentos do Node.js e construa sua primeira API REST. Inclui hands-on com Express e MongoDB.',
+    dateTime: new Date('2024-02-15T14:00:00'),
+    totalSlots: 30,
+    availableSlots: 30
+  },
+  {
+    title: 'Meetup: JavaScript Moderno',
+    description: 'Discussão sobre as últimas features do ES2024, incluindo decorators, records e tuples.',
+    dateTime: new Date('2024-02-20T19:00:00'),
+    totalSlots: 50,
+    availableSlots: 50
+  },
+  {
+    title: 'Curso: MongoDB e Clean Architecture',
+    description: 'Como estruturar aplicações Node.js com MongoDB seguindo princípios de Clean Architecture e SOLID.',
+    dateTime: new Date('2024-02-25T09:00:00'),
+    totalSlots: 25,
+    availableSlots: 25
+  },
+  {
+    title: 'Hackathon: Desenvolvimento Fullstack',
+    description: 'Maratona de 24 horas para desenvolver uma aplicação completa com Node.js, React e MongoDB.',
+    dateTime: new Date('2024-03-01T08:00:00'),
+    totalSlots: 40,
+    availableSlots: 40
+  },
+  {
+    title: 'Workshop: Bootstrap 5 e Design Responsivo',
+    description: 'Aprenda a criar interfaces modernas e responsivas com Bootstrap 5, incluindo componentes customizados.',
+    dateTime: new Date('2024-03-05T15:00:00'),
+    totalSlots: 35,
+    availableSlots: 35
+  }
+];
+
+async function seedDatabase() {
+  try {
+    console.log('🔌 Connecting to MongoDB...');
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ Connected to MongoDB');
+
+    console.log('🗑️  Clearing existing events...');
+    await EventModel.deleteMany({});
+    console.log('✅ Existing events cleared');
+
+    console.log('🌱 Seeding sample events...');
+    await EventModel.insertMany(sampleEvents);
+    console.log('✅ Sample events created successfully');
+
+    const count = await EventModel.countDocuments();
+    console.log(`📊 Total events in database: ${count}`);
+
+    console.log('\n📋 Sample Events:');
+    const events = await EventModel.find().sort({ dateTime: 1 });
+    events.forEach((event, index) => {
+      console.log(`\n${index + 1}. ${event.title}`);
+      console.log(`   ID: ${event._id}`);
+      console.log(`   Date: ${event.dateTime.toLocaleDateString('pt-BR')}`);
+      console.log(`   Slots: ${event.availableSlots}/${event.totalSlots}`);
+    });
+
+    console.log('\n✨ Database seeded successfully!');
+    console.log('🚀 You can now start the application with: npm start');
+
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+  } finally {
+    await mongoose.disconnect();
+    console.log('\n👋 Disconnected from MongoDB');
+  }
+}
+
+seedDatabase();

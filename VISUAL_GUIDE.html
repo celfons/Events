@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Platform - Visual Guide</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .section { margin: 40px 0; padding: 20px; border: 2px solid #ddd; border-radius: 8px; }
+        .section h2 { color: #0d6efd; margin-bottom: 20px; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { padding: 10px; margin: 5px 0; background: #e7f3ff; border-radius: 5px; }
+        .feature-list li i { color: #0d6efd; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-calendar-event"></i> Events Platform - Visual Guide
+            </a>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="section">
+            <h2><i class="bi bi-info-circle"></i> Platform Overview</h2>
+            <p class="lead">A complete event management platform built with Clean Architecture, SOLID principles, and modern web technologies.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-list-ul display-4 text-primary"></i>
+                            <h5 class="card-title mt-3">Event Listing</h5>
+                            <p class="card-text">Browse all available events with detailed information and availability status.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-info-square display-4 text-success"></i>
+                            <h5 class="card-title mt-3">Event Details</h5>
+                            <p class="card-text">View complete event information and register with a simple form.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-person-check display-4 text-warning"></i>
+                            <h5 class="card-title mt-3">Registration Management</h5>
+                            <p class="card-text">Easy registration and cancellation process with instant feedback.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-code-square"></i> Architecture Highlights</h2>
+            <ul class="feature-list">
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Clean Architecture</strong>: Separation of concerns with domain, application, and infrastructure layers</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>SOLID Principles</strong>: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Clean Code</strong>: Readable, maintainable, and self-documenting code</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Repository Pattern</strong>: Abstraction of data access logic</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Dependency Injection</strong>: Loose coupling and better testability</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-stack"></i> Technology Stack</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Backend</h5>
+                    <ul>
+                        <li><i class="bi bi-database"></i> MongoDB - NoSQL Database</li>
+                        <li><i class="bi bi-gear"></i> Node.js - Runtime Environment</li>
+                        <li><i class="bi bi-server"></i> Express - Web Framework</li>
+                        <li><i class="bi bi-plugin"></i> Mongoose - ODM</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Frontend</h5>
+                    <ul>
+                        <li><i class="bi bi-filetype-html"></i> HTML5 - Structure</li>
+                        <li><i class="bi bi-bootstrap"></i> Bootstrap 5 - Styling</li>
+                        <li><i class="bi bi-filetype-js"></i> JavaScript - Logic</li>
+                        <li><i class="bi bi-phone"></i> Responsive Design</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-list-check"></i> Key Features</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Event Management</h5>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-plus-circle"></i> Create new events</li>
+                        <li><i class="bi bi-eye"></i> View event details</li>
+                        <li><i class="bi bi-list"></i> List all events</li>
+                        <li><i class="bi bi-calendar"></i> Date/time display</li>
+                        <li><i class="bi bi-people"></i> Slot management</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Registration System</h5>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-person-plus"></i> User registration</li>
+                        <li><i class="bi bi-shield-check"></i> Duplicate prevention</li>
+                        <li><i class="bi bi-x-circle"></i> Cancellation option</li>
+                        <li><i class="bi bi-check2-square"></i> Validation</li>
+                        <li><i class="bi bi-arrow-clockwise"></i> Real-time updates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-diagram-3"></i> API Endpoints</h2>
+            <div class="code-block">
+                <strong>Events:</strong><br>
+                GET /api/events - List all events<br>
+                GET /api/events/:id - Get event details<br>
+                POST /api/events - Create new event<br><br>
+                
+                <strong>Registrations:</strong><br>
+                POST /api/registrations - Register for event<br>
+                POST /api/registrations/:id/cancel - Cancel registration
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-cloud-upload"></i> Azure Deployment</h2>
+            <p>The platform is configured for easy deployment to Azure Web App:</p>
+            <ul class="feature-list">
+                <li><i class="bi bi-github"></i> GitHub Actions workflow included</li>
+                <li><i class="bi bi-file-earmark-text"></i> Detailed deployment documentation</li>
+                <li><i class="bi bi-gear-wide-connected"></i> Environment configuration support</li>
+                <li><i class="bi bi-shield-lock"></i> Production-ready security settings</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-folder-symlink"></i> Project Structure</h2>
+            <div class="code-block">
+<pre>src/
+├── domain/              # Business entities & interfaces
+│   ├── entities/        # Event, Registration
+│   └── repositories/    # Repository interfaces
+├── application/         # Use cases (business logic)
+│   └── use-cases/       # CreateEvent, RegisterForEvent, etc.
+├── infrastructure/      # External concerns
+│   ├── database/        # MongoDB implementation
+│   └── web/             # Express controllers & routes
+└── server.js            # Application entry point</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-play-circle"></i> Quick Start</h2>
+            <ol>
+                <li>Clone the repository</li>
+                <li>Run <code>npm install</code></li>
+                <li>Configure MongoDB connection in <code>.env</code></li>
+                <li>Run <code>npm run seed</code> to populate sample data</li>
+                <li>Run <code>npm start</code> to start the server</li>
+                <li>Open <code>http://localhost:3000</code> in your browser</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2><i class="bi bi-phone"></i> Responsive Design</h2>
+            <p>The platform is fully responsive and works seamlessly across all devices:</p>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <i class="bi bi-phone display-3 text-primary"></i>
+                    <h5>Mobile</h5>
+                    <p>Optimized for smartphones</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="bi bi-tablet display-3 text-success"></i>
+                    <h5>Tablet</h5>
+                    <p>Perfect for tablets</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="bi bi-laptop display-3 text-warning"></i>
+                    <h5>Desktop</h5>
+                    <p>Full desktop experience</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section bg-light">
+            <h2><i class="bi bi-star"></i> Quality Standards</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="bi bi-code-slash text-primary"></i> Clean Code</h5>
+                    <ul>
+                        <li>Meaningful naming</li>
+                        <li>Small functions</li>
+                        <li>Clear structure</li>
+                        <li>No code smells</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="bi bi-shield-check text-success"></i> Security</h5>
+                    <ul>
+                        <li>Input validation</li>
+                        <li>XSS prevention</li>
+                        <li>CORS configured</li>
+                        <li>Secure headers</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="bi bi-speedometer2 text-warning"></i> Performance</h5>
+                    <ul>
+                        <li>Database indexing</li>
+                        <li>Async operations</li>
+                        <li>Connection pooling</li>
+                        <li>Optimized queries</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Events Platform - Built with Clean Architecture and SOLID Principles</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
