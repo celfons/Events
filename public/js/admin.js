@@ -529,7 +529,7 @@ function filterAndDisplayParticipants() {
     
     if (filteredParticipants.length === 0) {
         const participantsTableBody = document.getElementById('participantsTableBody');
-        participantsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum participante encontrado.</td></tr>';
+        participantsTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum participante encontrado.</td></tr>';
         const participantsPagination = document.getElementById('participantsPagination');
         participantsPagination.innerHTML = '';
         return;
@@ -566,7 +566,18 @@ function displayParticipantsPage(page) {
             <td>${escapeHtml(participant.email)}</td>
             <td>${escapeHtml(participant.phone)}</td>
             <td>${formattedDate}</td>
+            <td>
+                <button class="btn btn-sm btn-danger remove-participant-btn" data-registration-id="${participant.id}">
+                    <i class="bi bi-trash"></i> Remover
+                </button>
+            </td>
         `;
+
+        // Add event listener for remove button
+        const removeBtn = row.querySelector('.remove-participant-btn');
+        removeBtn.addEventListener('click', () => {
+            removeParticipant(participant.id, participant.name);
+        });
 
         participantsTableBody.appendChild(row);
     });
@@ -619,6 +630,39 @@ function renderParticipantsPagination() {
         });
     }
     participantsPagination.appendChild(nextLi);
+}
+
+// Remove participant
+async function removeParticipant(registrationId, participantName) {
+    if (!confirm(`Tem certeza que deseja remover ${participantName} deste evento?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/registrations/${registrationId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Erro ao remover participante';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
+        }
+
+        // Success - reload participants list
+        alert(`${participantName} foi removido com sucesso!`);
+        await openParticipantsModal(currentEventId);
+    } catch (error) {
+        alert('Erro ao remover participante: ' + error.message);
+    }
 }
 
 // Helper functions
