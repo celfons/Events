@@ -34,6 +34,8 @@ function createApp() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
+        // Note: 'unsafe-inline' is required for Bootstrap's inline styles
+        // Consider using nonces or hashes in a future enhancement
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
         scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
         fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
@@ -56,6 +58,8 @@ function createApp() {
   });
 
   // Middleware
+  // Note: CORS is currently permissive to maintain compatibility
+  // Consider restricting origins in a future security enhancement
   app.use(cors());
   app.use(limiter);
   app.use(express.json());

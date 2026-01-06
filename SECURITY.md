@@ -26,6 +26,8 @@ Content-Security-Policy:
 
 **Purpose**: Prevents XSS attacks by restricting resource loading sources.
 
+**Note**: `'unsafe-inline'` is currently required for Bootstrap's inline styles. Future enhancement could use nonces or hashes for better security.
+
 #### X-Frame-Options
 ```
 X-Frame-Options: DENY
@@ -88,10 +90,19 @@ Rate Limit: 100 requests per 15 minutes per IP
 
 ## CORS Configuration
 
-Cross-Origin Resource Sharing (CORS) is enabled with appropriate restrictions:
+Cross-Origin Resource Sharing (CORS) is currently configured permissively:
 
 ```javascript
 app.use(cors());
+```
+
+**Current Status**: Allows all origins for maximum compatibility.
+
+**Future Enhancement**: Consider restricting to specific origins:
+```javascript
+app.use(cors({
+  origin: ['https://yourdomain.com', 'https://www.yourdomain.com']
+}));
 ```
 
 ## Azure Deployment Security
@@ -188,6 +199,17 @@ If a security vulnerability is discovered:
 - [Helmet.js Documentation](https://helmetjs.github.io/)
 - [MDN Web Security](https://developer.mozilla.org/en-US/docs/Web/Security)
 - [Google Safe Browsing](https://safebrowsing.google.com/)
+
+## Future Security Enhancements
+
+Consider these improvements for even stronger security:
+
+1. **CSP Nonces/Hashes**: Replace `'unsafe-inline'` with nonces or hashes for inline styles
+2. **Stricter CORS**: Restrict CORS to specific trusted origins only
+3. **Rate Limiting by User**: Implement per-user rate limiting for authenticated endpoints
+4. **Content Security Policy Reporting**: Add CSP reporting to monitor violations
+5. **Subresource Integrity (SRI)**: Add SRI hashes for CDN resources
+6. **Security Headers Testing**: Automate security headers testing in CI/CD
 
 ## Version History
 
