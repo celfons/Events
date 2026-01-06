@@ -67,12 +67,19 @@ class MongoEventRepository extends EventRepository {
 
   async addParticipant(eventId, participantData) {
     // Add participant and decrement available slots atomically
+    // Ensure no active participant with the same email already exists
     const updatedEvent = await EventModel.findOneAndUpdate(
       { 
         _id: eventId,
         availableSlots: { $gt: 0 },
-        'participants.email': { $ne: participantData.email.toLowerCase() },
-        'participants.status': { $ne: 'active' }
+        participants: { 
+          $not: { 
+            $elemMatch: { 
+              email: participantData.email.toLowerCase(), 
+              status: 'active' 
+            } 
+          } 
+        }
       },
       { 
         $push: { participants: participantData },
