@@ -44,16 +44,3 @@ function isSuperuser() {
     const user = getUser();
     return user && user.role === 'superuser';
 }
-
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        saveToken,
-        getToken,
-        clearAuthData,
-        getUser,
-        isTokenValid,
-        isSuperuser,
-        TOKEN_EXPIRATION_HOURS
-    };
-}
