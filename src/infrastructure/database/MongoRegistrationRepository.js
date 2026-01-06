@@ -1,5 +1,5 @@
 const RegistrationRepository = require('../../domain/repositories/RegistrationRepository');
-const RegistrationModel = require('../database/RegistrationModel');
+const RegistrationModel = require('./RegistrationModel');
 const Registration = require('../../domain/entities/Registration');
 
 class MongoRegistrationRepository extends RegistrationRepository {

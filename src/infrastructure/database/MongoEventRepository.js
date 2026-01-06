@@ -1,5 +1,5 @@
 const EventRepository = require('../../domain/repositories/EventRepository');
-const EventModel = require('../database/EventModel');
+const EventModel = require('./EventModel');
 const Event = require('../../domain/entities/Event');
 
 class MongoEventRepository extends EventRepository {
