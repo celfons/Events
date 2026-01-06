@@ -4,28 +4,36 @@ Plataforma de gerenciamento de eventos desenvolvida com **Node.js**, **MongoDB**
 
 ## 🚀 Funcionalidades
 
-### 1. Listagem de Eventos (Home Page)
+### 1. Autenticação e Autorização
+- **Sistema de Login/Registro**: Autenticação JWT para usuários
+- **Controle de Acesso**: Permissões granulares baseadas em roles (user/superuser)
+- **Proteção de Eventos**: Usuários só podem editar/excluir seus próprios eventos
+- **Gestão de Usuários**: CRUD completo restrito a superusers
+- 📖 **[Documentação Completa de Autenticação](./AUTHENTICATION.md)**
+
+### 2. Listagem de Eventos (Home Page)
 - Visualização dos próximos eventos (apenas eventos futuros)
 - Paginação com até 5 eventos por página
 - Informações de data, horário e número de vagas
 - Interface responsiva com Bootstrap 5
+- **Acesso público** - todos os eventos de todos os usuários são exibidos
 
-### 2. Detalhes do Evento
+### 3. Detalhes do Evento
 - Visualização completa dos detalhes do evento
 - Formulário de inscrição integrado
 - Indicação visual de vagas disponíveis
 
-### 3. Sistema de Inscrições
+### 4. Sistema de Inscrições
 - **Inscrição**: Formulário para cadastro em eventos
 - **Validação**: Verificação de vagas disponíveis e inscrições duplicadas
 - **Cancelamento**: Botão para desistir da inscrição
 - **Persistência**: Dados salvos no MongoDB
 
-### 4. Painel Administrativo (Admin Page)
-- **Gerenciamento de Eventos**: CRUD completo de eventos
+### 5. Painel Administrativo (Admin Page)
+- **Gerenciamento de Eventos**: CRUD completo de eventos (requer autenticação)
 - **Listagem Paginada**: Visualização de todos os eventos (10 por página)
-- **Edição de Eventos**: Modal para atualizar informações
-- **Exclusão de Eventos**: Remoção de eventos com confirmação
+- **Edição de Eventos**: Modal para atualizar informações (apenas eventos próprios)
+- **Exclusão de Eventos**: Remoção de eventos com confirmação (apenas eventos próprios)
 - **Visualização de Participantes**: Lista paginada (10 por página) dos inscritos em cada evento
 
 ## 🏗️ Arquitetura
@@ -35,7 +43,7 @@ O projeto segue **Clean Architecture** com separação clara de responsabilidade
 ```
 src/
 ├── domain/
-│   ├── entities/           # Entidades de domínio (Event, Registration)
+│   ├── entities/           # Entidades de domínio (Event, Registration, User)
 │   └── repositories/       # Interfaces de repositório
 ├── application/
 │   └── use-cases/          # Casos de uso (lógica de negócio)
@@ -43,6 +51,7 @@ src/
 │   ├── database/           # Implementações MongoDB
 │   └── web/
 │       ├── controllers/    # Controladores HTTP
+│       ├── middleware/     # Middleware de autenticação/autorização
 │       └── routes/         # Definição de rotas
 ├── app.js                  # Configuração da aplicação
 └── server.js               # Ponto de entrada
@@ -63,6 +72,9 @@ src/
 - **Express**: Framework web
 - **MongoDB**: Banco de dados NoSQL
 - **Mongoose**: ODM para MongoDB
+- **JWT**: Autenticação via JSON Web Tokens
+- **bcryptjs**: Hashing de senhas
+- **Passport**: Middleware de autenticação
 - **dotenv**: Gerenciamento de variáveis de ambiente
 - **CORS**: Controle de acesso
 
@@ -101,14 +113,27 @@ Edite o arquivo `.env` com suas configurações:
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
 NODE_ENV=development
+JWT_SECRET=your-secret-key-change-this-in-production
 ```
 
-4. **Inicie o servidor**
+4. **Crie o superusuário inicial**
+```bash
+npm run create-superuser
+```
+
+Isso criará um superusuário com as credenciais padrão:
+- **Username**: admin
+- **Email**: admin@events.com
+- **Password**: admin123
+
+⚠️ **Importante**: Altere a senha após o primeiro login!
+
+5. **Inicie o servidor**
 ```bash
 npm start
 ```
 
-5. **Acesse a aplicação**
+6. **Acesse a aplicação**
 - Página Principal: http://localhost:3000
 - Painel Admin: http://localhost:3000/admin
 - Health Check: http://localhost:3000/health
@@ -129,9 +154,36 @@ A documentação interativa da API está disponível através do Swagger UI. Ace
 
 ## 🔌 API Endpoints
 
+### Autenticação
+
+#### Registrar novo usuário
+```
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+#### Login
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+Para mais detalhes sobre autenticação, consulte [AUTHENTICATION.md](./AUTHENTICATION.md)
+
 ### Eventos
 
-#### Listar todos os eventos
+#### Listar todos os eventos (público)
 ```
 GET /api/events
 ```
@@ -141,9 +193,10 @@ GET /api/events
 GET /api/events/:id
 ```
 
-#### Criar novo evento
+#### Criar novo evento (requer autenticação)
 ```
 POST /api/events
+Authorization: Bearer YOUR_JWT_TOKEN
 Content-Type: application/json
 
 {
@@ -154,9 +207,10 @@ Content-Type: application/json
 }
 ```
 
-#### Atualizar evento
+#### Atualizar evento (requer autenticação, apenas o dono)
 ```
 PUT /api/events/:id
+Authorization: Bearer YOUR_JWT_TOKEN
 Content-Type: application/json
 
 {
@@ -167,14 +221,42 @@ Content-Type: application/json
 }
 ```
 
-#### Excluir evento
+#### Excluir evento (requer autenticação, apenas o dono)
 ```
 DELETE /api/events/:id
+Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
 #### Obter participantes de um evento
 ```
 GET /api/events/:id/participants
+```
+
+### Gestão de Usuários (apenas superusuário)
+
+#### Listar todos os usuários
+```
+GET /api/users
+Authorization: Bearer SUPERUSER_JWT_TOKEN
+```
+
+#### Atualizar usuário
+```
+PUT /api/users/:id
+Authorization: Bearer SUPERUSER_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "username": "newusername",
+  "email": "newemail@example.com",
+  "role": "superuser"
+}
+```
+
+#### Excluir usuário
+```
+DELETE /api/users/:id
+Authorization: Bearer SUPERUSER_JWT_TOKEN
 ```
 
 ### Inscrições
@@ -207,10 +289,11 @@ POST /api/registrations/:id/cancel
 
 ### Painel Administrativo (/admin)
 - Tabela paginada com todos os eventos
-- Botão para criar novos eventos
-- Modal para visualizar e editar detalhes de eventos
+- **Requer autenticação**: Login necessário para gerenciar eventos
+- Botão para criar novos eventos (vinculados ao usuário logado)
+- Modal para visualizar e editar detalhes de eventos (apenas eventos próprios)
 - Modal para visualizar participantes inscritos
-- Funcionalidade de exclusão de eventos
+- Funcionalidade de exclusão de eventos (apenas eventos próprios)
 
 ### Página de Detalhes (/event/:id)
 - Informações completas do evento
@@ -239,9 +322,10 @@ npm run test:watch
 ```
 
 ### Cobertura de Testes
-- **Entidades de Domínio**: 100% de cobertura
-- **Casos de Uso**: 100% de cobertura
-- **Total de Testes**: 79 testes passando
+- **Entidades de Domínio**: 100% de cobertura (Event, Registration, User)
+- **Casos de Uso**: 100% de cobertura (incluindo autenticação)
+- **Total de Testes**: 113+ testes passando
+- **Autenticação**: Login, registro, validações completas
 
 Para mais detalhes sobre os testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
 
@@ -278,7 +362,7 @@ O projeto utiliza GitHub Actions para automação de build, testes e deploy:
 - **Validações**:
   - Instalação de dependências
   - Execução de build (se disponível)
-  - Execução de todos os testes unitários (79 testes)
+  - Execução de todos os testes unitários (113+ testes)
 - **Requisito**: Todos os checks devem passar antes do merge para `main`
 
 #### Deploy Automático
@@ -299,6 +383,18 @@ O projeto utiliza GitHub Actions para automação de build, testes e deploy:
   dateTime: Date,
   totalSlots: Number,
   availableSlots: Number,
+  userId: ObjectId,  // Referência ao usuário criador
+  createdAt: Date
+}
+```
+
+### User Schema
+```javascript
+{
+  username: String,
+  email: String,
+  password: String,  // Hashed com bcrypt
+  role: String,      // 'user' ou 'superuser'
   createdAt: Date
 }
 ```
@@ -317,11 +413,18 @@ O projeto utiliza GitHub Actions para automação de build, testes e deploy:
 
 ## 🔒 Segurança
 
-- Validação de entrada de dados
-- Sanitização de HTML para prevenção de XSS
-- CORS configurado
-- Variáveis de ambiente para secrets
-- Mongoose para prevenção de NoSQL injection
+- **Autenticação JWT**: Tokens seguros para autenticação stateless
+- **Hashing de Senhas**: bcrypt com salt para armazenamento seguro
+- **Autorização Granular**: Controle de acesso baseado em roles e ownership
+- **Validação de entrada de dados**: Validação em todas as camadas
+- **Sanitização de HTML**: Prevenção de XSS
+- **CORS configurado**: Controle de origens permitidas
+- **Variáveis de ambiente**: Secrets armazenados com segurança
+- **Mongoose**: Prevenção de NoSQL injection
+- **Rate Limiting**: Proteção contra ataques de força bruta
+- **Helmet**: Headers de segurança HTTP
+
+Para mais detalhes sobre segurança de autenticação, consulte [AUTHENTICATION.md](./AUTHENTICATION.md)
 
 ## 🤝 Contribuindo
 
