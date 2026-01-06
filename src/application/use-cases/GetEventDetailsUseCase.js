@@ -1,7 +1,6 @@
 class GetEventDetailsUseCase {
-  constructor(eventRepository, registrationRepository) {
+  constructor(eventRepository) {
     this.eventRepository = eventRepository;
-    this.registrationRepository = registrationRepository;
   }
 
   async execute(eventId) {
@@ -15,13 +14,13 @@ class GetEventDetailsUseCase {
         };
       }
 
-      const registrations = await this.registrationRepository.findByEventId(eventId);
+      const activeParticipants = event.participants.filter(p => p.status === 'active');
       
       return {
         success: true,
         data: {
           event: event.toJSON(),
-          registrationsCount: registrations.length
+          registrationsCount: activeParticipants.length
         }
       };
     } catch (error) {

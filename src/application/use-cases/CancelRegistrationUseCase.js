@@ -1,30 +1,20 @@
 class CancelRegistrationUseCase {
-  constructor(eventRepository, registrationRepository) {
+  constructor(eventRepository) {
     this.eventRepository = eventRepository;
-    this.registrationRepository = registrationRepository;
   }
 
-  async execute(registrationId) {
+  async execute(eventId, participantId) {
     try {
-      // Find registration
-      const registration = await this.registrationRepository.findById(registrationId);
-      if (!registration) {
+      // Validate input
+      if (!eventId || !participantId) {
         return {
           success: false,
-          error: 'Registration not found'
-        };
-      }
-
-      // Check if already cancelled
-      if (!registration.isActive()) {
-        return {
-          success: false,
-          error: 'Registration is already cancelled'
+          error: 'Event ID and Participant ID are required'
         };
       }
 
       // Find event
-      const event = await this.eventRepository.findById(registration.eventId);
+      const event = await this.eventRepository.findById(eventId);
       if (!event) {
         return {
           success: false,
@@ -32,14 +22,24 @@ class CancelRegistrationUseCase {
         };
       }
 
-      // Cancel registration
-      registration.cancel();
-      await this.registrationRepository.update(registrationId, {
-        status: registration.status
-      });
+      // Find participant in the event
+      const participant = event.participants.find(p => p.id === participantId && p.status === 'active');
+      if (!participant) {
+        return {
+          success: false,
+          error: 'Active registration not found'
+        };
+      }
 
-      // Atomically increment available slots in the database
-      await this.eventRepository.incrementAvailableSlots(event.id);
+      // Cancel participant (atomically increments slots)
+      const success = await this.eventRepository.cancelParticipant(eventId, participantId);
+      
+      if (!success) {
+        return {
+          success: false,
+          error: 'Failed to cancel registration'
+        };
+      }
 
       return {
         success: true,

@@ -300,7 +300,10 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                eventId
+            })
         });
 
         if (!response.ok) {

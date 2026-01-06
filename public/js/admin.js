@@ -643,7 +643,10 @@ async function removeParticipant(registrationId, participantName) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                eventId: currentEventId
+            })
         });
 
         if (!response.ok) {

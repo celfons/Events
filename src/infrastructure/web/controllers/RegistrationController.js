@@ -21,7 +21,13 @@ class RegistrationController {
   async cancel(req, res) {
     try {
       const { id } = req.params;
-      const result = await this.cancelRegistrationUseCase.execute(id);
+      const { eventId } = req.body;
+      
+      if (!eventId) {
+        return res.status(400).json({ error: 'eventId is required in request body' });
+      }
+      
+      const result = await this.cancelRegistrationUseCase.execute(eventId, id);
       
       if (!result.success) {
         return res.status(400).json({ error: result.error });

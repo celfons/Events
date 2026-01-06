@@ -197,6 +197,7 @@ describe('Event Entity', () => {
         dateTime: new Date('2024-12-31'),
         totalSlots: 50,
         availableSlots: 30,
+        participants: [],
         createdAt: new Date('2024-01-01')
       });
     });

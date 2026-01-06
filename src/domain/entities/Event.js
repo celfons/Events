@@ -1,11 +1,12 @@
 class Event {
-  constructor({ id, title, description, dateTime, totalSlots, availableSlots, createdAt }) {
+  constructor({ id, title, description, dateTime, totalSlots, availableSlots, participants, createdAt }) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.dateTime = dateTime;
     this.totalSlots = totalSlots;
     this.availableSlots = availableSlots !== undefined ? availableSlots : totalSlots;
+    this.participants = participants || [];
     this.createdAt = createdAt || new Date();
   }
 
@@ -37,6 +38,7 @@ class Event {
       dateTime: this.dateTime,
       totalSlots: this.totalSlots,
       availableSlots: this.availableSlots,
+      participants: this.participants,
       createdAt: this.createdAt
     };
   }

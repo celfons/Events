@@ -1,9 +1,8 @@
 const Registration = require('../../domain/entities/Registration');
 
 class RegisterForEventUseCase {
-  constructor(eventRepository, registrationRepository) {
+  constructor(eventRepository) {
     this.eventRepository = eventRepository;
-    this.registrationRepository = registrationRepository;
   }
 
   async execute(registrationData) {
@@ -26,7 +25,7 @@ class RegisterForEventUseCase {
       }
 
       // Check if user already registered
-      const existingRegistration = await this.registrationRepository.findByEventAndEmail(
+      const existingRegistration = await this.eventRepository.findParticipantByEmail(
         registrationData.eventId,
         registrationData.email
       );
@@ -46,31 +45,27 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Create registration
-      const registration = new Registration({
-        eventId: registrationData.eventId,
-        name: registrationData.name,
-        email: registrationData.email,
-        phone: registrationData.phone
-      });
-
-      const createdRegistration = await this.registrationRepository.create(registration);
-
-      // Atomically decrement available slots in the database
-      const updatedEvent = await this.eventRepository.decrementAvailableSlots(event.id);
+      // Add participant to event (atomically decrements slots)
+      const registration = await this.eventRepository.addParticipant(
+        registrationData.eventId,
+        {
+          name: registrationData.name,
+          email: registrationData.email,
+          phone: registrationData.phone,
+          status: 'active'
+        }
+      );
       
-      if (!updatedEvent) {
-        // Event was deleted during registration - rollback
-        await this.registrationRepository.delete(createdRegistration.id);
+      if (!registration) {
         return {
           success: false,
-          error: 'Event was deleted during registration'
+          error: 'Failed to register. Event may be full or was deleted.'
         };
       }
 
       return {
         success: true,
-        data: createdRegistration.toJSON()
+        data: registration.toJSON()
       };
     } catch (error) {
       return {
