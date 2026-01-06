@@ -288,14 +288,30 @@ async function openEventDetailsModal(eventId) {
         const data = await response.json();
         // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
         const event = data.event || data;
+        
+        // Validate event data
+        if (!event || typeof event !== 'object') {
+            console.error('Invalid event data structure:', data);
+            throw new Error('Dados do evento inválidos ou incompletos');
+        }
+        
+        if (!event.title || !event.dateTime) {
+            console.error('Missing required event fields:', event);
+            throw new Error('Dados do evento incompletos (título ou data ausente)');
+        }
+        
         currentEventId = eventId;
 
         // Populate form fields
-        document.getElementById('updateEventTitle').value = event.title;
-        document.getElementById('updateEventDescription').value = event.description;
+        document.getElementById('updateEventTitle').value = event.title || '';
+        document.getElementById('updateEventDescription').value = event.description || '';
         
         // Format date for datetime-local input
         const eventDate = new Date(event.dateTime);
+        if (isNaN(eventDate.getTime())) {
+            console.error('Invalid event dateTime:', event.dateTime);
+            throw new Error(`Data do evento inválida: ${event.dateTime}`);
+        }
         const formattedDateTime = eventDate.toISOString().slice(0, 16);
         document.getElementById('updateEventDateTime').value = formattedDateTime;
         
