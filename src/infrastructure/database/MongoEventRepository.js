@@ -26,7 +26,7 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findAll() {
-    const events = await EventModel.find().sort({ dateTime: 1 });
+    const events = await EventModel.find().sort({ dateTime: -1 });
     return events.map(event => this._toDomain(event));
   }
 
