@@ -4,8 +4,9 @@ Plataforma de gerenciamento de eventos desenvolvida com **Node.js**, **MongoDB**
 
 ## 🚀 Funcionalidades
 
-### 1. Listagem de Eventos
-- Visualização de todos os eventos disponíveis
+### 1. Listagem de Eventos (Home Page)
+- Visualização dos próximos eventos (apenas eventos futuros)
+- Paginação com até 5 eventos por página
 - Informações de data, horário e número de vagas
 - Interface responsiva com Bootstrap 5
 
@@ -19,6 +20,13 @@ Plataforma de gerenciamento de eventos desenvolvida com **Node.js**, **MongoDB**
 - **Validação**: Verificação de vagas disponíveis e inscrições duplicadas
 - **Cancelamento**: Botão para desistir da inscrição
 - **Persistência**: Dados salvos no MongoDB
+
+### 4. Painel Administrativo (Admin Page)
+- **Gerenciamento de Eventos**: CRUD completo de eventos
+- **Listagem Paginada**: Visualização de todos os eventos (10 por página)
+- **Edição de Eventos**: Modal para atualizar informações
+- **Exclusão de Eventos**: Remoção de eventos com confirmação
+- **Visualização de Participantes**: Lista paginada (10 por página) dos inscritos em cada evento
 
 ## 🏗️ Arquitetura
 
@@ -101,7 +109,8 @@ npm start
 ```
 
 5. **Acesse a aplicação**
-- Aplicação: http://localhost:3000
+- Página Principal: http://localhost:3000
+- Painel Admin: http://localhost:3000/admin
 - Health Check: http://localhost:3000/health
 
 ## 🔌 API Endpoints
@@ -131,6 +140,29 @@ Content-Type: application/json
 }
 ```
 
+#### Atualizar evento
+```
+PUT /api/events/:id
+Content-Type: application/json
+
+{
+  "title": "Workshop de Node.js Avançado",
+  "description": "Aprenda Node.js do básico ao avançado",
+  "dateTime": "2024-12-31T14:00:00",
+  "totalSlots": 100
+}
+```
+
+#### Excluir evento
+```
+DELETE /api/events/:id
+```
+
+#### Obter participantes de um evento
+```
+GET /api/events/:id/participants
+```
+
 ### Inscrições
 
 #### Criar inscrição
@@ -153,12 +185,20 @@ POST /api/registrations/:id/cancel
 
 ## 🎨 Interface do Usuário
 
-### Página Principal
-- Lista de eventos em cards responsivos
-- Modal para criação de novos eventos
+### Página Principal (/)
+- Lista de eventos futuros em cards responsivos
+- Paginação com até 5 eventos por página
+- Link para painel administrativo
 - Navegação intuitiva
 
-### Página de Detalhes
+### Painel Administrativo (/admin)
+- Tabela paginada com todos os eventos
+- Botão para criar novos eventos
+- Modal para visualizar e editar detalhes de eventos
+- Modal para visualizar participantes inscritos
+- Funcionalidade de exclusão de eventos
+
+### Página de Detalhes (/event/:id)
 - Informações completas do evento
 - Formulário de inscrição lateral
 - Feedback visual de status
@@ -187,7 +227,7 @@ npm run test:watch
 ### Cobertura de Testes
 - **Entidades de Domínio**: 100% de cobertura
 - **Casos de Uso**: 100% de cobertura
-- **Total de Testes**: 57 testes passando
+- **Total de Testes**: 79 testes passando
 
 Para mais detalhes sobre os testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
 

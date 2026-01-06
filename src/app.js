@@ -11,6 +11,9 @@ const MongoRegistrationRepository = require('./infrastructure/database/MongoRegi
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
 const GetEventDetailsUseCase = require('./application/use-cases/GetEventDetailsUseCase');
 const CreateEventUseCase = require('./application/use-cases/CreateEventUseCase');
+const UpdateEventUseCase = require('./application/use-cases/UpdateEventUseCase');
+const DeleteEventUseCase = require('./application/use-cases/DeleteEventUseCase');
+const GetEventParticipantsUseCase = require('./application/use-cases/GetEventParticipantsUseCase');
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
 
@@ -47,11 +50,14 @@ function createApp() {
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
   const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository, registrationRepository);
   const createEventUseCase = new CreateEventUseCase(eventRepository);
+  const updateEventUseCase = new UpdateEventUseCase(eventRepository);
+  const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
+  const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository, registrationRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, registrationRepository);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, registrationRepository);
 
   // Controllers
-  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase);
+  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase);
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
 
   // API Routes
@@ -61,6 +67,10 @@ function createApp() {
   // Serve HTML pages
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/views/index.html'));
+  });
+
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/views/admin.html'));
   });
 
   app.get('/event/:id', (req, res) => {
