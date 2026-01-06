@@ -39,7 +39,8 @@ class EventController {
 
   async createEvent(req, res) {
     try {
-      const result = await this.createEventUseCase.execute(req.body);
+      const userId = req.user ? req.user.userId : null;
+      const result = await this.createEventUseCase.execute(req.body, userId);
       
       if (!result.success) {
         return res.status(400).json({ error: result.error });
@@ -54,7 +55,8 @@ class EventController {
   async updateEvent(req, res) {
     try {
       const { id } = req.params;
-      const result = await this.updateEventUseCase.execute(id, req.body);
+      const userId = req.user ? req.user.userId : null;
+      const result = await this.updateEventUseCase.execute(id, req.body, userId);
       
       if (!result.success) {
         return res.status(400).json({ error: result.error });
@@ -69,7 +71,8 @@ class EventController {
   async deleteEvent(req, res) {
     try {
       const { id } = req.params;
-      const result = await this.deleteEventUseCase.execute(id);
+      const userId = req.user ? req.user.userId : null;
+      const result = await this.deleteEventUseCase.execute(id, userId);
       
       if (!result.success) {
         return res.status(400).json({ error: result.error });
