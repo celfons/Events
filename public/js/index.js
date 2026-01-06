@@ -97,6 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update auth UI
     updateAuthUI();
     
+    // Check if login is required (redirected from protected page)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'required') {
+        // Open login modal automatically
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+        
+        // Remove the query parameter from URL without reloading
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
     // Setup logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {

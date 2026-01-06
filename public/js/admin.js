@@ -5,8 +5,8 @@ const API_URL = window.location.origin;
 function checkAuthentication() {
     const token = getToken();
     if (!token) {
-        // Redirect to home page or show login modal
-        window.location.href = '/';
+        // Redirect to home page with login prompt
+        window.location.href = '/?login=required';
         return false;
     }
     return true;
@@ -15,7 +15,7 @@ function checkAuthentication() {
 // Handle authentication failure
 function handleAuthFailure() {
     clearAuthData();
-    window.location.href = '/';
+    window.location.href = '/?login=required';
 }
 
 // Get auth token for API requests

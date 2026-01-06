@@ -5,7 +5,7 @@ const API_URL = window.location.origin;
 function checkAuthentication() {
     const token = getToken();
     if (!token) {
-        window.location.href = '/';
+        window.location.href = '/?login=required';
         return false;
     }
     
@@ -23,7 +23,7 @@ function checkAuthentication() {
 // Handle authentication failure
 function handleAuthFailure() {
     clearAuthData();
-    window.location.href = '/';
+    window.location.href = '/?login=required';
 }
 
 // Get auth token for API requests
