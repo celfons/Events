@@ -218,6 +218,16 @@ NODE_ENV=production  # Em produção
 
 ⚠️ **IMPORTANTE**: Altere `SESSION_SECRET` em produção para uma string aleatória forte!
 
+### Considerações de Segurança em Produção
+
+#### CSRF Protection
+O sistema usa `SameSite: lax` nos cookies de sessão, que oferece proteção básica contra CSRF. Para aplicações críticas, considere:
+- Implementar CSRF tokens manualmente
+- Usar bibliotecas modernas como `csrf-csrf` ou `double-csrf`
+- Configurar `SameSite: strict` se compatível com sua aplicação
+
+**Nota**: A biblioteca `csurf` está depreciada. Para produção, recomenda-se implementar proteção CSRF adicional usando outras bibliotecas ou padrões como double-submit cookie.
+
 ## 🧪 Testes
 
 Os testes existentes continuam funcionando:
@@ -281,7 +291,8 @@ Resultado: **96 testes passando** ✅
 ## 🎯 Próximos Passos
 
 Melhorias futuras possíveis:
-- [ ] Sistema de permissões granulares
+- [ ] Sistema de permissões granulares (verificação ativa de permissões por grupo)
+- [ ] Proteção CSRF com tokens (csrf-csrf ou double-submit cookie)
 - [ ] Autenticação de dois fatores (2FA)
 - [ ] OAuth2 / Social Login
 - [ ] Auditoria de ações dos usuários
@@ -296,3 +307,28 @@ Melhorias futuras possíveis:
 - Senhas nunca são retornadas em respostas da API
 - Grupos podem ter múltiplas permissões
 - Usuários podem pertencer a múltiplos grupos
+
+## ⚠️ Limitações Atuais
+
+### Permissões Granulares
+O middleware `hasPermission()` está implementado de forma básica:
+- Verifica apenas se o usuário está autenticado
+- **Não** verifica se o usuário possui a permissão específica
+- Todos os usuários autenticados têm acesso às mesmas rotas
+
+**Implementação Futura:**
+Para ativar verificação de permissões granulares, o middleware precisa:
+1. Buscar o usuário do banco de dados com grupos populados
+2. Verificar se algum dos grupos do usuário possui a permissão requerida
+3. Retornar 403 Forbidden se o usuário não tiver a permissão
+
+**Workaround Atual:**
+Use a estrutura de grupos para organizar usuários, mas saiba que a autorização baseada em permissões não está ativa. Todas as páginas protegidas requerem apenas autenticação, não permissões específicas.
+
+### CSRF Protection
+A aplicação usa `SameSite: lax` em cookies, que oferece proteção básica contra CSRF para navegadores modernos. No entanto, não há tokens CSRF implementados.
+
+**Recomendação para Produção:**
+- Implementar CSRF tokens usando bibliotecas modernas como `csrf-csrf`
+- Ou configurar `SameSite: strict` se apropriado para seu caso de uso
+- Validar origem das requisições em endpoints críticos

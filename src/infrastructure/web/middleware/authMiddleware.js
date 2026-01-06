@@ -17,6 +17,9 @@ function isAuthenticated(req, res, next) {
 
 /**
  * Middleware to check if user has specific permission
+ * Note: Basic implementation - checks if user is authenticated.
+ * Full permission checking requires fetching user's groups and checking their permissions.
+ * This can be enhanced in the future to implement granular permission-based access control.
  */
 function hasPermission(permission) {
   return async (req, res, next) => {
@@ -24,8 +27,11 @@ function hasPermission(permission) {
       return res.status(401).json({ error: 'Authentication required' });
     }
     
-    // TODO: Check user's groups and permissions
-    // For now, allow all authenticated users
+    // Basic implementation: allow all authenticated users
+    // TODO: Implement full permission checking:
+    // 1. Fetch user from database with populated groups
+    // 2. Check if any of user's groups have the required permission
+    // 3. Return 403 if user doesn't have permission
     next();
   };
 }

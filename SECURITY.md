@@ -210,9 +210,40 @@ Consider these improvements for even stronger security:
 4. **Content Security Policy Reporting**: Add CSP reporting to monitor violations
 5. **Subresource Integrity (SRI)**: Add SRI hashes for CDN resources
 6. **Security Headers Testing**: Automate security headers testing in CI/CD
+7. **CSRF Protection**: Implement CSRF tokens for state-changing operations
+8. **Granular Permissions**: Implement full permission-based authorization checking
+
+## Authentication Security 🆕
+
+### Session Management
+- **MongoDB Store**: Sessions persisted in MongoDB
+- **Session Duration**: 7 days maximum
+- **HttpOnly Cookies**: Prevents XSS access to session cookies
+- **Secure Cookies**: HTTPS-only in production
+- **SameSite Lax**: Basic CSRF protection for modern browsers
+
+### Password Security
+- **Bcrypt Hashing**: 10 salt rounds for password hashing
+- **Minimum Length**: 6 characters required
+- **Never Transmitted**: Passwords never returned in API responses
+
+### Known Limitations
+- **CSRF Tokens**: Not implemented (relies on SameSite cookies)
+  - Recommendation: Implement CSRF tokens for production using modern libraries
+- **Granular Permissions**: Permission checking not fully implemented
+  - Current: All authenticated users have same access
+  - Future: Check user groups and permissions before allowing actions
+
+See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for complete authentication documentation.
 
 ## Version History
 
+- **2024-01**: Authentication and authorization system
+  - Added session-based authentication
+  - Implemented user and group management
+  - Bcrypt password hashing
+  - Protected admin routes
+  - SameSite cookie protection
 - **2024-01**: Initial security implementation
   - Added helmet.js
   - Implemented CSP

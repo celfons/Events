@@ -53,14 +53,21 @@ class MongoUserRepository extends UserRepository {
   }
 
   async update(id, userData) {
+    const updateData = {
+      username: userData.username,
+      email: userData.email,
+      groups: userData.groups,
+      isActive: userData.isActive
+    };
+
+    // Only update password if provided
+    if (userData.password) {
+      updateData.password = userData.password;
+    }
+
     const updated = await UserModel.findByIdAndUpdate(
       id,
-      {
-        username: userData.username,
-        email: userData.email,
-        groups: userData.groups,
-        isActive: userData.isActive
-      },
+      updateData,
       { new: true }
     ).populate('groups');
     
