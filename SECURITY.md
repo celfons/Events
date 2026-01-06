@@ -211,7 +211,7 @@ Consider these improvements for even stronger security:
 5. **Subresource Integrity (SRI)**: Add SRI hashes for CDN resources
 6. **Security Headers Testing**: Automate security headers testing in CI/CD
 7. **CSRF Protection**: Implement CSRF tokens for state-changing operations
-8. **Granular Permissions**: Implement full permission-based authorization checking
+8. ~~**Granular Permissions**~~: ✅ **Implemented** - Full permission-based authorization checking
 
 ## Authentication Security 🆕
 
@@ -227,17 +227,38 @@ Consider these improvements for even stronger security:
 - **Minimum Length**: 6 characters required
 - **Never Transmitted**: Passwords never returned in API responses
 
+### Granular Permissions ✅ **NEW**
+- **Permission-Based Access**: Each endpoint requires specific permissions
+- **Group-Based Authorization**: Users inherit permissions from their groups
+- **Database Validation**: Permissions checked on every request
+- **Detailed Errors**: 403 responses include required permission information
+
+**Available Permissions:**
+- Users: `users:read`, `users:update`, `users:delete`
+- Groups: `groups:read`, `groups:create`, `groups:update`, `groups:delete`
+- Events: `events:create`, `events:read`, `events:update`, `events:delete`
+
+**Super Admin Group:**
+- Has all permissions across the system
+- Created by seed script with admin user
+
+**Regular Groups:**
+- Can have subset of permissions
+- Admins can create custom groups with specific permissions
+
 ### Known Limitations
 - **CSRF Tokens**: Not implemented (relies on SameSite cookies)
   - Recommendation: Implement CSRF tokens for production using modern libraries
-- **Granular Permissions**: Permission checking not fully implemented
-  - Current: All authenticated users have same access
-  - Future: Check user groups and permissions before allowing actions
 
-See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for complete authentication documentation.
+See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for complete authentication and authorization documentation.
 
 ## Version History
 
+- **2024-01**: Granular permissions system
+  - Implemented permission-based authorization
+  - Created super admin and regular user groups
+  - Added permission checking middleware
+  - Protected all user/group management endpoints
 - **2024-01**: Authentication and authorization system
   - Added session-based authentication
   - Implemented user and group management

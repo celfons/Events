@@ -277,8 +277,9 @@ Resultado: **96 testes passando** ✅
 }
 ```
 
-## 🔄 Fluxo de Autenticação
+## 🔄 Fluxo de Autenticação e Autorização
 
+### Autenticação
 1. Usuário acessa `/admin`
 2. Middleware verifica se há sessão ativa
 3. Se não autenticado: redireciona para `/login`
@@ -286,12 +287,91 @@ Resultado: **96 testes passando** ✅
 5. Sistema verifica credenciais
 6. Cria sessão no MongoDB
 7. Retorna cookie de sessão
-8. Usuário pode acessar páginas protegidas
+8. Usuário pode acessar páginas autenticadas
+
+### Autorização (Permissões Granulares)
+1. Usuário acessa endpoint protegido (ex: `/api/users`)
+2. Middleware `isAuthenticated` verifica autenticação
+3. Middleware `hasPermission` verifica permissão específica
+4. Sistema busca usuário com grupos do banco de dados
+5. Verifica se algum grupo do usuário tem a permissão requerida
+6. Se não tem: retorna 403 com erro detalhado
+7. Se tem: permite acesso ao endpoint
+
+## 🔐 Sistema de Permissões Granulares
+
+### Permissões Disponíveis
+
+**Usuários:**
+- `users:read` - Visualizar lista de usuários
+- `users:update` - Atualizar usuários
+- `users:delete` - Excluir usuários
+
+**Grupos:**
+- `groups:read` - Visualizar lista de grupos
+- `groups:create` - Criar novos grupos
+- `groups:update` - Atualizar grupos
+- `groups:delete` - Excluir grupos
+
+**Eventos:**
+- `events:create` - Criar eventos
+- `events:read` - Visualizar eventos
+- `events:update` - Atualizar eventos
+- `events:delete` - Excluir eventos
+
+### Grupos Padrão
+
+**Super Administradores:**
+```json
+{
+  "name": "Super Administradores",
+  "permissions": [
+    "users:read", "users:update", "users:delete",
+    "groups:read", "groups:create", "groups:update", "groups:delete",
+    "events:create", "events:read", "events:update", "events:delete"
+  ]
+}
+```
+
+**Administradores:**
+```json
+{
+  "name": "Administradores",
+  "permissions": [
+    "events:create", "events:read", "events:update", "events:delete"
+  ]
+}
+```
+
+### Usuários de Teste
+
+**Super Admin (acesso total):**
+- Username: `admin`
+- Password: `admin123`
+- Grupo: Super Administradores
+- Pode gerenciar usuários, grupos e eventos
+
+**Usuário Regular (apenas eventos):**
+- Username: `user`
+- Password: `user123`
+- Grupo: Administradores
+- Pode apenas gerenciar eventos
+
+### Exemplo de Erro de Permissão
+
+Quando usuário tenta acessar endpoint sem permissão:
+```json
+{
+  "error": "Permission denied",
+  "required": "users:update",
+  "message": "You do not have the 'users:update' permission"
+}
+```
 
 ## 🎯 Próximos Passos
 
 Melhorias futuras possíveis:
-- [ ] Sistema de permissões granulares (verificação ativa de permissões por grupo)
+- [x] ~~Sistema de permissões granulares~~ ✅ **Implementado**
 - [ ] Proteção CSRF com tokens (csrf-csrf ou double-submit cookie)
 - [ ] Autenticação de dois fatores (2FA)
 - [ ] OAuth2 / Social Login
@@ -299,6 +379,7 @@ Melhorias futuras possíveis:
 - [ ] Recuperação de senha por email
 - [ ] Política de expiração de senha
 - [ ] Histórico de login
+- [ ] Cache de permissões para melhor performance
 
 ## 📝 Notas
 
@@ -307,23 +388,10 @@ Melhorias futuras possíveis:
 - Senhas nunca são retornadas em respostas da API
 - Grupos podem ter múltiplas permissões
 - Usuários podem pertencer a múltiplos grupos
+- Permissões são verificadas em cada requisição
+- Sistema busca grupos do usuário para validar permissões
 
 ## ⚠️ Limitações Atuais
-
-### Permissões Granulares
-O middleware `hasPermission()` está implementado de forma básica:
-- Verifica apenas se o usuário está autenticado
-- **Não** verifica se o usuário possui a permissão específica
-- Todos os usuários autenticados têm acesso às mesmas rotas
-
-**Implementação Futura:**
-Para ativar verificação de permissões granulares, o middleware precisa:
-1. Buscar o usuário do banco de dados com grupos populados
-2. Verificar se algum dos grupos do usuário possui a permissão requerida
-3. Retornar 403 Forbidden se o usuário não tiver a permissão
-
-**Workaround Atual:**
-Use a estrutura de grupos para organizar usuários, mas saiba que a autorização baseada em permissões não está ativa. Todas as páginas protegidas requerem apenas autenticação, não permissões específicas.
 
 ### CSRF Protection
 A aplicação usa `SameSite: lax` em cookies, que oferece proteção básica contra CSRF para navegadores modernos. No entanto, não há tokens CSRF implementados.
