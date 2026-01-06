@@ -19,6 +19,20 @@ let currentRegistrationId = null;
 // Storage key for registration data
 const STORAGE_KEY_PREFIX = 'event_registration_';
 
+// Helper function to create safe storage key
+function getStorageKey() {
+    // Validate and sanitize eventId to prevent injection or collisions
+    if (!eventId || typeof eventId !== 'string') {
+        return null;
+    }
+    // Remove any characters that could cause issues, keep alphanumeric, dash, underscore
+    const sanitizedEventId = eventId.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!sanitizedEventId) {
+        return null;
+    }
+    return STORAGE_KEY_PREFIX + sanitizedEventId;
+}
+
 // Load event details on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEventDetails();
@@ -28,12 +42,27 @@ document.addEventListener('DOMContentLoaded', () => {
 // Restore registration state from localStorage
 function restoreRegistrationState() {
     try {
-        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot restore state');
+            return;
+        }
+        
         const storedData = localStorage.getItem(storageKey);
         
         if (storedData) {
             try {
                 const registrationData = JSON.parse(storedData);
+                
+                // Validate required fields exist
+                if (!registrationData || 
+                    typeof registrationData.registrationId !== 'string' || 
+                    !registrationData.registrationId) {
+                    console.error('Invalid registration data structure');
+                    localStorage.removeItem(storageKey);
+                    return;
+                }
+                
                 currentRegistrationId = registrationData.registrationId;
                 
                 // Restore form data - check elements exist before setting values
@@ -75,13 +104,24 @@ function restoreRegistrationState() {
 // Save registration state to localStorage
 function saveRegistrationState(registrationId, name, email, phone) {
     try {
-        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot save state');
+            return;
+        }
+        
+        // Validate input parameters
+        if (!registrationId || typeof registrationId !== 'string') {
+            console.error('Invalid registration ID');
+            return;
+        }
+        
         const registrationData = {
             registrationId,
             eventId,
-            name,
-            email,
-            phone,
+            name: name || '',
+            email: email || '',
+            phone: phone || '',
             timestamp: new Date().toISOString()
         };
         localStorage.setItem(storageKey, JSON.stringify(registrationData));
@@ -95,7 +135,11 @@ function saveRegistrationState(registrationId, name, email, phone) {
 // Clear registration state from localStorage
 function clearRegistrationState() {
     try {
-        const storageKey = STORAGE_KEY_PREFIX + eventId;
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot clear state');
+            return;
+        }
         localStorage.removeItem(storageKey);
     } catch (error) {
         // Handle localStorage errors
