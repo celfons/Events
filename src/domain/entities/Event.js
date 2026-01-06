@@ -22,7 +22,9 @@ class Event {
 
   incrementSlots() {
     if (this.availableSlots >= this.totalSlots) {
-      throw new Error('Cannot increment slots beyond total slots');
+      // Already at capacity - this may indicate data inconsistency but we shouldn't fail the operation
+      // Silently skip incrementing to avoid user-facing errors during cancellation
+      return;
     }
     this.availableSlots += 1;
   }

@@ -223,5 +223,50 @@ describe('CancelRegistrationUseCase', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Cannot cancel registration');
     });
+
+    it('should handle data inconsistency gracefully when event is at full capacity', async () => {
+      // Bug scenario: Event shows full capacity but user has active registration
+      const mockRegistration = {
+        id: '999',
+        eventId: '888',
+        status: 'active',
+        isActive: jest.fn().mockReturnValue(true),
+        cancel: jest.fn()
+      };
+
+      const mockEvent = {
+        id: '888',
+        totalSlots: 50,
+        availableSlots: 50, // Data inconsistency: full capacity but registration exists
+        incrementSlots: jest.fn()
+      };
+
+      mockRegistrationRepository.findById.mockResolvedValue(mockRegistration);
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockRegistrationRepository.update.mockResolvedValue(true);
+      mockEventRepository.update.mockResolvedValue(true);
+
+      mockRegistration.cancel.mockImplementation(() => {
+        mockRegistration.status = 'cancelled';
+      });
+
+      // incrementSlots should not throw error even when at capacity
+      mockEvent.incrementSlots.mockImplementation(() => {
+        // Silently skip increment when already at capacity
+        if (mockEvent.availableSlots < mockEvent.totalSlots) {
+          mockEvent.availableSlots += 1;
+        }
+      });
+
+      const result = await cancelRegistrationUseCase.execute('999');
+
+      // Should succeed despite data inconsistency
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Registration cancelled successfully');
+      expect(mockRegistration.cancel).toHaveBeenCalled();
+      expect(mockEvent.incrementSlots).toHaveBeenCalled();
+      // availableSlots should remain at 50 (not error out)
+      expect(mockEvent.availableSlots).toBe(50);
+    });
   });
 });

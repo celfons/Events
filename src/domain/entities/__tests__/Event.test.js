@@ -128,7 +128,7 @@ describe('Event Entity', () => {
       expect(event.availableSlots).toBe(31);
     });
 
-    it('should throw error when trying to increment beyond total slots', () => {
+    it('should not increment when already at total slots capacity', () => {
       const event = new Event({
         title: 'Test Event',
         description: 'Test Description',
@@ -137,7 +137,26 @@ describe('Event Entity', () => {
         availableSlots: 50
       });
 
-      expect(() => event.incrementSlots()).toThrow('Cannot increment slots beyond total slots');
+      event.incrementSlots();
+      
+      // Should remain at 50, not increment to 51
+      expect(event.availableSlots).toBe(50);
+    });
+
+    it('should handle data inconsistency gracefully - when availableSlots equals totalSlots', () => {
+      // Simulates the bug scenario: event shows full capacity but has active registrations
+      const event = new Event({
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 10,
+        availableSlots: 10 // Data inconsistency: should be less if registrations exist
+      });
+
+      // This scenario happens when canceling a registration with data inconsistency
+      // Should not throw error - silently skip increment
+      expect(() => event.incrementSlots()).not.toThrow();
+      expect(event.availableSlots).toBe(10);
     });
   });
 
