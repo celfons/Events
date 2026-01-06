@@ -38,11 +38,8 @@ class CancelRegistrationUseCase {
         status: registration.status
       });
 
-      // Increment available slots
-      event.incrementSlots();
-      await this.eventRepository.update(event.id, {
-        availableSlots: event.availableSlots
-      });
+      // Atomically increment available slots in the database
+      await this.eventRepository.incrementAvailableSlots(event.id);
 
       return {
         success: true,

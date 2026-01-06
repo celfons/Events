@@ -42,6 +42,26 @@ class MongoEventRepository extends EventRepository {
     return !!result;
   }
 
+  async decrementAvailableSlots(id) {
+    const updatedEvent = await EventModel.findOneAndUpdate(
+      { _id: id, availableSlots: { $gt: 0 } },
+      { $inc: { availableSlots: -1 } },
+      { new: true, runValidators: true }
+    );
+    if (!updatedEvent) return null;
+    return this._toDomain(updatedEvent);
+  }
+
+  async incrementAvailableSlots(id) {
+    const updatedEvent = await EventModel.findByIdAndUpdate(
+      id,
+      { $inc: { availableSlots: 1 } },
+      { new: true, runValidators: true }
+    );
+    if (!updatedEvent) return null;
+    return this._toDomain(updatedEvent);
+  }
+
   _toDomain(eventModel) {
     return new Event({
       id: eventModel._id.toString(),
