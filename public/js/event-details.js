@@ -16,10 +16,137 @@ const registrationSuccess = document.getElementById('registrationSuccess');
 // Store registration ID
 let currentRegistrationId = null;
 
+// Storage key for registration data
+const STORAGE_KEY_PREFIX = 'event_registration_';
+
+// Helper function to create safe storage key
+function getStorageKey() {
+    // Validate and sanitize eventId to prevent injection or collisions
+    if (!eventId || typeof eventId !== 'string') {
+        return null;
+    }
+    // Remove any characters that could cause issues, keep alphanumeric, dash, underscore
+    const sanitizedEventId = eventId.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!sanitizedEventId) {
+        return null;
+    }
+    return STORAGE_KEY_PREFIX + sanitizedEventId;
+}
+
 // Load event details on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEventDetails();
+    restoreRegistrationState();
 });
+
+// Restore registration state from localStorage
+function restoreRegistrationState() {
+    try {
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot restore state');
+            return;
+        }
+        
+        const storedData = localStorage.getItem(storageKey);
+        
+        if (storedData) {
+            try {
+                const registrationData = JSON.parse(storedData);
+                
+                // Validate required fields exist
+                if (!registrationData || 
+                    typeof registrationData.registrationId !== 'string' || 
+                    !registrationData.registrationId) {
+                    console.error('Invalid registration data structure');
+                    localStorage.removeItem(storageKey);
+                    return;
+                }
+                
+                currentRegistrationId = registrationData.registrationId;
+                
+                // Restore form data - check elements exist before setting values
+                const nameInput = document.getElementById('name');
+                const emailInput = document.getElementById('email');
+                const phoneInput = document.getElementById('phone');
+                
+                if (nameInput && registrationData.name) {
+                    nameInput.value = registrationData.name;
+                }
+                if (emailInput && registrationData.email) {
+                    emailInput.value = registrationData.email;
+                }
+                if (phoneInput && registrationData.phone) {
+                    phoneInput.value = registrationData.phone;
+                }
+                
+                // Show cancellation button
+                if (registrationForm && registrationSuccess) {
+                    registrationForm.classList.add('d-none');
+                    registrationSuccess.classList.remove('d-none');
+                }
+            } catch (parseError) {
+                console.error('Error parsing registration data:', parseError);
+                // Clear invalid data
+                try {
+                    localStorage.removeItem(storageKey);
+                } catch (removeError) {
+                    console.error('Error removing invalid data:', removeError);
+                }
+            }
+        }
+    } catch (error) {
+        // Handle localStorage access errors (disabled, private mode, etc.)
+        console.error('Error accessing localStorage:', error);
+    }
+}
+
+// Save registration state to localStorage
+function saveRegistrationState(registrationId, name, email, phone) {
+    try {
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot save state');
+            return;
+        }
+        
+        // Validate input parameters
+        if (!registrationId || typeof registrationId !== 'string') {
+            console.error('Invalid registration ID');
+            return;
+        }
+        
+        const registrationData = {
+            registrationId,
+            eventId,
+            name: name || '',
+            email: email || '',
+            phone: phone || '',
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(storageKey, JSON.stringify(registrationData));
+    } catch (error) {
+        // Handle localStorage errors (quota exceeded, disabled, etc.)
+        console.error('Error saving registration state:', error);
+        // Continue execution - the app still works without persistence
+    }
+}
+
+// Clear registration state from localStorage
+function clearRegistrationState() {
+    try {
+        const storageKey = getStorageKey();
+        if (!storageKey) {
+            console.error('Invalid event ID, cannot clear state');
+            return;
+        }
+        localStorage.removeItem(storageKey);
+    } catch (error) {
+        // Handle localStorage errors
+        console.error('Error clearing registration state:', error);
+        // Continue execution - not critical if clear fails
+    }
+}
 
 // Load event details
 async function loadEventDetails() {
@@ -116,6 +243,10 @@ registerForm.addEventListener('submit', async (e) => {
 
         // Success
         currentRegistrationId = data.id;
+        
+        // Save registration state to localStorage
+        saveRegistrationState(data.id, name, email, phone);
+        
         registrationForm.classList.add('d-none');
         registrationSuccess.classList.remove('d-none');
         registrationError.classList.add('d-none');
@@ -164,6 +295,9 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
         registrationForm.classList.remove('d-none');
         registerForm.reset();
         currentRegistrationId = null;
+        
+        // Clear registration state from localStorage
+        clearRegistrationState();
 
         // Reload event details to update available slots
         await loadEventDetails();
