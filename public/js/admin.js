@@ -257,8 +257,14 @@ async function openEventDetailsModal(eventId) {
         const response = await fetch(`${API_URL}/api/events/${eventId}`);
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erro ao carregar detalhes do evento');
+            let errorMessage = 'Erro ao carregar detalhes do evento';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -405,8 +411,14 @@ async function openParticipantsModal(eventId) {
 
         if (!response.ok) {
             participantsLoading.classList.add('d-none');
-            const error = await response.json();
-            throw new Error(error.error || 'Erro ao carregar participantes');
+            let errorMessage = 'Erro ao carregar participantes';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
         }
 
         const participants = await response.json();
