@@ -232,7 +232,6 @@ function createEventRow(event) {
         <td>${escapeHtml(event.title)}</td>
         <td>${formattedDate}</td>
         <td>${event.availableSlots}</td>
-        <td>${event.totalSlots}</td>
         <td>${statusBadge}</td>
         <td>
             <button class="btn btn-sm btn-primary view-details-btn" data-event-id="${event.id}">
