@@ -42,7 +42,8 @@ async function createSuperuser() {
       username: process.env.SUPERUSER_USERNAME || 'admin',
       email: process.env.SUPERUSER_EMAIL || 'admin@events.com',
       password: password, // This will be hashed automatically by the pre-save hook
-      role: 'superuser'
+      role: 'superuser',
+      isActive: true
     });
 
     await superuser.save();
