@@ -35,9 +35,11 @@ Adicione ao seu arquivo `.env`:
 
 ```env
 ENABLE_WHATSAPP_NOTIFICATIONS=true
+LOCALE=pt-BR
 ```
 
 - `ENABLE_WHATSAPP_NOTIFICATIONS`: Define se as notificações WhatsApp estão habilitadas (padrão: `false`)
+- `LOCALE`: Define o formato de data/hora nas mensagens (padrão: `pt-BR`). Exemplos: `en-US`, `es-ES`, `fr-FR`
 
 ### Instalação
 
@@ -132,6 +134,8 @@ Te esperamos lá! 😊
 
 - Arquivos de autenticação WhatsApp são ignorados pelo Git (`.whatsapp-auth/`)
 - Notificações podem ser desabilitadas via variável de ambiente
+- Validação rigorosa de números de telefone (10-11 dígitos + código do país)
+- Reconexão com exponential backoff (máximo 5 tentativas)
 - Tratamento de erros para evitar crash do servidor
 - Logs detalhados para auditoria
 
