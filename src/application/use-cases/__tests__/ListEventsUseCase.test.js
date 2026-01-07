@@ -124,6 +124,41 @@ describe('ListEventsUseCase', () => {
       expect(result.data[0].title).toBe('Newer Event');
       expect(result.data[1].title).toBe('Older Event');
     });
+
+    it('should only return active events from repository', async () => {
+      // The repository is responsible for filtering out inactive events
+      // This test verifies that the use case properly handles the data from repository
+      const mockEvents = [
+        {
+          id: '1',
+          title: 'Active Event',
+          isActive: true,
+          toJSON: jest.fn().mockReturnValue({
+            id: '1',
+            title: 'Active Event',
+            isActive: true
+          })
+        },
+        {
+          id: '2',
+          title: 'Another Active Event',
+          isActive: true,
+          toJSON: jest.fn().mockReturnValue({
+            id: '2',
+            title: 'Another Active Event',
+            isActive: true
+          })
+        }
+      ];
+
+      mockEventRepository.findAll.mockResolvedValue(mockEvents);
+
+      const result = await listEventsUseCase.execute();
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(result.data.every(event => event.isActive === true)).toBe(true);
+    });
   });
 
   describe('Error Handling', () => {

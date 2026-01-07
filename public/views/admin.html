@@ -55,14 +55,20 @@
                 </button>
             </div>
 
-            <!-- Search Bar -->
+            <!-- Search Bar and Filters -->
             <div class="mb-4">
-                <div class="input-group">
+                <div class="input-group mb-2">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="searchInput" placeholder="Buscar eventos por nome...">
                     <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
                         <i class="bi bi-x"></i> Limpar
                     </button>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="activeOnlySwitch">
+                    <label class="form-check-label" for="activeOnlySwitch">
+                        <i class="bi bi-funnel"></i> Mostrar apenas eventos ativos
+                    </label>
                 </div>
             </div>
 
@@ -81,6 +87,7 @@
                                 <th>Data e Horário</th>
                                 <th>Vagas Disponíveis</th>
                                 <th>Total de Vagas</th>
+                                <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -174,6 +181,13 @@
                         <div class="mb-3">
                             <label for="updateEventLocal" class="form-label">Local</label>
                             <input type="text" class="form-control" id="updateEventLocal" placeholder="Auditório Principal, Sala 301, etc.">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="updateEventIsActive" checked>
+                            <label class="form-check-label" for="updateEventIsActive">
+                                Evento ativo
+                            </label>
+                            <div class="form-text">Desmarque para desativar o evento (não será exibido na página inicial)</div>
                         </div>
                         <div class="alert alert-danger d-none" id="updateEventError"></div>
                     </form>

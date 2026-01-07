@@ -50,6 +50,7 @@ const eventsPerPage = 10;
 let allEvents = [];
 let filteredEvents = [];
 let currentEventId = null;
+let currentStatusFilter = 'all'; // 'all' or 'active'
 
 // Participants pagination
 let currentParticipantsPage = 1;
@@ -99,6 +100,17 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = '';
         filterAndDisplayEvents();
     });
+    
+    // Status filter switch functionality
+    const activeOnlySwitch = document.getElementById('activeOnlySwitch');
+    
+    if (activeOnlySwitch) {
+        activeOnlySwitch.addEventListener('change', () => {
+            // When switch is ON, show only active events; when OFF, show all events
+            currentStatusFilter = activeOnlySwitch.checked ? 'active' : 'all';
+            filterAndDisplayEvents();
+        });
+    }
 });
 
 // Load all events
@@ -147,20 +159,31 @@ async function loadEvents() {
     }
 }
 
-// Filter events based on search query
+// Filter events based on search query and status
 function filterAndDisplayEvents() {
     const searchQuery = searchInput.value.toLowerCase().trim();
     
+    // Start with all events
+    let eventsToFilter = allEvents;
+    
+    // Apply status filter
+    // Note: Events with undefined isActive are treated as active (backend default)
+    if (currentStatusFilter === 'active') {
+        eventsToFilter = eventsToFilter.filter(event => event.isActive !== false);
+    }
+    // If 'all', don't filter by status
+    
+    // Apply search filter
     if (searchQuery === '') {
-        filteredEvents = allEvents;
+        filteredEvents = eventsToFilter;
     } else {
-        filteredEvents = allEvents.filter(event => 
+        filteredEvents = eventsToFilter.filter(event => 
             event.title.toLowerCase().includes(searchQuery)
         );
     }
     
     if (filteredEvents.length === 0) {
-        eventsTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum evento encontrado.</td></tr>';
+        eventsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum evento encontrado.</td></tr>';
         paginationElement.innerHTML = '';
         return;
     }
@@ -198,12 +221,19 @@ function createEventRow(event) {
         hour: '2-digit',
         minute: '2-digit'
     });
+    
+    // Determine status badge (treat undefined as active to match backend default)
+    const isActive = event.isActive !== false;
+    const statusBadge = isActive 
+        ? '<span class="badge bg-success">Ativo</span>' 
+        : '<span class="badge bg-secondary">Inativo</span>';
 
     row.innerHTML = `
         <td>${escapeHtml(event.title)}</td>
         <td>${formattedDate}</td>
         <td>${event.availableSlots}</td>
         <td>${event.totalSlots}</td>
+        <td>${statusBadge}</td>
         <td>
             <button class="btn btn-sm btn-primary view-details-btn" data-event-id="${event.id}">
                 <i class="bi bi-eye"></i> Detalhes
@@ -413,6 +443,8 @@ async function openEventDetailsModal(eventId) {
         document.getElementById('updateEventSlots').value = event.totalSlots;
         document.getElementById('updateEventAvailableSlots').value = event.availableSlots;
         document.getElementById('updateEventLocal').value = event.local || '';
+        // Treat undefined as active to match backend default
+        document.getElementById('updateEventIsActive').checked = event.isActive !== false;
 
         updateEventError.classList.add('d-none');
 
@@ -431,6 +463,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
     const dateTime = document.getElementById('updateEventDateTime').value;
     const totalSlots = parseInt(document.getElementById('updateEventSlots').value);
     const local = document.getElementById('updateEventLocal').value.trim();
+    const isActive = document.getElementById('updateEventIsActive').checked;
 
     if (!title || !description || !dateTime || !totalSlots) {
         showError(updateEventError, 'Todos os campos são obrigatórios');
@@ -451,7 +484,8 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             description,
             dateTime: convertLocalDateTimeToISO(dateTime),
             totalSlots,
-            local
+            local,
+            isActive
         };
 
         const response = await fetch(`${API_URL}/api/events/${currentEventId}`, {
