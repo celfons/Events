@@ -326,9 +326,7 @@ function createEventCard(event) {
         : 'Esgotado';
     
     const localBadge = event.local 
-        ? `<span class="badge bg-secondary">
-               <i class="bi bi-geo-alt"></i> ${escapeHtml(event.local)}
-           </span>`
+        ? `<span class="badge bg-secondary"><i class="bi bi-geo-alt"></i> ${escapeHtml(event.local)}</span>`
         : '';
 
     col.innerHTML = `
