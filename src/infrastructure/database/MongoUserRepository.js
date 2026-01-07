@@ -1,6 +1,7 @@
 const UserRepository = require('../../domain/repositories/UserRepository');
 const User = require('../../domain/entities/User');
 const UserModel = require('./UserModel');
+const bcrypt = require('bcryptjs');
 
 class MongoUserRepository extends UserRepository {
   async findById(id) {
@@ -66,6 +67,12 @@ class MongoUserRepository extends UserRepository {
   }
 
   async update(id, userData) {
+    // If password is being updated, hash it first
+    if (userData.password) {
+      const salt = await bcrypt.genSalt(10);
+      userData.password = await bcrypt.hash(userData.password, salt);
+    }
+    
     const userDoc = await UserModel.findByIdAndUpdate(
       id,
       userData,

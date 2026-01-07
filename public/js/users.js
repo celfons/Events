@@ -282,6 +282,7 @@ async function openEditUserModal(userId) {
         // Populate form fields
         document.getElementById('editUserUsername').value = user.username;
         document.getElementById('editUserEmail').value = user.email;
+        document.getElementById('editUserPassword').value = ''; // Clear password field
         document.getElementById('editUserRole').value = user.role;
 
         editUserError.classList.add('d-none');
@@ -298,6 +299,7 @@ async function openEditUserModal(userId) {
 submitEditUserBtn.addEventListener('click', async () => {
     const username = document.getElementById('editUserUsername').value.trim();
     const email = document.getElementById('editUserEmail').value.trim();
+    const password = document.getElementById('editUserPassword').value;
     const role = document.getElementById('editUserRole').value;
 
     if (!username || !email) {
@@ -305,18 +307,31 @@ submitEditUserBtn.addEventListener('click', async () => {
         return;
     }
 
+    // Validate password if provided
+    if (password && password.length > 0 && password.length < 6) {
+        showError(editUserError, 'A senha deve ter pelo menos 6 caracteres');
+        return;
+    }
+
     try {
         submitEditUserBtn.disabled = true;
         submitEditUserBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Atualizando...';
 
+        const updateData = {
+            username,
+            email,
+            role
+        };
+
+        // Only include password if it was provided
+        if (password && password.length > 0) {
+            updateData.password = password;
+        }
+
         const response = await fetch(`${API_URL}/api/users/${currentUserId}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({
-                username,
-                email,
-                role
-            })
+            body: JSON.stringify(updateData)
         });
 
         if (!response.ok) {
