@@ -207,7 +207,7 @@ function displayEventDetails(event) {
     
     // Display location if available
     const eventDateElement = document.getElementById('eventDate');
-    if (eventDateElement && eventDateElement.parentElement && event.local) {
+    if (eventDateElement && eventDateElement.parentElement) {
         const badgesContainer = eventDateElement.parentElement;
         
         // Remove existing location badge if present
@@ -217,13 +217,15 @@ function displayEventDetails(event) {
         }
         
         // Add new location badge if location is provided
-        const locationBadge = document.createElement('span');
-        locationBadge.className = 'badge bg-secondary ms-2 event-location-badge';
-        const icon = document.createElement('i');
-        icon.className = 'bi bi-geo-alt';
-        locationBadge.appendChild(icon);
-        locationBadge.appendChild(document.createTextNode(' ' + event.local));
-        badgesContainer.appendChild(locationBadge);
+        if (event.local) {
+            const locationBadge = document.createElement('span');
+            locationBadge.className = 'badge bg-secondary ms-2 event-location-badge';
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-geo-alt';
+            locationBadge.appendChild(icon);
+            locationBadge.appendChild(document.createTextNode(' ' + event.local));
+            badgesContainer.appendChild(locationBadge);
+        }
     }
 
     // Update registration button state based on available slots
