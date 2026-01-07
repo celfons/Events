@@ -150,7 +150,7 @@ function filterAndDisplayUsers() {
     }
     
     if (filteredUsers.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum usuário encontrado.</td></tr>';
+        usersTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum usuário encontrado.</td></tr>';
         return;
     }
     
@@ -184,10 +184,15 @@ function createUserRow(user) {
         '<span class="badge bg-danger">Superuser</span>' : 
         '<span class="badge bg-primary">User</span>';
 
+    const statusLabel = user.isActive ? 
+        '<span class="badge bg-success">Ativo</span>' : 
+        '<span class="badge bg-secondary">Inativo</span>';
+
     row.innerHTML = `
         <td>${escapeHtml(user.username)}</td>
         <td>${escapeHtml(user.email)}</td>
         <td>${roleLabel}</td>
+        <td>${statusLabel}</td>
         <td>${formattedDate}</td>
         <td>
             <button class="btn btn-sm btn-primary edit-user-btn" data-user-id="${user.id}">
@@ -209,6 +214,7 @@ submitCreateUserBtn.addEventListener('click', async () => {
     const email = document.getElementById('userEmail').value.trim();
     const password = document.getElementById('userPassword').value;
     const role = document.getElementById('userRole').value;
+    const isActive = document.getElementById('userIsActive').checked;
 
     if (!username || !email || !password) {
         showError(createUserError, 'Todos os campos são obrigatórios');
@@ -231,7 +237,8 @@ submitCreateUserBtn.addEventListener('click', async () => {
                 username,
                 email,
                 password,
-                role
+                role,
+                isActive
             })
         });
 
@@ -284,6 +291,7 @@ async function openEditUserModal(userId) {
         document.getElementById('editUserEmail').value = user.email;
         document.getElementById('editUserPassword').value = ''; // Clear password field
         document.getElementById('editUserRole').value = user.role;
+        document.getElementById('editUserIsActive').checked = user.isActive;
 
         editUserError.classList.add('d-none');
 
@@ -301,6 +309,7 @@ submitEditUserBtn.addEventListener('click', async () => {
     const email = document.getElementById('editUserEmail').value.trim();
     const password = document.getElementById('editUserPassword').value;
     const role = document.getElementById('editUserRole').value;
+    const isActive = document.getElementById('editUserIsActive').checked;
 
     if (!username || !email) {
         showError(editUserError, 'Todos os campos são obrigatórios');
@@ -320,7 +329,8 @@ submitEditUserBtn.addEventListener('click', async () => {
         const updateData = {
             username,
             email,
-            role
+            role,
+            isActive
         };
 
         // Only include password if it was provided

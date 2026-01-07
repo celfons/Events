@@ -40,11 +40,13 @@ class RegisterUseCase {
       }
 
       // Create new user (role is always 'user' for registration, superuser can only be set by other superuser)
+      // isActive can be set during creation
       const user = new User({
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        role: 'user'
+        role: 'user',
+        isActive: userData.isActive
       });
 
       const createdUser = await this.userRepository.create(user);
