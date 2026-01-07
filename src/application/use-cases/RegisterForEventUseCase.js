@@ -84,7 +84,14 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Send WhatsApp verification code
+      // Prepare success response before sending WhatsApp to ensure no errors occur after message is sent
+      const successResponse = {
+        success: true,
+        data: registration.toJSON(),
+        message: 'Registration pending. Please verify your phone number with the code sent via WhatsApp.'
+      };
+
+      // Send WhatsApp verification code (non-blocking - happens after successful registration)
       if (this.whatsAppService && registrationData.phone) {
         try {
           const eventDate = new Date(event.dateTime);
@@ -107,16 +114,12 @@ class RegisterForEventUseCase {
           await this.whatsAppService.sendMessage(registrationData.phone, verificationMessage);
           console.log(`📱 Verification code sent to ${registrationData.phone}`);
         } catch (error) {
-          // Log error but don't fail the registration
+          // Log error but don't fail the registration since participant was already added
           console.error(`⚠️  Failed to send WhatsApp verification to ${registrationData.phone}:`, error.message);
         }
       }
 
-      return {
-        success: true,
-        data: registration.toJSON(),
-        message: 'Registration pending. Please verify your phone number with the code sent via WhatsApp.'
-      };
+      return successResponse;
     } catch (error) {
       return {
         success: false,
