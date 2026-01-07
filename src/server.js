@@ -66,8 +66,8 @@ async function start() {
     );
     await cronJobService.start();
 
-    // Create and start server
-    const app = createApp();
+    // Create and start server with WhatsApp service
+    const app = createApp(effectiveWhatsAppService, LOCALE);
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📋 Events page: http://localhost:${PORT}`);

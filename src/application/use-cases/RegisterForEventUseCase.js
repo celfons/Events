@@ -1,8 +1,10 @@
 const Registration = require('../../domain/entities/Registration');
 
 class RegisterForEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, whatsAppService = null, locale = 'pt-BR') {
     this.eventRepository = eventRepository;
+    this.whatsAppService = whatsAppService;
+    this.locale = locale;
   }
 
   async execute(registrationData) {
@@ -74,6 +76,34 @@ class RegisterForEventUseCase {
           success: false,
           error: 'Failed to register. Event may be full or was deleted.'
         };
+      }
+
+      // Send WhatsApp confirmation message
+      if (this.whatsAppService && registrationData.phone) {
+        try {
+          const eventDate = new Date(event.dateTime);
+          const formattedDate = eventDate.toLocaleDateString(this.locale);
+          const formattedTime = eventDate.toLocaleTimeString(this.locale, { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+
+          const confirmationMessage = `✅ *Inscrição Confirmada!*\n\n` +
+            `Olá ${registrationData.name}! 👋\n\n` +
+            `Sua inscrição foi confirmada com sucesso!\n\n` +
+            `📌 *${event.title}*\n` +
+            `📝 ${event.description}\n` +
+            `📅 Data: ${formattedDate}\n` +
+            `⏰ Horário: ${formattedTime}\n` +
+            `📍 Local: ${event.local || 'A definir'}\n\n` +
+            `Aguardamos você! 🎉`;
+
+          await this.whatsAppService.sendMessage(registrationData.phone, confirmationMessage);
+          console.log(`📱 Confirmation message sent to ${registrationData.phone}`);
+        } catch (error) {
+          // Log error but don't fail the registration
+          console.error(`⚠️  Failed to send WhatsApp confirmation to ${registrationData.phone}:`, error.message);
+        }
       }
 
       return {

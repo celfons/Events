@@ -317,4 +317,176 @@ describe('RegisterForEventUseCase', () => {
       expect(result.error).toBe('Database connection error');
     });
   });
+
+  describe('WhatsApp Confirmation', () => {
+    it('should send WhatsApp confirmation message after successful registration', async () => {
+      const mockWhatsAppService = {
+        sendMessage: jest.fn().mockResolvedValue(true)
+      };
+
+      const registerForEventUseCaseWithWhatsApp = new RegisterForEventUseCase(
+        mockEventRepository,
+        mockWhatsAppService,
+        'pt-BR'
+      );
+
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-01-15T14:00:00'),
+        local: 'Test Location',
+        availableSlots: 5,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '11987654321',
+          status: 'active'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCaseWithWhatsApp.execute(registrationData);
+
+      expect(result.success).toBe(true);
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledTimes(1);
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '11987654321',
+        expect.stringContaining('Inscrição Confirmada')
+      );
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '11987654321',
+        expect.stringContaining('John Doe')
+      );
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '11987654321',
+        expect.stringContaining('Test Event')
+      );
+    });
+
+    it('should not fail registration if WhatsApp message fails', async () => {
+      const mockWhatsAppService = {
+        sendMessage: jest.fn().mockRejectedValue(new Error('WhatsApp API error'))
+      };
+
+      const registerForEventUseCaseWithWhatsApp = new RegisterForEventUseCase(
+        mockEventRepository,
+        mockWhatsAppService,
+        'pt-BR'
+      );
+
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-01-15T14:00:00'),
+        local: 'Test Location',
+        availableSlots: 5,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '11987654321',
+          status: 'active'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCaseWithWhatsApp.execute(registrationData);
+
+      // Registration should succeed even if WhatsApp fails
+      expect(result.success).toBe(true);
+      expect(result.data.name).toBe('John Doe');
+    });
+
+    it('should not send message if WhatsApp service is not provided', async () => {
+      // Use case without WhatsApp service
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-01-15T14:00:00'),
+        local: 'Test Location',
+        availableSlots: 5,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '11987654321',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '11987654321',
+          status: 'active'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCase.execute(registrationData);
+
+      // Registration should succeed
+      expect(result.success).toBe(true);
+      expect(result.data.name).toBe('John Doe');
+    });
+  });
 });

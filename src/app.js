@@ -38,7 +38,7 @@ const createRegistrationRoutes = require('./infrastructure/web/routes/registrati
 const createAuthRoutes = require('./infrastructure/web/routes/authRoutes');
 const createUserRoutes = require('./infrastructure/web/routes/userRoutes');
 
-function createApp() {
+function createApp(whatsAppService = null, locale = 'pt-BR') {
   const app = express();
 
   // Security headers with Helmet
@@ -90,7 +90,7 @@ function createApp() {
   const updateEventUseCase = new UpdateEventUseCase(eventRepository);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
-  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository);
+  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService, locale);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
