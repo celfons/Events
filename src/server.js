@@ -27,12 +27,15 @@ async function start() {
       
       if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
         console.error('⚠️  WhatsApp credentials missing. Please set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID');
+        console.log('ℹ️  Continuing without WhatsApp notifications');
+        whatsAppService = null;
       } else {
         whatsAppService = new WhatsAppService(WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID);
         try {
           await whatsAppService.connect();
         } catch (error) {
           console.error('⚠️  WhatsApp token validation failed, but server will continue:', error.message);
+          whatsAppService = null;
         }
       }
     } else {

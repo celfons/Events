@@ -25,8 +25,11 @@ class WhatsAppService {
         throw new Error(`Token validation failed: ${error.error?.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('❌ Error validating WhatsApp token:', error);
-      throw error;
+      if (error.message.includes('Token validation failed')) {
+        throw error;
+      }
+      console.error('❌ Network error during WhatsApp token validation:', error);
+      throw new Error(`Failed to validate WhatsApp token: ${error.message}`);
     }
   }
 
@@ -61,11 +64,24 @@ class WhatsAppService {
         return true;
       } else {
         const error = await response.json();
-        console.error(`❌ Error sending message to ${phoneNumber}:`, error);
+        const errorMessage = error.error?.message || 'Unknown API error';
+        const errorCode = error.error?.code;
+        
+        if (errorCode === 131047) {
+          console.error(`❌ Rate limit exceeded for ${phoneNumber}`);
+        } else if (errorCode === 190) {
+          console.error(`❌ Invalid access token for ${phoneNumber}`);
+        } else {
+          console.error(`❌ API error sending message to ${phoneNumber}: ${errorMessage}`);
+        }
         return false;
       }
     } catch (error) {
-      console.error(`❌ Error sending message to ${phoneNumber}:`, error);
+      if (error.message.includes('Invalid phone number')) {
+        console.error(`❌ ${error.message}`);
+        return false;
+      }
+      console.error(`❌ Network error sending message to ${phoneNumber}: ${error.message}`);
       return false;
     }
   }
