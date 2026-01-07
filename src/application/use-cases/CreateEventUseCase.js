@@ -29,7 +29,8 @@ class CreateEventUseCase {
         totalSlots: parseInt(eventData.totalSlots),
         availableSlots: parseInt(eventData.totalSlots),
         userId: userId,
-        local: eventData.local
+        local: eventData.local,
+        isActive: true
       });
 
       const createdEvent = await this.eventRepository.create(event);

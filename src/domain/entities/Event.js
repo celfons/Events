@@ -1,5 +1,5 @@
 class Event {
-  constructor({ id, title, description, dateTime, totalSlots, availableSlots, participants, createdAt, userId, local }) {
+  constructor({ id, title, description, dateTime, totalSlots, availableSlots, participants, createdAt, userId, local, isActive }) {
     this.id = id;
     this.title = title;
     this.description = description;
@@ -10,6 +10,7 @@ class Event {
     this.createdAt = createdAt || new Date();
     this.userId = userId;
     this.local = local;
+    this.isActive = isActive !== undefined ? isActive : true;
   }
 
   hasAvailableSlots() {
@@ -43,7 +44,8 @@ class Event {
       participants: this.participants,
       createdAt: this.createdAt,
       userId: this.userId,
-      local: this.local
+      local: this.local,
+      isActive: this.isActive
     };
   }
 }

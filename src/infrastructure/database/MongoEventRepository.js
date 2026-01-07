@@ -14,7 +14,8 @@ class MongoEventRepository extends EventRepository {
       availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots,
       participants: [],
       userId: event.userId,
-      local: event.local
+      local: event.local,
+      isActive: event.isActive !== undefined ? event.isActive : true
     });
     
     const savedEvent = await eventModel.save();
@@ -28,7 +29,7 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findAll() {
-    const events = await EventModel.find().sort({ dateTime: -1 });
+    const events = await EventModel.find({ isActive: true }).sort({ dateTime: -1 });
     return events.map(event => this._toDomain(event));
   }
 
@@ -225,7 +226,8 @@ class MongoEventRepository extends EventRepository {
       })) : [],
       createdAt: eventModel.createdAt,
       userId: eventModel.userId ? eventModel.userId.toString() : null,
-      local: eventModel.local
+      local: eventModel.local,
+      isActive: eventModel.isActive !== undefined ? eventModel.isActive : true
     });
   }
 }

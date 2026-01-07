@@ -48,6 +48,47 @@ describe('Event Entity', () => {
       expect(event.local).toBe('Main Conference Room');
     });
 
+    it('should set isActive to true by default when not provided', () => {
+      const eventData = {
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50
+      };
+
+      const event = new Event(eventData);
+
+      expect(event.isActive).toBe(true);
+    });
+
+    it('should preserve isActive when explicitly set to false', () => {
+      const eventData = {
+        title: 'Inactive Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        isActive: false
+      };
+
+      const event = new Event(eventData);
+
+      expect(event.isActive).toBe(false);
+    });
+
+    it('should preserve isActive when explicitly set to true', () => {
+      const eventData = {
+        title: 'Active Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        isActive: true
+      };
+
+      const event = new Event(eventData);
+
+      expect(event.isActive).toBe(true);
+    });
+
     it('should set availableSlots equal to totalSlots when not provided', () => {
       const eventData = {
         title: 'Test Event',
@@ -222,7 +263,8 @@ describe('Event Entity', () => {
         totalSlots: 50,
         availableSlots: 30,
         participants: [],
-        createdAt: new Date('2024-01-01')
+        createdAt: new Date('2024-01-01'),
+        isActive: true
       });
     });
 
@@ -250,7 +292,36 @@ describe('Event Entity', () => {
         availableSlots: 30,
         participants: [],
         createdAt: new Date('2024-01-01'),
-        local: 'Conference Hall A'
+        local: 'Conference Hall A',
+        isActive: true
+      });
+    });
+
+    it('should return event data with isActive field', () => {
+      const eventData = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 30,
+        createdAt: new Date('2024-01-01'),
+        isActive: false
+      };
+
+      const event = new Event(eventData);
+      const json = event.toJSON();
+
+      expect(json).toEqual({
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 30,
+        participants: [],
+        createdAt: new Date('2024-01-01'),
+        isActive: false
       });
     });
   });
