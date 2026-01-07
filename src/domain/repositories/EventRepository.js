@@ -31,6 +31,10 @@ class EventRepository {
     throw new Error('Method not implemented');
   }
 
+  async findParticipantByPhone(eventId, phone) {
+    throw new Error('Method not implemented');
+  }
+
   async cancelParticipant(eventId, participantId) {
     throw new Error('Method not implemented');
   }

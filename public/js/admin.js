@@ -532,8 +532,24 @@ viewParticipantsBtn.addEventListener('click', async () => {
     openParticipantsModal(currentEventId);
 });
 
+// Register participant button - opens the register participant modal
+document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'registerParticipantBtn') {
+        openRegisterParticipantModal();
+    }
+});
+
 // Open participants modal
 async function openParticipantsModal(eventId) {
+    await loadParticipants(eventId);
+    
+    // Show participants modal
+    const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
+    modal.show();
+}
+
+// Load participants data (can be called without opening modal)
+async function loadParticipants(eventId) {
     try {
         const participantsLoading = document.getElementById('participantsLoading');
         const participantsContainer = document.getElementById('participantsContainer');
@@ -583,10 +599,6 @@ async function openParticipantsModal(eventId) {
             
             displayParticipantsPage(1);
         }
-
-        // Show participants modal
-        const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
-        modal.show();
     } catch (error) {
         alert('Erro ao carregar participantes: ' + error.message);
     }
@@ -752,11 +764,92 @@ async function removeParticipant(registrationId, participantName) {
 
         // Success - reload participants list
         alert(`${participantName} foi removido com sucesso!`);
-        await openParticipantsModal(currentEventId);
+        await loadParticipants(currentEventId);
     } catch (error) {
         alert('Erro ao remover participante: ' + error.message);
     }
 }
+
+// Open register participant modal
+function openRegisterParticipantModal() {
+    // Clear form
+    document.getElementById('registerParticipantForm').reset();
+    const registerParticipantError = document.getElementById('registerParticipantError');
+    registerParticipantError.classList.add('d-none');
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('registerParticipantModal'));
+    modal.show();
+}
+
+// Submit register participant form
+document.getElementById('submitRegisterParticipant').addEventListener('click', async () => {
+    const name = document.getElementById('participantName').value.trim();
+    const email = document.getElementById('participantEmail').value.trim();
+    const phone = document.getElementById('participantPhone').value.trim();
+    const registerParticipantError = document.getElementById('registerParticipantError');
+    const submitBtn = document.getElementById('submitRegisterParticipant');
+
+    if (!name || !email || !phone) {
+        showError(registerParticipantError, 'Todos os campos são obrigatórios');
+        return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showError(registerParticipantError, 'Por favor, insira um email válido');
+        return;
+    }
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Inscrevendo...';
+
+        const response = await fetch(`${API_URL}/api/registrations`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                eventId: currentEventId,
+                name,
+                email,
+                phone
+            })
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Erro ao inscrever participante';
+            try {
+                const error = await response.json();
+                errorMessage = error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
+        }
+
+        // Success
+        registerParticipantError.classList.add('d-none');
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('registerParticipantModal'));
+        modal.hide();
+
+        // Show success message
+        alert(`${name} foi inscrito com sucesso!`);
+        
+        // Reload participants list (without reopening modal)
+        await loadParticipants(currentEventId);
+        
+        // Reload events to update available slots
+        await loadEvents();
+    } catch (error) {
+        showError(registerParticipantError, error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Inscrever';
+    }
+});
 
 // Helper functions
 function showError(element, message) {
