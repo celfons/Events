@@ -46,7 +46,7 @@ class RegisterUseCase {
         email: userData.email,
         password: userData.password,
         role: userData.role || 'user',
-        isActive: userData.isActive !== undefined ? userData.isActive : true
+        isActive: userData.isActive
       });
 
       const createdUser = await this.userRepository.create(user);
