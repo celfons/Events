@@ -55,14 +55,24 @@
                 </button>
             </div>
 
-            <!-- Search Bar -->
+            <!-- Search Bar and Filters -->
             <div class="mb-4">
-                <div class="input-group">
+                <div class="input-group mb-2">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="searchInput" placeholder="Buscar eventos por nome...">
                     <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
                         <i class="bi bi-x"></i> Limpar
                     </button>
+                </div>
+                <div class="btn-group" role="group" aria-label="Filtro de status">
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="filterAll">Todos</label>
+                    
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterActive" value="active" autocomplete="off">
+                    <label class="btn btn-outline-success" for="filterActive">Ativos</label>
+                    
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterInactive" value="inactive" autocomplete="off">
+                    <label class="btn btn-outline-secondary" for="filterInactive">Inativos</label>
                 </div>
             </div>
 
@@ -81,6 +91,7 @@
                                 <th>Data e Horário</th>
                                 <th>Vagas Disponíveis</th>
                                 <th>Total de Vagas</th>
+                                <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -174,6 +185,13 @@
                         <div class="mb-3">
                             <label for="updateEventLocal" class="form-label">Local</label>
                             <input type="text" class="form-control" id="updateEventLocal" placeholder="Auditório Principal, Sala 301, etc.">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="updateEventIsActive" checked>
+                            <label class="form-check-label" for="updateEventIsActive">
+                                Evento ativo
+                            </label>
+                            <div class="form-text">Desmarque para desativar o evento (não será exibido na página inicial)</div>
                         </div>
                         <div class="alert alert-danger d-none" id="updateEventError"></div>
                     </form>
