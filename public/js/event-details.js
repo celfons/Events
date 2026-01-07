@@ -204,6 +204,29 @@ function displayEventDetails(event) {
     
     document.getElementById('eventSlots').className = `badge bg-${slotsColor}`;
     document.getElementById('eventSlots').innerHTML = `<i class="bi bi-people"></i> ${slotsText}`;
+    
+    // Display location if available
+    const eventDateElement = document.getElementById('eventDate');
+    if (eventDateElement && eventDateElement.parentElement) {
+        const badgesContainer = eventDateElement.parentElement;
+        
+        // Remove existing location badge if present
+        const existingLocationBadge = badgesContainer.querySelector('.event-location-badge');
+        if (existingLocationBadge) {
+            existingLocationBadge.remove();
+        }
+        
+        // Add new location badge if location is provided
+        if (event.local) {
+            const locationBadge = document.createElement('span');
+            locationBadge.className = 'badge bg-secondary ms-2 event-location-badge';
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-geo-alt';
+            locationBadge.appendChild(icon);
+            locationBadge.appendChild(document.createTextNode(' ' + event.local));
+            badgesContainer.appendChild(locationBadge);
+        }
+    }
 
     // Update registration button state based on available slots
     const registerButton = document.getElementById('registerButton');
