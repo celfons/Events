@@ -50,7 +50,7 @@ const eventsPerPage = 10;
 let allEvents = [];
 let filteredEvents = [];
 let currentEventId = null;
-let currentStatusFilter = 'all'; // 'all', 'active', or 'inactive'
+let currentStatusFilter = 'all'; // 'all' or 'active'
 
 // Participants pagination
 let currentParticipantsPage = 1;
@@ -170,8 +170,6 @@ function filterAndDisplayEvents() {
     // Note: Events with undefined isActive are treated as active (backend default)
     if (currentStatusFilter === 'active') {
         eventsToFilter = eventsToFilter.filter(event => event.isActive !== false);
-    } else if (currentStatusFilter === 'inactive') {
-        eventsToFilter = eventsToFilter.filter(event => event.isActive === false);
     }
     // If 'all', don't filter by status
     
