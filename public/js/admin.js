@@ -541,6 +541,15 @@ document.addEventListener('click', (e) => {
 
 // Open participants modal
 async function openParticipantsModal(eventId) {
+    await loadParticipants(eventId);
+    
+    // Show participants modal
+    const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
+    modal.show();
+}
+
+// Load participants data (can be called without opening modal)
+async function loadParticipants(eventId) {
     try {
         const participantsLoading = document.getElementById('participantsLoading');
         const participantsContainer = document.getElementById('participantsContainer');
@@ -590,10 +599,6 @@ async function openParticipantsModal(eventId) {
             
             displayParticipantsPage(1);
         }
-
-        // Show participants modal
-        const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
-        modal.show();
     } catch (error) {
         alert('Erro ao carregar participantes: ' + error.message);
     }
@@ -759,7 +764,7 @@ async function removeParticipant(registrationId, participantName) {
 
         // Success - reload participants list
         alert(`${participantName} foi removido com sucesso!`);
-        await openParticipantsModal(currentEventId);
+        await loadParticipants(currentEventId);
     } catch (error) {
         alert('Erro ao remover participante: ' + error.message);
     }
@@ -833,8 +838,8 @@ document.getElementById('submitRegisterParticipant').addEventListener('click', a
         // Show success message
         alert(`${name} foi inscrito com sucesso!`);
         
-        // Reload participants list
-        await openParticipantsModal(currentEventId);
+        // Reload participants list (without reopening modal)
+        await loadParticipants(currentEventId);
         
         // Reload events to update available slots
         await loadEvents();
