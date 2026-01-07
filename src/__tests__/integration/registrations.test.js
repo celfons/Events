@@ -10,11 +10,20 @@ describe('Registrations API Integration Tests', () => {
   let eventRepository;
   let userId;
   let eventId;
+  let mockWhatsAppService;
 
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-    app = createApp();
+    
+    // Mock WhatsApp service for integration tests
+    mockWhatsAppService = {
+      connect: jest.fn().mockResolvedValue(true),
+      disconnect: jest.fn().mockResolvedValue(true),
+      sendMessage: jest.fn().mockResolvedValue(true)
+    };
+    
+    app = createApp(mockWhatsAppService);
     userRepository = new MongoUserRepository();
     eventRepository = new MongoEventRepository();
   });
@@ -25,6 +34,9 @@ describe('Registrations API Integration Tests', () => {
 
   beforeEach(async () => {
     await clearDatabase();
+    
+    // Reset mock
+    mockWhatsAppService.sendMessage.mockClear();
 
     // Create a test user
     const user = await userRepository.create({
@@ -47,7 +59,7 @@ describe('Registrations API Integration Tests', () => {
   });
 
   describe('POST /api/registrations', () => {
-    it('should register a participant for an event', async () => {
+    it('should register a participant for an event with pending status', async () => {
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -60,15 +72,27 @@ describe('Registrations API Integration Tests', () => {
         .send(registrationData)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.name).toBe('John Doe');
-      expect(response.body.email).toBe('john@example.com');
-      expect(response.body.status).toBe('active');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.name).toBe('John Doe');
+      expect(response.body.data.email).toBe('john@example.com');
+      expect(response.body.data.status).toBe('pending');
+      expect(response.body.data).toHaveProperty('verificationCode');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('verify');
+
+      // Verify WhatsApp was called
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledTimes(1);
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('Verificação de Cadastro')
+      );
 
       // Verify the event has the registration
       const event = await eventRepository.findById(eventId);
       expect(event.participants).toHaveLength(1);
       expect(event.participants[0].email).toBe('john@example.com');
+      expect(event.participants[0].status).toBe('pending');
     });
 
     it('should return 400 for missing required fields', async () => {
@@ -118,7 +142,7 @@ describe('Registrations API Integration Tests', () => {
     });
 
     it('should return 400 when event is full', async () => {
-      // Create event with only 1 spot and register one participant
+      // Create event with only 1 spot
       const fullEvent = await eventRepository.create({
         title: 'Full Event',
         description: 'Description',
@@ -127,12 +151,13 @@ describe('Registrations API Integration Tests', () => {
         userId: userId
       });
 
-      // Register the first (and only) participant
-      await eventRepository.addParticipant(fullEvent.id, {
+      // Register and verify the first (and only) participant
+      const firstParticipant = await eventRepository.addParticipant(fullEvent.id, {
         name: 'Existing Participant',
         email: 'existing@example.com',
         phone: '+9999999999',
-        status: 'active'
+        status: 'active',
+        verified: true
       });
 
       // Try to register a second participant (should fail)
@@ -180,7 +205,8 @@ describe('Registrations API Integration Tests', () => {
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
-        email: 'invalid-email'
+        email: 'invalid-email',
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -192,8 +218,8 @@ describe('Registrations API Integration Tests', () => {
     });
   });
 
-  describe('POST /api/registrations/:id/cancel', () => {
-    it('should cancel a registration', async () => {
+  describe('POST /api/registrations/verify', () => {
+    it('should verify a registration with valid code', async () => {
       // First, create a registration
       const registrationData = {
         eventId: eventId,
@@ -207,11 +233,150 @@ describe('Registrations API Integration Tests', () => {
         .send(registrationData)
         .expect(201);
 
-      const registrationId = createResponse.body.id;
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
+
+      // Clear the mock to track only verification message
+      mockWhatsAppService.sendMessage.mockClear();
+
+      // Verify the registration
+      const verifyResponse = await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(200);
+
+      expect(verifyResponse.body).toHaveProperty('message');
+      expect(verifyResponse.body.message).toContain('confirmed');
+
+      // Verify WhatsApp confirmation was sent
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledTimes(1);
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('Inscrição Confirmada')
+      );
+
+      // Verify the registration status is updated
+      const event = await eventRepository.findById(eventId);
+      const registration = event.participants.find(r => r.id === participantId);
+      expect(registration.status).toBe('active');
+      expect(registration.verified).toBe(true);
+    });
+
+    it('should return 400 for invalid verification code', async () => {
+      // First, create a registration
+      const registrationData = {
+        eventId: eventId,
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
+      };
+
+      const createResponse = await request(app)
+        .post('/api/registrations')
+        .send(registrationData)
+        .expect(201);
+
+      const participantId = createResponse.body.data.id;
+
+      // Try to verify with wrong code
+      const verifyResponse = await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: '000000'
+        })
+        .expect(400);
+
+      expect(verifyResponse.body).toHaveProperty('error');
+      expect(verifyResponse.body.error).toContain('Invalid');
+    });
+
+    it('should return 400 when event becomes full before verification', async () => {
+      // Create event with only 1 spot
+      const limitedEvent = await eventRepository.create({
+        title: 'Limited Event',
+        description: 'Description',
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 1,
+        userId: userId
+      });
+
+      // Register a participant (pending)
+      const registrationData = {
+        eventId: limitedEvent.id,
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
+      };
+
+      const createResponse = await request(app)
+        .post('/api/registrations')
+        .send(registrationData)
+        .expect(201);
+
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
+
+      // Manually add an active participant to fill the event
+      await eventRepository.addParticipant(limitedEvent.id, {
+        name: 'Quick Participant',
+        email: 'quick@example.com',
+        phone: '+9999999999',
+        status: 'active',
+        verified: true
+      });
+
+      // Try to verify (should fail because event is full)
+      const verifyResponse = await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: limitedEvent.id,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(400);
+
+      expect(verifyResponse.body).toHaveProperty('error');
+      expect(verifyResponse.body.error).toContain('full');
+    });
+  });
+
+  describe('POST /api/registrations/:id/cancel', () => {
+    it('should cancel an active registration', async () => {
+      // First, create and verify a registration
+      const registrationData = {
+        eventId: eventId,
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
+      };
+
+      const createResponse = await request(app)
+        .post('/api/registrations')
+        .send(registrationData)
+        .expect(201);
+
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
+
+      // Verify the registration
+      await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(200);
 
       // Cancel the registration
       const response = await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
+        .post(`/api/registrations/${participantId}/cancel`)
         .send({ eventId: eventId })
         .expect(200);
 
@@ -220,7 +385,7 @@ describe('Registrations API Integration Tests', () => {
 
       // Verify the registration status is updated
       const event = await eventRepository.findById(eventId);
-      const registration = event.participants.find(r => r.id === registrationId);
+      const registration = event.participants.find(r => r.id === participantId);
       expect(registration.status).toBe('cancelled');
     });
 
@@ -243,7 +408,7 @@ describe('Registrations API Integration Tests', () => {
     });
 
     it('should return 400 when trying to cancel already cancelled registration', async () => {
-      // Create and cancel a registration
+      // Create and verify a registration
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -256,16 +421,28 @@ describe('Registrations API Integration Tests', () => {
         .send(registrationData)
         .expect(201);
 
-      const registrationId = createResponse.body.id;
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
 
+      // Verify the registration
       await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(200);
+
+      // Cancel the registration
+      await request(app)
+        .post(`/api/registrations/${participantId}/cancel`)
         .send({ eventId: eventId })
         .expect(200);
 
       // Try to cancel again
       const response = await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
+        .post(`/api/registrations/${participantId}/cancel`)
         .send({ eventId: eventId })
         .expect(400);
 
@@ -295,10 +472,10 @@ describe('Registrations API Integration Tests', () => {
       const eventAfter = await eventRepository.findById(eventId);
       expect(eventAfter.participants).toHaveLength(1);
       expect(eventAfter.participants[0].email).toBe('john@example.com');
-      expect(eventAfter.participants[0].status).toBe('active');
+      expect(eventAfter.participants[0].status).toBe('pending');
     });
 
-    it('should update event participant count after cancellation', async () => {
+    it('should update participant status after verification', async () => {
       // Register a participant
       const createResponse = await request(app)
         .post('/api/registrations')
@@ -310,7 +487,53 @@ describe('Registrations API Integration Tests', () => {
         })
         .expect(201);
 
-      const registrationId = createResponse.body.id;
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
+
+      // Verify registration is pending
+      let event = await eventRepository.findById(eventId);
+      expect(event.participants).toHaveLength(1);
+      expect(event.participants[0].status).toBe('pending');
+
+      // Verify the registration
+      await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(200);
+
+      // Verify registration is now active
+      event = await eventRepository.findById(eventId);
+      expect(event.participants).toHaveLength(1);
+      expect(event.participants[0].status).toBe('active');
+    });
+
+    it('should update event participant count after cancellation', async () => {
+      // Register and verify a participant
+      const createResponse = await request(app)
+        .post('/api/registrations')
+        .send({
+          eventId: eventId,
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '+1234567890'
+        })
+        .expect(201);
+
+      const participantId = createResponse.body.data.id;
+      const verificationCode = createResponse.body.data.verificationCode;
+
+      await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: eventId,
+          participantId: participantId,
+          verificationCode: verificationCode
+        })
+        .expect(200);
 
       // Verify registration exists
       let event = await eventRepository.findById(eventId);
@@ -319,7 +542,7 @@ describe('Registrations API Integration Tests', () => {
 
       // Cancel the registration
       await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
+        .post(`/api/registrations/${participantId}/cancel`)
         .send({ eventId: eventId })
         .expect(200);
 
@@ -339,8 +562,8 @@ describe('Registrations API Integration Tests', () => {
         userId: userId
       });
 
-      // Register first participant
-      await request(app)
+      // Register and verify first participant
+      const firstResponse = await request(app)
         .post('/api/registrations')
         .send({
           eventId: limitedEvent.id,
@@ -350,8 +573,17 @@ describe('Registrations API Integration Tests', () => {
         })
         .expect(201);
 
-      // Register second participant
       await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: limitedEvent.id,
+          participantId: firstResponse.body.data.id,
+          verificationCode: firstResponse.body.data.verificationCode
+        })
+        .expect(200);
+
+      // Register and verify second participant
+      const secondResponse = await request(app)
         .post('/api/registrations')
         .send({
           eventId: limitedEvent.id,
@@ -360,6 +592,15 @@ describe('Registrations API Integration Tests', () => {
           phone: '+0987654321'
         })
         .expect(201);
+
+      await request(app)
+        .post('/api/registrations/verify')
+        .send({
+          eventId: limitedEvent.id,
+          participantId: secondResponse.body.data.id,
+          verificationCode: secondResponse.body.data.verificationCode
+        })
+        .expect(200);
 
       // Try to register third participant (should fail)
       const response = await request(app)
