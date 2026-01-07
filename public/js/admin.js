@@ -164,8 +164,9 @@ function filterAndDisplayEvents() {
     let eventsToFilter = allEvents;
     
     // Apply status filter
+    // Note: Events with undefined isActive are treated as active (backend default)
     if (currentStatusFilter === 'active') {
-        eventsToFilter = eventsToFilter.filter(event => event.isActive === true);
+        eventsToFilter = eventsToFilter.filter(event => event.isActive !== false);
     } else if (currentStatusFilter === 'inactive') {
         eventsToFilter = eventsToFilter.filter(event => event.isActive === false);
     }
@@ -220,8 +221,8 @@ function createEventRow(event) {
         minute: '2-digit'
     });
     
-    // Determine status badge
-    const isActive = event.isActive !== false; // Default to true if undefined
+    // Determine status badge (treat undefined as active to match backend default)
+    const isActive = event.isActive !== false;
     const statusBadge = isActive 
         ? '<span class="badge bg-success">Ativo</span>' 
         : '<span class="badge bg-secondary">Inativo</span>';
@@ -441,7 +442,8 @@ async function openEventDetailsModal(eventId) {
         document.getElementById('updateEventSlots').value = event.totalSlots;
         document.getElementById('updateEventAvailableSlots').value = event.availableSlots;
         document.getElementById('updateEventLocal').value = event.local || '';
-        document.getElementById('updateEventIsActive').checked = event.isActive !== false; // Default to true if undefined
+        // Treat undefined as active to match backend default
+        document.getElementById('updateEventIsActive').checked = event.isActive !== false;
 
         updateEventError.classList.add('d-none');
 
