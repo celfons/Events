@@ -34,6 +34,14 @@ class LoginUseCase {
         };
       }
 
+      // Check if user is active
+      if (!userModel.isActive) {
+        return {
+          success: false,
+          error: 'User account is inactive'
+        };
+      }
+
       // Check for JWT_SECRET
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {

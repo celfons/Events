@@ -14,6 +14,7 @@ class MongoUserRepository extends UserRepository {
       email: userDoc.email,
       password: userDoc.password,
       role: userDoc.role,
+      isActive: userDoc.isActive,
       createdAt: userDoc.createdAt
     });
   }
@@ -28,6 +29,7 @@ class MongoUserRepository extends UserRepository {
       email: userDoc.email,
       password: userDoc.password,
       role: userDoc.role,
+      isActive: userDoc.isActive,
       createdAt: userDoc.createdAt
     });
   }
@@ -42,6 +44,7 @@ class MongoUserRepository extends UserRepository {
       email: userDoc.email,
       password: userDoc.password,
       role: userDoc.role,
+      isActive: userDoc.isActive,
       createdAt: userDoc.createdAt
     });
   }
@@ -51,7 +54,8 @@ class MongoUserRepository extends UserRepository {
       username: user.username,
       email: user.email,
       password: user.password,
-      role: user.role
+      role: user.role,
+      isActive: user.isActive
     });
     
     const savedUser = await userDoc.save();
@@ -62,6 +66,7 @@ class MongoUserRepository extends UserRepository {
       email: savedUser.email,
       password: savedUser.password,
       role: savedUser.role,
+      isActive: savedUser.isActive,
       createdAt: savedUser.createdAt
     });
   }
@@ -87,6 +92,7 @@ class MongoUserRepository extends UserRepository {
       email: userDoc.email,
       password: userDoc.password,
       role: userDoc.role,
+      isActive: userDoc.isActive,
       createdAt: userDoc.createdAt
     });
   }
@@ -105,6 +111,7 @@ class MongoUserRepository extends UserRepository {
       email: userDoc.email,
       password: userDoc.password,
       role: userDoc.role,
+      isActive: userDoc.isActive,
       createdAt: userDoc.createdAt
     }));
   }
