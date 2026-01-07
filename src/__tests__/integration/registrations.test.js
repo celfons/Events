@@ -52,7 +52,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -90,7 +90,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: 'invalid-id',
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -106,7 +106,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: '507f1f77bcf86cd799439011',
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -131,7 +131,7 @@ describe('Registrations API Integration Tests', () => {
       await eventRepository.addParticipant(fullEvent.id, {
         name: 'Existing Participant',
         email: 'existing@example.com',
-          phone: '+9999999999',
+        phone: '+9999999999',
         status: 'active'
       });
 
@@ -140,7 +140,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: fullEvent.id,
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -158,7 +158,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       await request(app)
@@ -199,7 +199,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const createResponse = await request(app)
@@ -248,7 +248,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-          phone: '+1234567890'
+        phone: '+1234567890'
       };
 
       const createResponse = await request(app)

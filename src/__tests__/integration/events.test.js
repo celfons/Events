@@ -174,7 +174,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.event.id).toBe(event.id);
       expect(response.body.event.title).toBe('Test Event');
       expect(response.body.event.description).toBe('Test Description');
-          });
+    });
 
     it('should return 404 for non-existent event', async () => {
       const response = await request(app)
