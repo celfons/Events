@@ -264,6 +264,14 @@ function renderPagination() {
     paginationElement.appendChild(nextLi);
 }
 
+// Helper function to convert datetime-local input to ISO string in local timezone
+function convertLocalDateTimeToISO(dateTimeLocalValue) {
+    // dateTimeLocalValue is in format: "2024-12-31T14:00"
+    // We need to treat this as local time and convert to ISO string
+    const localDate = new Date(dateTimeLocalValue);
+    return localDate.toISOString();
+}
+
 // Create event form submission
 submitCreateEventBtn.addEventListener('click', async () => {
     const title = document.getElementById('eventTitle').value.trim();
@@ -291,7 +299,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
             body: JSON.stringify({
                 title,
                 description,
-                dateTime,
+                dateTime: convertLocalDateTimeToISO(dateTime),
                 totalSlots
             })
         });
@@ -369,12 +377,19 @@ async function openEventDetailsModal(eventId) {
         document.getElementById('updateEventDescription').value = event.description;
         
         // Format date for datetime-local input
+        // Convert UTC date from database to local time for display in datetime-local input
         const eventDate = new Date(event.dateTime);
         if (isNaN(eventDate.getTime())) {
             console.error('Invalid event dateTime:', event.dateTime);
             throw new Error(`Data do evento inválida: ${event.dateTime}`);
         }
-        const formattedDateTime = eventDate.toISOString().slice(0, 16);
+        // Get local date components
+        const year = eventDate.getFullYear();
+        const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+        const day = String(eventDate.getDate()).padStart(2, '0');
+        const hours = String(eventDate.getHours()).padStart(2, '0');
+        const minutes = String(eventDate.getMinutes()).padStart(2, '0');
+        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
         document.getElementById('updateEventDateTime').value = formattedDateTime;
         
         document.getElementById('updateEventSlots').value = event.totalSlots;
@@ -417,7 +432,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             body: JSON.stringify({
                 title,
                 description,
-                dateTime,
+                dateTime: convertLocalDateTimeToISO(dateTime),
                 totalSlots
             })
         });
