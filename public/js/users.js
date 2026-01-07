@@ -291,7 +291,7 @@ async function openEditUserModal(userId) {
         document.getElementById('editUserEmail').value = user.email;
         document.getElementById('editUserPassword').value = ''; // Clear password field
         document.getElementById('editUserRole').value = user.role;
-        document.getElementById('editUserIsActive').checked = user.isActive !== undefined ? user.isActive : true;
+        document.getElementById('editUserIsActive').checked = user.isActive;
 
         editUserError.classList.add('d-none');
 
