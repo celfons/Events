@@ -324,6 +324,12 @@ function createEventCard(event) {
     const slotsText = event.availableSlots > 0 
         ? `${event.availableSlots} vagas disponíveis` 
         : 'Esgotado';
+    
+    const localBadge = event.local 
+        ? `<span class="badge bg-secondary">
+               <i class="bi bi-geo-alt"></i> ${escapeHtml(event.local)}
+           </span>`
+        : '';
 
     col.innerHTML = `
         <div class="card event-card h-100">
@@ -337,6 +343,7 @@ function createEventCard(event) {
                     <span class="badge bg-${slotsColor}">
                         <i class="bi bi-people"></i> ${slotsText}
                     </span>
+                    ${localBadge}
                 </div>
                 <a href="/event/${event.id}" class="btn btn-primary w-100">
                     Ver Detalhes

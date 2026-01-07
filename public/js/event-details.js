@@ -204,6 +204,15 @@ function displayEventDetails(event) {
     
     document.getElementById('eventSlots').className = `badge bg-${slotsColor}`;
     document.getElementById('eventSlots').innerHTML = `<i class="bi bi-people"></i> ${slotsText}`;
+    
+    // Display location if available
+    const eventDateElement = document.getElementById('eventDate');
+    if (event.local) {
+        const locationBadge = document.createElement('span');
+        locationBadge.className = 'badge bg-secondary ms-2';
+        locationBadge.innerHTML = `<i class="bi bi-geo-alt"></i> ${event.local}`;
+        eventDateElement.parentElement.appendChild(locationBadge);
+    }
 
     // Update registration button state based on available slots
     const registerButton = document.getElementById('registerButton');

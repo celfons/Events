@@ -299,6 +299,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
     const description = document.getElementById('eventDescription').value.trim();
     const dateTime = document.getElementById('eventDateTime').value;
     const totalSlots = parseInt(document.getElementById('eventSlots').value);
+    const local = document.getElementById('eventLocal').value.trim();
 
     if (!title || !description || !dateTime || !totalSlots) {
         showError(createEventError, 'Todos os campos são obrigatórios');
@@ -314,15 +315,21 @@ submitCreateEventBtn.addEventListener('click', async () => {
         submitCreateEventBtn.disabled = true;
         submitCreateEventBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Criando...';
 
+        const requestBody = {
+            title,
+            description,
+            dateTime: convertLocalDateTimeToISO(dateTime),
+            totalSlots
+        };
+        
+        if (local) {
+            requestBody.local = local;
+        }
+
         const response = await fetch(`${API_URL}/api/events`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({
-                title,
-                description,
-                dateTime: convertLocalDateTimeToISO(dateTime),
-                totalSlots
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -408,6 +415,7 @@ async function openEventDetailsModal(eventId) {
         
         document.getElementById('updateEventSlots').value = event.totalSlots;
         document.getElementById('updateEventAvailableSlots').value = event.availableSlots;
+        document.getElementById('updateEventLocal').value = event.local || '';
 
         updateEventError.classList.add('d-none');
 
@@ -425,6 +433,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
     const description = document.getElementById('updateEventDescription').value.trim();
     const dateTime = document.getElementById('updateEventDateTime').value;
     const totalSlots = parseInt(document.getElementById('updateEventSlots').value);
+    const local = document.getElementById('updateEventLocal').value.trim();
 
     if (!title || !description || !dateTime || !totalSlots) {
         showError(updateEventError, 'Todos os campos são obrigatórios');
@@ -440,15 +449,21 @@ submitUpdateEventBtn.addEventListener('click', async () => {
         submitUpdateEventBtn.disabled = true;
         submitUpdateEventBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Atualizando...';
 
+        const requestBody = {
+            title,
+            description,
+            dateTime: convertLocalDateTimeToISO(dateTime),
+            totalSlots
+        };
+        
+        if (local) {
+            requestBody.local = local;
+        }
+
         const response = await fetch(`${API_URL}/api/events/${currentEventId}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({
-                title,
-                description,
-                dateTime: convertLocalDateTimeToISO(dateTime),
-                totalSlots
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {

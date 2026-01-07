@@ -126,6 +126,10 @@
                             <label for="eventSlots" class="form-label">Número de Vagas *</label>
                             <input type="number" class="form-control" id="eventSlots" min="1" placeholder="50" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="eventLocal" class="form-label">Local</label>
+                            <input type="text" class="form-control" id="eventLocal" placeholder="Auditório Principal, Sala 301, etc.">
+                        </div>
                         <div class="alert alert-danger d-none" id="createEventError"></div>
                     </form>
                 </div>
@@ -166,6 +170,10 @@
                         <div class="mb-3">
                             <label for="updateEventAvailableSlots" class="form-label">Vagas Disponíveis</label>
                             <input type="number" class="form-control" id="updateEventAvailableSlots" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updateEventLocal" class="form-label">Local</label>
+                            <input type="text" class="form-control" id="updateEventLocal" placeholder="Auditório Principal, Sala 301, etc.">
                         </div>
                         <div class="alert alert-danger d-none" id="updateEventError"></div>
                     </form>
