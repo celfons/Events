@@ -24,19 +24,6 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Check if user already registered by email
-      const existingRegistrationByEmail = await this.eventRepository.findParticipantByEmail(
-        registrationData.eventId,
-        registrationData.email
-      );
-
-      if (existingRegistrationByEmail) {
-        return {
-          success: false,
-          error: 'You are already registered for this event'
-        };
-      }
-
       // Check if user already registered by phone
       const existingRegistrationByPhone = await this.eventRepository.findParticipantByPhone(
         registrationData.eventId,
@@ -47,6 +34,19 @@ class RegisterForEventUseCase {
         return {
           success: false,
           error: 'A participant with this phone number is already registered for this event'
+        };
+      }
+
+      // Check if user already registered by email
+      const existingRegistrationByEmail = await this.eventRepository.findParticipantByEmail(
+        registrationData.eventId,
+        registrationData.email
+      );
+
+      if (existingRegistrationByEmail) {
+        return {
+          success: false,
+          error: 'You are already registered for this event'
         };
       }
 
