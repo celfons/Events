@@ -319,12 +319,9 @@ submitCreateEventBtn.addEventListener('click', async () => {
             title,
             description,
             dateTime: convertLocalDateTimeToISO(dateTime),
-            totalSlots
+            totalSlots,
+            local
         };
-        
-        if (local) {
-            requestBody.local = local;
-        }
 
         const response = await fetch(`${API_URL}/api/events`, {
             method: 'POST',
@@ -453,12 +450,9 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             title,
             description,
             dateTime: convertLocalDateTimeToISO(dateTime),
-            totalSlots
+            totalSlots,
+            local
         };
-        
-        if (local) {
-            requestBody.local = local;
-        }
 
         const response = await fetch(`${API_URL}/api/events/${currentEventId}`, {
             method: 'PUT',
