@@ -25,6 +25,7 @@ class UpdateUserUseCase {
       if (userData.username) updateData.username = userData.username;
       if (userData.email) updateData.email = userData.email;
       if (userData.role) updateData.role = userData.role;
+      if (userData.isActive !== undefined) updateData.isActive = userData.isActive;
       if (userData.password) {
         // Validate password length
         if (userData.password.length < 6) {

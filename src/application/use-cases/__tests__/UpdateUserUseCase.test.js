@@ -178,5 +178,38 @@ describe('UpdateUserUseCase', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Database error');
     });
+
+    it('should update user isActive status', async () => {
+      const existingUser = new User({
+        id: '123',
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'hashed',
+        role: 'user',
+        isActive: true
+      });
+
+      const updatedUser = new User({
+        id: '123',
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'hashed',
+        role: 'user',
+        isActive: false
+      });
+
+      mockUserRepository.findById.mockResolvedValue(existingUser);
+      mockUserRepository.update.mockResolvedValue(updatedUser);
+
+      const result = await updateUserUseCase.execute('123', {
+        isActive: false
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(updatedUser.toJSON());
+      expect(mockUserRepository.update).toHaveBeenCalledWith('123', {
+        isActive: false
+      });
+    });
   });
 });

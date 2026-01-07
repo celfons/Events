@@ -9,6 +9,7 @@ describe('User', () => {
         email: 'test@example.com',
         password: 'hashed_password',
         role: 'user',
+        isActive: true,
         createdAt: new Date('2024-01-01')
       };
 
@@ -19,6 +20,7 @@ describe('User', () => {
       expect(user.email).toBe('test@example.com');
       expect(user.password).toBe('hashed_password');
       expect(user.role).toBe('user');
+      expect(user.isActive).toBe(true);
       expect(user.createdAt).toEqual(new Date('2024-01-01'));
     });
 
@@ -31,6 +33,17 @@ describe('User', () => {
       });
 
       expect(user.role).toBe('user');
+    });
+
+    it('should default isActive to true if not provided', () => {
+      const user = new User({
+        id: '123',
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'hashed_password'
+      });
+
+      expect(user.isActive).toBe(true);
     });
 
     it('should set createdAt to current date if not provided', () => {
@@ -82,6 +95,7 @@ describe('User', () => {
         email: 'test@example.com',
         password: 'hashed_password',
         role: 'user',
+        isActive: true,
         createdAt: new Date('2024-01-01')
       });
 
@@ -92,6 +106,7 @@ describe('User', () => {
         username: 'testuser',
         email: 'test@example.com',
         role: 'user',
+        isActive: true,
         createdAt: new Date('2024-01-01')
       });
       expect(json.password).toBeUndefined();

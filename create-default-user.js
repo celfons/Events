@@ -26,7 +26,8 @@ async function createDefaultUser() {
       username: 'user',
       email: 'user@events.com',
       password: 'user123', // This will be hashed automatically by the pre-save hook
-      role: 'user'
+      role: 'user',
+      isActive: true
     });
 
     await defaultUser.save();

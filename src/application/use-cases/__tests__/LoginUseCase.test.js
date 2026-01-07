@@ -51,6 +51,7 @@ describe('LoginUseCase', () => {
         username: 'testuser',
         email: 'user@example.com',
         role: 'user',
+        isActive: true,
         comparePassword: jest.fn().mockResolvedValue(false)
       };
       mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
@@ -68,6 +69,7 @@ describe('LoginUseCase', () => {
         username: 'testuser',
         email: 'user@example.com',
         role: 'user',
+        isActive: true,
         comparePassword: jest.fn().mockResolvedValue(true)
       };
       mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
@@ -103,6 +105,7 @@ describe('LoginUseCase', () => {
         username: 'testuser',
         email: 'user@example.com',
         role: 'user',
+        isActive: true,
         comparePassword: jest.fn().mockResolvedValue(true)
       };
       mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
@@ -114,6 +117,24 @@ describe('LoginUseCase', () => {
 
       // Restore JWT_SECRET
       process.env.JWT_SECRET = 'test-secret-key';
+    });
+
+    it('should return error when user is inactive', async () => {
+      const mockUser = {
+        _id: '123',
+        username: 'testuser',
+        email: 'user@example.com',
+        role: 'user',
+        isActive: false,
+        comparePassword: jest.fn().mockResolvedValue(true)
+      };
+      mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
+
+      const result = await loginUseCase.execute('user@example.com', 'password123');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('User account is inactive');
+      expect(mockUser.comparePassword).not.toHaveBeenCalled(); // Password not checked for inactive users
     });
   });
 });

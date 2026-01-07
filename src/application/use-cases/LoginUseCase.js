@@ -24,6 +24,14 @@ class LoginUseCase {
         };
       }
 
+      // Check if user is active (before password validation to prevent timing attacks)
+      if (!userModel.isActive) {
+        return {
+          success: false,
+          error: 'User account is inactive'
+        };
+      }
+
       // Compare password
       const isValidPassword = await userModel.comparePassword(password);
       
