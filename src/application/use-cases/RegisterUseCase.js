@@ -39,12 +39,14 @@ class RegisterUseCase {
         };
       }
 
-      // Create new user (role is always 'user' for registration, superuser can only be set by other superuser)
+      // Create new user with provided role and isActive status
+      // When called from admin panel, allows creating superusers and setting active status
       const user = new User({
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        role: 'user'
+        role: userData.role || 'user',
+        isActive: userData.isActive !== undefined ? userData.isActive : true
       });
 
       const createdUser = await this.userRepository.create(user);
