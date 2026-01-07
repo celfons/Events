@@ -101,13 +101,32 @@ document.addEventListener('DOMContentLoaded', () => {
         filterAndDisplayEvents();
     });
     
-    // Status filter functionality
-    document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            currentStatusFilter = e.target.value;
+    // Status filter toggle button functionality
+    const toggleStatusFilterBtn = document.getElementById('toggleStatusFilter');
+    const filterStatusText = document.getElementById('filterStatusText');
+    
+    if (toggleStatusFilterBtn) {
+        toggleStatusFilterBtn.addEventListener('click', () => {
+            // Cycle through: all -> active -> inactive -> all
+            if (currentStatusFilter === 'all') {
+                currentStatusFilter = 'active';
+                filterStatusText.textContent = 'Ativos';
+                toggleStatusFilterBtn.classList.remove('btn-outline-primary', 'btn-outline-secondary');
+                toggleStatusFilterBtn.classList.add('btn-success');
+            } else if (currentStatusFilter === 'active') {
+                currentStatusFilter = 'inactive';
+                filterStatusText.textContent = 'Inativos';
+                toggleStatusFilterBtn.classList.remove('btn-success', 'btn-outline-primary');
+                toggleStatusFilterBtn.classList.add('btn-secondary');
+            } else {
+                currentStatusFilter = 'all';
+                filterStatusText.textContent = 'Todos';
+                toggleStatusFilterBtn.classList.remove('btn-success', 'btn-secondary');
+                toggleStatusFilterBtn.classList.add('btn-outline-primary');
+            }
             filterAndDisplayEvents();
         });
-    });
+    }
 });
 
 // Load all events
