@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/events';
 const ENABLE_WHATSAPP = process.env.ENABLE_WHATSAPP_NOTIFICATIONS === 'true';
 const LOCALE = process.env.LOCALE || 'pt-BR';
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
 let whatsAppService = null;
 let cronJobService = null;
@@ -22,11 +24,16 @@ async function start() {
     // Initialize WhatsApp service if enabled
     if (ENABLE_WHATSAPP) {
       console.log('🔌 Initializing WhatsApp service...');
-      whatsAppService = new WhatsAppService();
-      try {
-        await whatsAppService.connect();
-      } catch (error) {
-        console.error('⚠️  WhatsApp connection failed, but server will continue:', error.message);
+      
+      if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
+        console.error('⚠️  WhatsApp credentials missing. Please set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID');
+      } else {
+        whatsAppService = new WhatsAppService(WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID);
+        try {
+          await whatsAppService.connect();
+        } catch (error) {
+          console.error('⚠️  WhatsApp token validation failed, but server will continue:', error.message);
+        }
       }
     } else {
       console.log('ℹ️  WhatsApp notifications are disabled. Set ENABLE_WHATSAPP_NOTIFICATIONS=true to enable.');

@@ -1,82 +1,69 @@
-const makeWASocket = require('@whiskeysockets/baileys').default;
-const { useMultiFileAuthState, DisconnectReason, delay } = require('@whiskeysockets/baileys');
-const qrcode = require('qrcode-terminal');
-const path = require('path');
-
 class WhatsAppService {
-  constructor() {
-    this.sock = null;
-    this.isConnected = false;
-    this.authPath = path.join(__dirname, '../../../.whatsapp-auth');
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
+  constructor(accessToken, phoneNumberId, apiVersion = 'v18.0') {
+    this.accessToken = accessToken;
+    this.phoneNumberId = phoneNumberId;
+    this.apiVersion = apiVersion;
+    this.baseUrl = `https://graph.facebook.com/${apiVersion}`;
   }
 
   async connect() {
+    // Validate token by making a test API call
     try {
-      const { state, saveCreds } = await useMultiFileAuthState(this.authPath);
-
-      this.sock = makeWASocket({
-        auth: state,
-        printQRInTerminal: false,
-      });
-
-      // Handle QR code
-      this.sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
-
-        if (qr) {
-          console.log('📱 WhatsApp QR Code:');
-          qrcode.generate(qr, { small: true });
-          console.log('Scan the QR code above with WhatsApp to connect');
-        }
-
-        if (connection === 'close') {
-          const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-          console.log('Connection closed. Reconnecting:', shouldReconnect);
-          
-          if (shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            const delayMs = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
-            console.log(`Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delayMs}ms`);
-            await delay(delayMs);
-            await this.connect();
-          } else {
-            this.isConnected = false;
-            if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-              console.error('❌ Max reconnection attempts reached');
-            }
-          }
-        } else if (connection === 'open') {
-          console.log('✅ WhatsApp connected successfully');
-          this.isConnected = true;
-          this.reconnectAttempts = 0; // Reset on successful connection
+      const response = await fetch(`${this.baseUrl}/${this.phoneNumberId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
         }
       });
 
-      // Save credentials on update
-      this.sock.ev.on('creds.update', saveCreds);
-
+      if (response.ok) {
+        console.log('✅ WhatsApp Business API token validated successfully');
+        return true;
+      } else {
+        const error = await response.json();
+        console.error('❌ WhatsApp token validation failed:', error);
+        throw new Error(`Token validation failed: ${error.error?.message || 'Unknown error'}`);
+      }
     } catch (error) {
-      console.error('❌ Error connecting to WhatsApp:', error);
+      console.error('❌ Error validating WhatsApp token:', error);
       throw error;
     }
   }
 
   async sendMessage(phoneNumber, message) {
-    if (!this.isConnected || !this.sock) {
-      console.warn('⚠️  WhatsApp not connected. Message not sent to:', phoneNumber);
+    if (!this.accessToken || !this.phoneNumberId) {
+      console.warn('⚠️  WhatsApp not configured. Message not sent to:', phoneNumber);
       return false;
     }
 
     try {
-      // Format phone number (remove non-numeric characters and add country code if needed)
       const formattedNumber = this.formatPhoneNumber(phoneNumber);
-      const jid = `${formattedNumber}@s.whatsapp.net`;
+      
+      const response = await fetch(`${this.baseUrl}/${this.phoneNumberId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: formattedNumber,
+          type: 'text',
+          text: {
+            body: message
+          }
+        })
+      });
 
-      await this.sock.sendMessage(jid, { text: message });
-      console.log(`✅ Message sent to ${phoneNumber}`);
-      return true;
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`✅ Message sent to ${phoneNumber} (ID: ${data.messages?.[0]?.id})`);
+        return true;
+      } else {
+        const error = await response.json();
+        console.error(`❌ Error sending message to ${phoneNumber}:`, error);
+        return false;
+      }
     } catch (error) {
       console.error(`❌ Error sending message to ${phoneNumber}:`, error);
       return false;
@@ -106,15 +93,13 @@ class WhatsAppService {
   }
 
   async disconnect() {
-    if (this.sock) {
-      await this.sock.logout();
-      this.isConnected = false;
-      console.log('🔌 WhatsApp disconnected');
-    }
+    // No persistent connection to close with API-based approach
+    console.log('🔌 WhatsApp service stopped (no active connection to close)');
   }
 
   getConnectionStatus() {
-    return this.isConnected;
+    // With token-based API, we're always "connected" if token is configured
+    return !!(this.accessToken && this.phoneNumberId);
   }
 }
 
