@@ -64,6 +64,11 @@ const eventSchema = new mongoose.Schema({
     ref: 'User',
     required: false
   },
+  local: {
+    type: String,
+    required: false,
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
