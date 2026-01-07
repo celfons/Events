@@ -24,6 +24,30 @@ describe('Event Entity', () => {
       expect(event.createdAt).toEqual(new Date('2024-01-01'));
     });
 
+    it('should create an event with local field', () => {
+      const eventData = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 30,
+        createdAt: new Date('2024-01-01'),
+        local: 'Main Conference Room'
+      };
+
+      const event = new Event(eventData);
+
+      expect(event.id).toBe('123');
+      expect(event.title).toBe('Test Event');
+      expect(event.description).toBe('Test Description');
+      expect(event.dateTime).toEqual(new Date('2024-12-31'));
+      expect(event.totalSlots).toBe(50);
+      expect(event.availableSlots).toBe(30);
+      expect(event.createdAt).toEqual(new Date('2024-01-01'));
+      expect(event.local).toBe('Main Conference Room');
+    });
+
     it('should set availableSlots equal to totalSlots when not provided', () => {
       const eventData = {
         title: 'Test Event',
@@ -199,6 +223,34 @@ describe('Event Entity', () => {
         availableSlots: 30,
         participants: [],
         createdAt: new Date('2024-01-01')
+      });
+    });
+
+    it('should return event data with local field', () => {
+      const eventData = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 30,
+        createdAt: new Date('2024-01-01'),
+        local: 'Conference Hall A'
+      };
+
+      const event = new Event(eventData);
+      const json = event.toJSON();
+
+      expect(json).toEqual({
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 30,
+        participants: [],
+        createdAt: new Date('2024-01-01'),
+        local: 'Conference Hall A'
       });
     });
   });

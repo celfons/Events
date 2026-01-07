@@ -138,6 +138,50 @@ describe('CreateEventUseCase', () => {
       expect(mockEventRepository.create).toHaveBeenCalledTimes(1);
     });
 
+    it('should create event successfully with local field', async () => {
+      const eventData = {
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: '2024-12-31T14:00:00',
+        totalSlots: 50,
+        local: 'Main Auditorium'
+      };
+
+      const createdEvent = {
+        id: '123',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2024-12-31T14:00:00'),
+        totalSlots: 50,
+        availableSlots: 50,
+        local: 'Main Auditorium',
+        toJSON: jest.fn().mockReturnValue({
+          id: '123',
+          title: 'Test Event',
+          description: 'Test Description',
+          dateTime: new Date('2024-12-31T14:00:00'),
+          totalSlots: 50,
+          availableSlots: 50,
+          local: 'Main Auditorium'
+        })
+      };
+
+      mockEventRepository.create.mockResolvedValue(createdEvent);
+
+      const result = await createEventUseCase.execute(eventData);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data.title).toBe('Test Event');
+      expect(result.data.local).toBe('Main Auditorium');
+      expect(mockEventRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Test Event',
+          local: 'Main Auditorium'
+        })
+      );
+    });
+
     it('should parse totalSlots as integer', async () => {
       const eventData = {
         title: 'Test Event',

@@ -103,6 +103,47 @@ describe('UpdateEventUseCase', () => {
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
     });
 
+    it('should update local field', async () => {
+      const eventId = '456';
+      const existingEvent = {
+        id: eventId,
+        title: 'Original Title',
+        description: 'Original Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 40,
+        participants: [],
+        local: 'Old Location'
+      };
+
+      const updateData = {
+        local: 'New Conference Center'
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        local: 'New Conference Center',
+        toJSON: jest.fn().mockReturnValue({
+          id: eventId,
+          title: 'Original Title',
+          description: 'Original Description',
+          dateTime: new Date('2024-12-31'),
+          totalSlots: 50,
+          availableSlots: 40,
+          local: 'New Conference Center'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCase.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(result.data.local).toBe('New Conference Center');
+      expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
+    });
+
     it('should allow updating availableSlots without totalSlots', async () => {
       const eventId = '789';
       const existingEvent = {
