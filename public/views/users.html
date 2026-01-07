@@ -80,6 +80,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Status</th>
                                 <th>Criado em</th>
                                 <th>Ações</th>
                             </tr>
@@ -125,6 +126,12 @@
                                 <option value="superuser">Superuser</option>
                             </select>
                         </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="userIsActive" checked>
+                            <label class="form-check-label" for="userIsActive">
+                                Usuário Ativo
+                            </label>
+                        </div>
                         <div class="alert alert-danger d-none" id="createUserError"></div>
                     </form>
                 </div>
@@ -165,6 +172,12 @@
                                 <option value="user">User</option>
                                 <option value="superuser">Superuser</option>
                             </select>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="editUserIsActive" checked>
+                            <label class="form-check-label" for="editUserIsActive">
+                                Usuário Ativo
+                            </label>
                         </div>
                         <div class="alert alert-danger d-none" id="editUserError"></div>
                     </form>
