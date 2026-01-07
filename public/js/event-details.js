@@ -210,7 +210,10 @@ function displayEventDetails(event) {
     if (event.local) {
         const locationBadge = document.createElement('span');
         locationBadge.className = 'badge bg-secondary ms-2';
-        locationBadge.innerHTML = `<i class="bi bi-geo-alt"></i> ${event.local}`;
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-geo-alt';
+        locationBadge.appendChild(icon);
+        locationBadge.appendChild(document.createTextNode(' ' + event.local));
         eventDateElement.parentElement.appendChild(locationBadge);
     }
 
