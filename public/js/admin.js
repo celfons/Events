@@ -625,21 +625,28 @@ async function loadParticipants(eventId) {
         if (!Array.isArray(participants) || participants.length === 0) {
             noParticipants.classList.remove('d-none');
         } else {
-            allParticipants = participants;
-            filteredParticipants = participants;
-            participantsContainer.classList.remove('d-none');
+            // Filter to only show confirmed (active) participants
+            const confirmedParticipants = participants.filter(p => p.status === 'active');
             
-            // Clear previous search
-            participantsSearchInput.value = '';
-            
-            // Setup search functionality
-            participantsSearchInput.removeEventListener('input', handleParticipantsSearch);
-            participantsSearchInput.addEventListener('input', handleParticipantsSearch);
-            
-            clearParticipantsSearchBtn.removeEventListener('click', handleClearParticipantsSearch);
-            clearParticipantsSearchBtn.addEventListener('click', handleClearParticipantsSearch);
-            
-            displayParticipantsPage(1);
+            if (confirmedParticipants.length === 0) {
+                noParticipants.classList.remove('d-none');
+            } else {
+                allParticipants = confirmedParticipants;
+                filteredParticipants = confirmedParticipants;
+                participantsContainer.classList.remove('d-none');
+                
+                // Clear previous search
+                participantsSearchInput.value = '';
+                
+                // Setup search functionality
+                participantsSearchInput.removeEventListener('input', handleParticipantsSearch);
+                participantsSearchInput.addEventListener('input', handleParticipantsSearch);
+                
+                clearParticipantsSearchBtn.removeEventListener('click', handleClearParticipantsSearch);
+                clearParticipantsSearchBtn.addEventListener('click', handleClearParticipantsSearch);
+                
+                displayParticipantsPage(1);
+            }
         }
     } catch (error) {
         alert('Erro ao carregar participantes: ' + error.message);
