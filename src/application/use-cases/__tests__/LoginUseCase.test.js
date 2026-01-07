@@ -51,6 +51,7 @@ describe('LoginUseCase', () => {
         username: 'testuser',
         email: 'user@example.com',
         role: 'user',
+        isActive: true,
         comparePassword: jest.fn().mockResolvedValue(false)
       };
       mockUserRepository.findModelByEmail.mockResolvedValue(mockUser);
@@ -133,7 +134,7 @@ describe('LoginUseCase', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('User account is inactive');
-      expect(mockUser.comparePassword).toHaveBeenCalledWith('password123');
+      expect(mockUser.comparePassword).not.toHaveBeenCalled(); // Password not checked for inactive users
     });
   });
 });
