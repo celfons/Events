@@ -9,6 +9,7 @@ const MongoEventRepository = require('./infrastructure/database/MongoEventReposi
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/events';
 const ENABLE_WHATSAPP = process.env.ENABLE_WHATSAPP_NOTIFICATIONS === 'true';
+const LOCALE = process.env.LOCALE || 'pt-BR';
 
 let whatsAppService = null;
 let cronJobService = null;
@@ -41,13 +42,17 @@ async function start() {
         console.log('ℹ️  WhatsApp disabled - message not sent');
         return false;
       },
-      getConnectionStatus: () => false
+      getConnectionStatus: () => false,
+      disconnect: async () => {
+        // No-op for mock service
+      }
     };
     
     cronJobService = new CronJobService(
       MONGODB_URI,
       effectiveWhatsAppService,
-      getUpcomingEventsUseCase
+      getUpcomingEventsUseCase,
+      LOCALE
     );
     await cronJobService.start();
 

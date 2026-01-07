@@ -8,6 +8,8 @@ class WhatsAppService {
     this.sock = null;
     this.isConnected = false;
     this.authPath = path.join(__dirname, '../../../.whatsapp-auth');
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
   }
 
   async connect() {
@@ -33,15 +35,22 @@ class WhatsAppService {
           const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
           console.log('Connection closed. Reconnecting:', shouldReconnect);
           
-          if (shouldReconnect) {
-            await delay(3000);
+          if (shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            const delayMs = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+            console.log(`Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delayMs}ms`);
+            await delay(delayMs);
             await this.connect();
           } else {
             this.isConnected = false;
+            if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+              console.error('❌ Max reconnection attempts reached');
+            }
           }
         } else if (connection === 'open') {
           console.log('✅ WhatsApp connected successfully');
           this.isConnected = true;
+          this.reconnectAttempts = 0; // Reset on successful connection
         }
       });
 
@@ -78,9 +87,19 @@ class WhatsAppService {
     // Remove all non-numeric characters
     let cleaned = phone.replace(/\D/g, '');
     
-    // If number doesn't start with country code, assume Brazil (+55)
-    if (!cleaned.startsWith('55') && cleaned.length <= 11) {
+    // Validate minimum length
+    if (cleaned.length < 10) {
+      throw new Error(`Invalid phone number: ${phone} (too short)`);
+    }
+    
+    // If number doesn't start with country code and has 10-11 digits (Brazilian format)
+    if (!cleaned.startsWith('55') && cleaned.length >= 10 && cleaned.length <= 11) {
       cleaned = '55' + cleaned;
+    }
+    
+    // Validate final length (Brazilian numbers: 12-13 digits including country code)
+    if (cleaned.length < 12 || cleaned.length > 13) {
+      throw new Error(`Invalid phone number format: ${phone}`);
     }
     
     return cleaned;

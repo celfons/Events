@@ -1,7 +1,7 @@
 const Agenda = require('agenda');
 
 class CronJobService {
-  constructor(mongodbUri, whatsAppService, getUpcomingEventsUseCase) {
+  constructor(mongodbUri, whatsAppService, getUpcomingEventsUseCase, locale = 'pt-BR') {
     this.agenda = new Agenda({
       db: { address: mongodbUri, collection: 'agendaJobs' },
       processEvery: '1 minute',
@@ -10,6 +10,7 @@ class CronJobService {
 
     this.whatsAppService = whatsAppService;
     this.getUpcomingEventsUseCase = getUpcomingEventsUseCase;
+    this.locale = locale;
 
     this.setupJobs();
   }
@@ -40,8 +41,8 @@ class CronJobService {
         // Send WhatsApp messages to participants
         for (const event of upcomingEvents) {
           const eventDate = new Date(event.dateTime);
-          const formattedDate = eventDate.toLocaleDateString('pt-BR');
-          const formattedTime = eventDate.toLocaleTimeString('pt-BR', { 
+          const formattedDate = eventDate.toLocaleDateString(this.locale);
+          const formattedTime = eventDate.toLocaleTimeString(this.locale, { 
             hour: '2-digit', 
             minute: '2-digit' 
           });
