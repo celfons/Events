@@ -189,11 +189,9 @@ function createUserRow(user) {
         '<span class="badge bg-secondary">Inativo</span>';
 
     row.innerHTML = `
-        <td>${escapeHtml(user.username)}</td>
         <td>${escapeHtml(user.email)}</td>
         <td>${roleLabel}</td>
         <td>${statusLabel}</td>
-        <td>${formattedDate}</td>
         <td>
             <button class="btn btn-sm btn-primary edit-user-btn" data-user-id="${user.id}">
                 <i class="bi bi-pencil"></i> Editar
