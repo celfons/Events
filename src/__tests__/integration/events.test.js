@@ -120,7 +120,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body.title).toBe(eventData.title);
       expect(response.body.description).toBe(eventData.description);
-            expect(response.body.totalSlots).toBe(eventData.totalSlots);
+      expect(response.body.totalSlots).toBe(eventData.totalSlots);
       expect(response.body.userId).toBe(userId);
       expect(response.body.participants).toEqual([]);
     });
