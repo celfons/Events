@@ -66,7 +66,7 @@ describe('GetUpcomingEventsUseCase', () => {
       expect(result.data[0].participants).toHaveLength(1);
     });
 
-    it('should filter out cancelled participants', async () => {
+    it('should include all participants regardless of status', async () => {
       const now = new Date();
       const futureEvent = new Date(now.getTime() + 30 * 60 * 1000);
 
@@ -102,8 +102,9 @@ describe('GetUpcomingEventsUseCase', () => {
       const result = await getUpcomingEventsUseCase.execute();
 
       expect(result.success).toBe(true);
-      expect(result.data[0].participants).toHaveLength(1);
+      expect(result.data[0].participants).toHaveLength(2);
       expect(result.data[0].participants[0].name).toBe('Active User');
+      expect(result.data[0].participants[1].name).toBe('Cancelled User');
     });
 
     it('should filter out inactive events', async () => {

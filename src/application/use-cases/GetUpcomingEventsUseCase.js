@@ -20,14 +20,14 @@ class GetUpcomingEventsUseCase {
         return eventDate >= now && eventDate <= oneHourLater && event.isActive;
       });
 
-      // Return events with their active participants
+      // Return events with all their participants
       const eventsWithParticipants = upcomingEvents.map(event => ({
         id: event.id,
         title: event.title,
         description: event.description,
         dateTime: event.dateTime,
         local: event.local,
-        participants: event.participants.filter(p => p.status === 'active')
+        participants: event.participants
       }));
 
       return {
