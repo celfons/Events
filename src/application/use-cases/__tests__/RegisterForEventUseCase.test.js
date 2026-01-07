@@ -8,7 +8,8 @@ describe('RegisterForEventUseCase', () => {
     mockEventRepository = {
       findById: jest.fn(),
       addParticipant: jest.fn(),
-      findParticipantByEmail: jest.fn()
+      findParticipantByEmail: jest.fn(),
+      findParticipantByPhone: jest.fn()
     };
     registerForEventUseCase = new RegisterForEventUseCase(
       mockEventRepository
@@ -110,12 +111,45 @@ describe('RegisterForEventUseCase', () => {
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockEventRepository.findParticipantByEmail.mockResolvedValue(existingRegistration);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
 
       const result = await registerForEventUseCase.execute(registrationData);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('You are already registered for this event');
       expect(mockEventRepository.findParticipantByEmail).toHaveBeenCalledWith('123', 'john@example.com');
+    });
+
+    it('should return error when phone is already registered', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const existingRegistration = {
+        id: '456',
+        eventId: '123',
+        phone: '(11) 98765-4321'
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(existingRegistration);
+
+      const result = await registerForEventUseCase.execute(registrationData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('A participant with this phone number is already registered for this event');
+      expect(mockEventRepository.findParticipantByPhone).toHaveBeenCalledWith('123', '(11) 98765-4321');
     });
 
     it('should return error when event has no available slots', async () => {
@@ -135,6 +169,7 @@ describe('RegisterForEventUseCase', () => {
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
 
       const result = await registerForEventUseCase.execute(registrationData);
 
@@ -178,6 +213,7 @@ describe('RegisterForEventUseCase', () => {
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
       mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
 
       const result = await registerForEventUseCase.execute(registrationData);
@@ -226,6 +262,7 @@ describe('RegisterForEventUseCase', () => {
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
       mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
 
       const result = await registerForEventUseCase.execute(registrationData);
@@ -253,6 +290,7 @@ describe('RegisterForEventUseCase', () => {
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
       mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
       mockEventRepository.addParticipant.mockResolvedValue(null);
 
       const result = await registerForEventUseCase.execute(registrationData);

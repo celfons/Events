@@ -135,6 +135,32 @@ class MongoEventRepository extends EventRepository {
     });
   }
 
+  async findParticipantByPhone(eventId, phone) {
+    const event = await EventModel.findOne(
+      { 
+        _id: eventId,
+        'participants.phone': phone,
+        'participants.status': 'active'
+      },
+      { 'participants.$': 1 }
+    );
+    
+    if (!event || !event.participants || event.participants.length === 0) {
+      return null;
+    }
+    
+    const participant = event.participants[0];
+    return new Registration({
+      id: participant._id.toString(),
+      eventId: eventId,
+      name: participant.name,
+      email: participant.email,
+      phone: participant.phone,
+      registeredAt: participant.registeredAt,
+      status: participant.status
+    });
+  }
+
   async cancelParticipant(eventId, participantId) {
     // Cancel participant and increment available slots atomically
     const updatedEvent = await EventModel.findOneAndUpdate(
