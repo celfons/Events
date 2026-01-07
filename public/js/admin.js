@@ -264,6 +264,35 @@ function renderPagination() {
     paginationElement.appendChild(nextLi);
 }
 
+// Helper function to convert datetime-local input to ISO string with proper timezone handling
+function convertLocalDateTimeToISO(dateTimeLocalValue) {
+    // dateTimeLocalValue is in format: "2024-12-31T14:00" (no timezone info)
+    // This represents the user's LOCAL time (e.g., 14:00 Brazilian time for users in Brazil)
+    // 
+    // When we create a Date object from this string, JavaScript interprets it as local time
+    // For a Brazilian user (UTC-3):
+    //   - Input: "2024-12-31T14:00" represents 14:00 BRT
+    //   - new Date() creates: Date object for 14:00 BRT
+    //   - toISOString() converts to UTC: "2024-12-31T17:00:00.000Z" (adds 3 hours)
+    // 
+    // This ensures MongoDB stores the correct UTC time, which will display
+    // as the correct local time when rendered in the user's timezone
+    const localDate = new Date(dateTimeLocalValue);
+    return localDate.toISOString();
+}
+
+// Helper function to format Date object for datetime-local input
+function formatDateForInput(date) {
+    // Convert UTC date from database to local time components for datetime-local input
+    // This ensures the user sees the time in their local timezone when editing
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 // Create event form submission
 submitCreateEventBtn.addEventListener('click', async () => {
     const title = document.getElementById('eventTitle').value.trim();
@@ -291,7 +320,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
             body: JSON.stringify({
                 title,
                 description,
-                dateTime,
+                dateTime: convertLocalDateTimeToISO(dateTime),
                 totalSlots
             })
         });
@@ -369,13 +398,13 @@ async function openEventDetailsModal(eventId) {
         document.getElementById('updateEventDescription').value = event.description;
         
         // Format date for datetime-local input
+        // Convert UTC date from database to local time for display in datetime-local input
         const eventDate = new Date(event.dateTime);
         if (isNaN(eventDate.getTime())) {
             console.error('Invalid event dateTime:', event.dateTime);
             throw new Error(`Data do evento inválida: ${event.dateTime}`);
         }
-        const formattedDateTime = eventDate.toISOString().slice(0, 16);
-        document.getElementById('updateEventDateTime').value = formattedDateTime;
+        document.getElementById('updateEventDateTime').value = formatDateForInput(eventDate);
         
         document.getElementById('updateEventSlots').value = event.totalSlots;
         document.getElementById('updateEventAvailableSlots').value = event.availableSlots;
@@ -417,7 +446,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             body: JSON.stringify({
                 title,
                 description,
-                dateTime,
+                dateTime: convertLocalDateTimeToISO(dateTime),
                 totalSlots
             })
         });
