@@ -98,6 +98,9 @@ function createUserRoutes(userController) {
    *                 type: string
    *               email:
    *                 type: string
+   *               password:
+   *                 type: string
+   *                 description: Optional new password (minimum 6 characters)
    *               role:
    *                 type: string
    *                 enum: [user, superuser]

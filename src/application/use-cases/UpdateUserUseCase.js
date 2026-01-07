@@ -25,6 +25,16 @@ class UpdateUserUseCase {
       if (userData.username) updateData.username = userData.username;
       if (userData.email) updateData.email = userData.email;
       if (userData.role) updateData.role = userData.role;
+      if (userData.password) {
+        // Validate password length
+        if (userData.password.length < 6) {
+          return {
+            success: false,
+            error: 'Password must be at least 6 characters long'
+          };
+        }
+        updateData.password = userData.password;
+      }
 
       const updatedUser = await this.userRepository.update(userId, updateData);
 
