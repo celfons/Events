@@ -60,14 +60,19 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Add participant to event (atomically decrements slots)
+      // Generate 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Add participant to event with pending status (atomically decrements slots)
       const registration = await this.eventRepository.addParticipant(
         registrationData.eventId,
         {
           name: registrationData.name,
           email: registrationData.email,
           phone: registrationData.phone,
-          status: 'active'
+          status: 'pending',
+          verificationCode: verificationCode,
+          verified: false
         }
       );
       
@@ -78,7 +83,7 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Send WhatsApp confirmation message
+      // Send WhatsApp verification code
       if (this.whatsAppService && registrationData.phone) {
         try {
           const eventDate = new Date(event.dateTime);
@@ -88,27 +93,28 @@ class RegisterForEventUseCase {
             minute: '2-digit' 
           });
 
-          const confirmationMessage = `✅ *Inscrição Confirmada!*\n\n` +
+          const verificationMessage = `🔐 *Verificação de Cadastro*\n\n` +
             `Olá ${registrationData.name}! 👋\n\n` +
-            `Sua inscrição foi confirmada com sucesso!\n\n` +
+            `Seu código de verificação é:\n\n` +
+            `*${verificationCode}*\n\n` +
+            `Use este código para confirmar sua inscrição no evento:\n\n` +
             `📌 *${event.title}*\n` +
-            `📝 ${event.description}\n` +
-            `📅 Data: ${formattedDate}\n` +
-            `⏰ Horário: ${formattedTime}\n` +
-            `📍 Local: ${event.local || 'A definir'}\n\n` +
-            `Aguardamos você! 🎉`;
+            `📅 ${formattedDate} às ${formattedTime}\n` +
+            `📍 ${event.local || 'A definir'}\n\n` +
+            `⚠️ Este código expira em 24 horas.`;
 
-          await this.whatsAppService.sendMessage(registrationData.phone, confirmationMessage);
-          console.log(`📱 Confirmation message sent to ${registrationData.phone}`);
+          await this.whatsAppService.sendMessage(registrationData.phone, verificationMessage);
+          console.log(`📱 Verification code sent to ${registrationData.phone}`);
         } catch (error) {
           // Log error but don't fail the registration
-          console.error(`⚠️  Failed to send WhatsApp confirmation to ${registrationData.phone}:`, error.message);
+          console.error(`⚠️  Failed to send WhatsApp verification to ${registrationData.phone}:`, error.message);
         }
       }
 
       return {
         success: true,
-        data: registration.toJSON()
+        data: registration.toJSON(),
+        message: 'Registration pending. Please verify your phone number with the code sent via WhatsApp.'
       };
     } catch (error) {
       return {

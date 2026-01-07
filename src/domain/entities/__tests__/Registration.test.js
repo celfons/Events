@@ -24,7 +24,7 @@ describe('Registration Entity', () => {
       expect(registration.status).toBe('active');
     });
 
-    it('should set status to "active" when not provided', () => {
+    it('should set status to "pending" when not provided', () => {
       const registration = new Registration({
         eventId: '123',
         name: 'John Doe',
@@ -32,7 +32,8 @@ describe('Registration Entity', () => {
         phone: '(11) 98765-4321'
       });
 
-      expect(registration.status).toBe('active');
+      expect(registration.status).toBe('pending');
+      expect(registration.verified).toBe(false);
     });
 
     it('should set registeredAt to current date when not provided', () => {
@@ -75,6 +76,63 @@ describe('Registration Entity', () => {
       });
 
       expect(() => registration.cancel()).toThrow('Registration is already cancelled');
+    });
+  });
+
+  describe('verify', () => {
+    it('should verify registration and set status to active', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'pending',
+        verified: false
+      });
+
+      registration.verify();
+
+      expect(registration.verified).toBe(true);
+      expect(registration.status).toBe('active');
+      expect(registration.verifiedAt).toBeInstanceOf(Date);
+    });
+
+    it('should throw error when trying to verify already verified registration', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        verified: true
+      });
+
+      expect(() => registration.verify()).toThrow('Registration is already verified');
+    });
+  });
+
+  describe('isPending', () => {
+    it('should return true when status is "pending"', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'pending'
+      });
+
+      expect(registration.isPending()).toBe(true);
+    });
+
+    it('should return false when status is not "pending"', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'active'
+      });
+
+      expect(registration.isPending()).toBe(false);
     });
   });
 
@@ -126,7 +184,9 @@ describe('Registration Entity', () => {
         email: 'john@example.com',
         phone: '(11) 98765-4321',
         registeredAt: new Date('2024-01-01'),
-        status: 'active'
+        status: 'active',
+        verified: false,
+        verifiedAt: undefined
       });
     });
   });

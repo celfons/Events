@@ -208,6 +208,25 @@ class MongoEventRepository extends EventRepository {
     return !!updatedEvent;
   }
 
+  async verifyParticipant(eventId, participantId) {
+    const updatedEvent = await EventModel.findOneAndUpdate(
+      { 
+        _id: eventId,
+        'participants._id': participantId,
+        'participants.status': 'pending'
+      },
+      { 
+        $set: { 
+          'participants.$.status': 'active',
+          'participants.$.verified': true,
+          'participants.$.verifiedAt': new Date()
+        }
+      },
+      { new: true }
+    );
+    return !!updatedEvent;
+  }
+
   _toDomain(eventModel) {
     return new Event({
       id: eventModel._id.toString(),
@@ -222,7 +241,10 @@ class MongoEventRepository extends EventRepository {
         email: p.email,
         phone: p.phone,
         registeredAt: p.registeredAt,
-        status: p.status
+        status: p.status,
+        verificationCode: p.verificationCode,
+        verified: p.verified,
+        verifiedAt: p.verifiedAt
       })) : [],
       createdAt: eventModel.createdAt,
       userId: eventModel.userId ? eventModel.userId.toString() : null,

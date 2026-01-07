@@ -1,12 +1,15 @@
 class Registration {
-  constructor({ id, eventId, name, email, phone, registeredAt, status }) {
+  constructor({ id, eventId, name, email, phone, registeredAt, status, verificationCode, verified, verifiedAt }) {
     this.id = id;
     this.eventId = eventId;
     this.name = name;
     this.email = email;
     this.phone = phone;
     this.registeredAt = registeredAt || new Date();
-    this.status = status || 'active'; // active, cancelled
+    this.status = status || 'pending'; // pending, active, cancelled
+    this.verificationCode = verificationCode;
+    this.verified = verified || false;
+    this.verifiedAt = verifiedAt;
   }
 
   cancel() {
@@ -16,8 +19,21 @@ class Registration {
     this.status = 'cancelled';
   }
 
+  verify() {
+    if (this.verified) {
+      throw new Error('Registration is already verified');
+    }
+    this.verified = true;
+    this.verifiedAt = new Date();
+    this.status = 'active';
+  }
+
   isActive() {
     return this.status === 'active';
+  }
+
+  isPending() {
+    return this.status === 'pending';
   }
 
   toJSON() {
@@ -28,7 +44,9 @@ class Registration {
       email: this.email,
       phone: this.phone,
       registeredAt: this.registeredAt,
-      status: this.status
+      status: this.status,
+      verified: this.verified,
+      verifiedAt: this.verifiedAt
     };
   }
 }

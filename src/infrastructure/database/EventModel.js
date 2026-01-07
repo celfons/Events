@@ -23,8 +23,20 @@ const participantSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'cancelled'],
-    default: 'active'
+    enum: ['pending', 'active', 'cancelled'],
+    default: 'pending'
+  },
+  verificationCode: {
+    type: String,
+    required: false
+  },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  verifiedAt: {
+    type: Date,
+    required: false
   }
 }, { _id: true });
 

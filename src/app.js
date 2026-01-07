@@ -20,6 +20,7 @@ const DeleteEventUseCase = require('./application/use-cases/DeleteEventUseCase')
 const GetEventParticipantsUseCase = require('./application/use-cases/GetEventParticipantsUseCase');
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
+const VerifyRegistrationUseCase = require('./application/use-cases/VerifyRegistrationUseCase');
 const LoginUseCase = require('./application/use-cases/LoginUseCase');
 const RegisterUseCase = require('./application/use-cases/RegisterUseCase');
 const ListUsersUseCase = require('./application/use-cases/ListUsersUseCase');
@@ -92,6 +93,7 @@ function createApp(whatsAppService = null, locale = 'pt-BR') {
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService, locale);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
+  const verifyRegistrationUseCase = new VerifyRegistrationUseCase(eventRepository, whatsAppService, locale);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
   const listUsersUseCase = new ListUsersUseCase(userRepository);
@@ -100,7 +102,7 @@ function createApp(whatsAppService = null, locale = 'pt-BR') {
 
   // Controllers
   const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase);
-  const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
+  const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase, verifyRegistrationUseCase);
   const authController = new AuthController(loginUseCase, registerUseCase);
   const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase, registerUseCase);
 

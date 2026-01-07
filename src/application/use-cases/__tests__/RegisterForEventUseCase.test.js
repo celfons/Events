@@ -207,7 +207,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '(11) 98765-4321',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -256,7 +256,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'Maria Silva',
           email: 'maria@example.com',
           phone: '(21) 99999-8888',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -318,8 +318,8 @@ describe('RegisterForEventUseCase', () => {
     });
   });
 
-  describe('WhatsApp Confirmation', () => {
-    it('should send WhatsApp confirmation message after successful registration', async () => {
+  describe('WhatsApp Verification', () => {
+    it('should send WhatsApp verification code after successful registration', async () => {
       const mockWhatsAppService = {
         sendMessage: jest.fn().mockResolvedValue(true)
       };
@@ -359,7 +359,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '11987654321',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -374,7 +374,7 @@ describe('RegisterForEventUseCase', () => {
       expect(mockWhatsAppService.sendMessage).toHaveBeenCalledTimes(1);
       expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
         '11987654321',
-        expect.stringContaining('Inscrição Confirmada')
+        expect.stringContaining('Verificação de Cadastro')
       );
       expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
         '11987654321',
@@ -426,7 +426,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '11987654321',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -473,7 +473,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '11987654321',
-          status: 'active'
+          status: 'pending'
         })
       };
 

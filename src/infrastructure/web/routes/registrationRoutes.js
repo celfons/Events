@@ -47,6 +47,55 @@ function createRegistrationRoutes(registrationController) {
 
   /**
    * @swagger
+   * /api/registrations/verify:
+   *   post:
+   *     summary: Verify registration with code
+   *     tags: [Registrations]
+   *     description: Verify a pending registration using the code sent via WhatsApp
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - eventId
+   *               - participantId
+   *               - verificationCode
+   *             properties:
+   *               eventId:
+   *                 type: string
+   *                 description: Event ID
+   *               participantId:
+   *                 type: string
+   *                 description: Participant ID
+   *               verificationCode:
+   *                 type: string
+   *                 description: 6-digit verification code sent via WhatsApp
+   *     responses:
+   *       200:
+   *         description: Registration verified successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessMessage'
+   *       400:
+   *         description: Bad request - Invalid or expired code
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.post('/verify', (req, res) => registrationController.verify(req, res));
+
+  /**
+   * @swagger
    * /api/registrations/{id}/cancel:
    *   post:
    *     summary: Cancel a registration

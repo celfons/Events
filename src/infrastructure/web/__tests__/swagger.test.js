@@ -58,6 +58,8 @@ describe('Swagger Documentation', () => {
       
       expect(swaggerSpec.paths['/api/registrations']).toBeDefined();
       expect(swaggerSpec.paths['/api/registrations'].post).toBeDefined();
+      expect(swaggerSpec.paths['/api/registrations/verify']).toBeDefined();
+      expect(swaggerSpec.paths['/api/registrations/verify'].post).toBeDefined();
       expect(swaggerSpec.paths['/api/registrations/{id}/cancel']).toBeDefined();
       expect(swaggerSpec.paths['/api/registrations/{id}/cancel'].post).toBeDefined();
     });
