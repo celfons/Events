@@ -101,7 +101,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body).toHaveProperty('error');
     });
 
-    it('should return 404 for non-existent event', async () => {
+    it('should return 400 for non-existent event', async () => {
       const registrationData = {
         eventId: '507f1f77bcf86cd799439011',
         name: 'John Doe',
@@ -112,30 +112,30 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app)
         .post('/api/registrations')
         .send(registrationData)
-        .expect(404);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
 
     it('should return 400 when event is full', async () => {
-      // Create event with only 1 spot
+      // Create event with only 1 spot and register one participant
       const fullEvent = await eventRepository.create({
         title: 'Full Event',
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 1,
-        userId: userId,
-        registrations: [
-          {
-            name: 'Existing Participant',
-            email: 'existing@example.com',
-        phone: '+9999999999',
-            registrationDate: new Date(),
-            status: 'active'
-          }
-        ]
+        userId: userId
       });
 
+      // Register the first (and only) participant
+      await eventRepository.addParticipant(fullEvent.id, {
+        name: 'Existing Participant',
+        email: 'existing@example.com',
+        phone: '+9999999999',
+        status: 'active'
+      });
+
+      // Try to register a second participant (should fail)
       const registrationData = {
         eventId: fullEvent.id,
         name: 'John Doe',

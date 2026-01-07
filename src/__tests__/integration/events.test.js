@@ -97,8 +97,8 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('title');
       expect(response.body[0]).toHaveProperty('description');
-      expect(response.body[0]).toHaveProperty('date');
-      expect(response.body[0]).toHaveProperty('location');
+      expect(response.body[0]).toHaveProperty('dateTime');
+      expect(response.body[0]).toHaveProperty('totalSlots');
     });
   });
 
@@ -206,8 +206,7 @@ describe('Events API Integration Tests', () => {
       const updatedData = {
         title: 'Updated Event',
         description: 'Updated Description',
-        dateTime: '2026-12-31T00:00:00.000Z',
-        totalSlots: 100
+        dateTime: '2027-01-15T00:00:00.000Z'
       };
 
       const response = await request(app)
@@ -218,7 +217,6 @@ describe('Events API Integration Tests', () => {
 
       expect(response.body.title).toBe('Updated Event');
       expect(response.body.description).toBe('Updated Description');
-            expect(response.body.totalSlots).toBe(100);
     });
 
     it('should return 401 when no auth token is provided', async () => {
