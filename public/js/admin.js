@@ -101,26 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
         filterAndDisplayEvents();
     });
     
-    // Status filter toggle button functionality
-    const toggleStatusFilterBtn = document.getElementById('toggleStatusFilter');
-    const filterStatusText = document.getElementById('filterStatusText');
+    // Status filter switch functionality
+    const activeOnlySwitch = document.getElementById('activeOnlySwitch');
     
-    if (toggleStatusFilterBtn && filterStatusText) {
-        toggleStatusFilterBtn.addEventListener('click', () => {
-            // Cycle through: all -> active -> inactive -> all
-            if (currentStatusFilter === 'all') {
-                currentStatusFilter = 'active';
-                filterStatusText.textContent = 'Ativos';
-                toggleStatusFilterBtn.className = 'btn btn-success';
-            } else if (currentStatusFilter === 'active') {
-                currentStatusFilter = 'inactive';
-                filterStatusText.textContent = 'Inativos';
-                toggleStatusFilterBtn.className = 'btn btn-secondary';
-            } else {
-                currentStatusFilter = 'all';
-                filterStatusText.textContent = 'Todos';
-                toggleStatusFilterBtn.className = 'btn btn-outline-primary';
-            }
+    if (activeOnlySwitch) {
+        activeOnlySwitch.addEventListener('change', () => {
+            // When switch is ON, show only active events; when OFF, show all events
+            currentStatusFilter = activeOnlySwitch.checked ? 'active' : 'all';
             filterAndDisplayEvents();
         });
     }

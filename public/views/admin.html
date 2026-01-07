@@ -57,15 +57,18 @@
 
             <!-- Search Bar and Filters -->
             <div class="mb-4">
-                <div class="input-group">
+                <div class="input-group mb-2">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="searchInput" placeholder="Buscar eventos por nome...">
                     <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
                         <i class="bi bi-x"></i> Limpar
                     </button>
-                    <button class="btn btn-outline-primary" type="button" id="toggleStatusFilter" title="Clique para alternar entre todos os eventos, apenas ativos ou apenas inativos">
-                        <i class="bi bi-funnel"></i> <span id="filterStatusText">Todos</span>
-                    </button>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="activeOnlySwitch">
+                    <label class="form-check-label" for="activeOnlySwitch">
+                        <i class="bi bi-funnel"></i> Mostrar apenas eventos ativos
+                    </label>
                 </div>
             </div>
 
