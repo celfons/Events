@@ -207,16 +207,16 @@ function displayEventDetails(event) {
     
     // Display location if available
     const eventDateElement = document.getElementById('eventDate');
-    const badgesContainer = eventDateElement.parentElement;
-    
-    // Remove existing location badge if present
-    const existingLocationBadge = badgesContainer.querySelector('.event-location-badge');
-    if (existingLocationBadge) {
-        existingLocationBadge.remove();
-    }
-    
-    // Add new location badge if location is provided
-    if (event.local) {
+    if (eventDateElement && eventDateElement.parentElement && event.local) {
+        const badgesContainer = eventDateElement.parentElement;
+        
+        // Remove existing location badge if present
+        const existingLocationBadge = badgesContainer.querySelector('.event-location-badge');
+        if (existingLocationBadge) {
+            existingLocationBadge.remove();
+        }
+        
+        // Add new location badge if location is provided
         const locationBadge = document.createElement('span');
         locationBadge.className = 'badge bg-secondary ms-2 event-location-badge';
         const icon = document.createElement('i');
