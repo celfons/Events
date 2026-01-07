@@ -233,7 +233,43 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="registerParticipantBtn">
+                        <i class="bi bi-person-plus"></i> Inscrever Participante
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Participant Modal -->
+    <div class="modal fade" id="registerParticipantModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Inscrever Participante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerParticipantForm">
+                        <div class="mb-3">
+                            <label for="participantName" class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="participantName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="participantEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="participantEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="participantPhone" class="form-label">Telefone *</label>
+                            <input type="tel" class="form-control" id="participantPhone" placeholder="(11) 98765-4321" required>
+                        </div>
+                        <div class="alert alert-danger d-none" id="registerParticipantError"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="submitRegisterParticipant">Inscrever</button>
                 </div>
             </div>
         </div>
