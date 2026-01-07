@@ -53,7 +53,7 @@ let currentEventId = null;
 
 // Participants pagination
 let currentParticipantsPage = 1;
-const participantsPerPage = 10;
+const participantsPerPage = 5;
 let allParticipants = [];
 let filteredParticipants = [];
 
