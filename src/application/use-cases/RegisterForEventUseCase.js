@@ -1,4 +1,5 @@
 const Registration = require('../../domain/entities/Registration');
+const crypto = require('crypto');
 
 class RegisterForEventUseCase {
   constructor(eventRepository, whatsAppService = null, locale = 'pt-BR') {
@@ -60,8 +61,8 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Generate 6-digit verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      // Generate 6-digit verification code using cryptographically secure random
+      const verificationCode = crypto.randomInt(100000, 999999).toString();
 
       // Add participant to event with pending status (atomically decrements slots)
       const registration = await this.eventRepository.addParticipant(

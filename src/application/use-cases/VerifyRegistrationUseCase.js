@@ -3,6 +3,7 @@ class VerifyRegistrationUseCase {
     this.eventRepository = eventRepository;
     this.whatsAppService = whatsAppService;
     this.locale = locale;
+    this.VERIFICATION_CODE_EXPIRY_HOURS = 24;
   }
 
   async execute(eventId, participantId, verificationCode) {
@@ -52,12 +53,12 @@ class VerifyRegistrationUseCase {
         };
       }
 
-      // Check if code expired (24 hours)
+      // Check if code expired
       const registrationTime = new Date(participant.registeredAt);
       const now = new Date();
       const hoursSinceRegistration = (now - registrationTime) / (1000 * 60 * 60);
       
-      if (hoursSinceRegistration > 24) {
+      if (hoursSinceRegistration > this.VERIFICATION_CODE_EXPIRY_HOURS) {
         return {
           success: false,
           error: 'Verification code expired. Please register again.'

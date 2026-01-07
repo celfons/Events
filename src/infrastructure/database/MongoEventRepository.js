@@ -116,7 +116,7 @@ class MongoEventRepository extends EventRepository {
       { 
         _id: eventId,
         'participants.email': email.toLowerCase(),
-        'participants.status': 'active'
+        'participants.status': { $in: ['active', 'pending'] }
       },
       { 'participants.$': 1 }
     );
@@ -133,7 +133,10 @@ class MongoEventRepository extends EventRepository {
       email: participant.email,
       phone: participant.phone,
       registeredAt: participant.registeredAt,
-      status: participant.status
+      status: participant.status,
+      verificationCode: participant.verificationCode,
+      verified: participant.verified,
+      verifiedAt: participant.verifiedAt
     });
   }
 
@@ -142,7 +145,7 @@ class MongoEventRepository extends EventRepository {
       { 
         _id: eventId,
         'participants.phone': phone,
-        'participants.status': 'active'
+        'participants.status': { $in: ['active', 'pending'] }
       },
       { 'participants.$': 1 }
     );
@@ -159,7 +162,10 @@ class MongoEventRepository extends EventRepository {
       email: participant.email,
       phone: participant.phone,
       registeredAt: participant.registeredAt,
-      status: participant.status
+      status: participant.status,
+      verificationCode: participant.verificationCode,
+      verified: participant.verified,
+      verifiedAt: participant.verifiedAt
     });
   }
 
