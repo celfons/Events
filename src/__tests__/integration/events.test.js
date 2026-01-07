@@ -77,19 +77,17 @@ describe('Events API Integration Tests', () => {
       await eventRepository.create({
         title: 'Event 1',
         description: 'Description 1',
-        date: new Date('2026-12-31'),
-        location: 'Location 1',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       await eventRepository.create({
         title: 'Event 2',
         description: 'Description 2',
-        date: new Date('2026-12-31'),
-        location: 'Location 2',
-        maxParticipants: 100,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 100,
+        userId: userId
       });
 
       const response = await request(app)
@@ -109,9 +107,8 @@ describe('Events API Integration Tests', () => {
       const eventData = {
         title: 'New Event',
         description: 'New Event Description',
-        date: '2026-12-31T00:00:00.000Z',
-        location: 'New Location',
-        maxParticipants: 50
+        dateTime: '2026-12-31T00:00:00.000Z',
+        totalSlots: 50
       };
 
       const response = await request(app)
@@ -123,19 +120,17 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body.title).toBe(eventData.title);
       expect(response.body.description).toBe(eventData.description);
-      expect(response.body.location).toBe(eventData.location);
-      expect(response.body.maxParticipants).toBe(eventData.maxParticipants);
-      expect(response.body.organizerId).toBe(userId);
-      expect(response.body.registrations).toEqual([]);
+            expect(response.body.totalSlots).toBe(eventData.totalSlots);
+      expect(response.body.userId).toBe(userId);
+      expect(response.body.participants).toEqual([]);
     });
 
     it('should return 401 when no auth token is provided', async () => {
       const eventData = {
         title: 'New Event',
         description: 'New Event Description',
-        date: '2026-12-31T00:00:00.000Z',
-        location: 'New Location',
-        maxParticipants: 50
+        dateTime: '2026-12-31T00:00:00.000Z',
+        totalSlots: 50
       };
 
       await request(app)
@@ -148,9 +143,8 @@ describe('Events API Integration Tests', () => {
       const eventData = {
         title: '', // Invalid: empty title
         description: 'Description',
-        date: '2026-12-31T00:00:00.000Z',
-        location: 'Location',
-        maxParticipants: 50
+        dateTime: '2026-12-31T00:00:00.000Z',
+        totalSlots: 50
       };
 
       const response = await request(app)
@@ -168,21 +162,19 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Test Event',
         description: 'Test Description',
-        date: new Date('2026-12-31'),
-        location: 'Test Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       const response = await request(app)
         .get(`/api/events/${event.id}`)
         .expect(200);
 
-      expect(response.body.id).toBe(event.id);
-      expect(response.body.title).toBe('Test Event');
-      expect(response.body.description).toBe('Test Description');
-      expect(response.body.location).toBe('Test Location');
-    });
+      expect(response.body.event.id).toBe(event.id);
+      expect(response.body.event.title).toBe('Test Event');
+      expect(response.body.event.description).toBe('Test Description');
+          });
 
     it('should return 404 for non-existent event', async () => {
       const response = await request(app)
@@ -192,10 +184,10 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveProperty('error');
     });
 
-    it('should return 400 for invalid event id', async () => {
+    it('should return 404 for invalid event id', async () => {
       const response = await request(app)
         .get('/api/events/invalid-id')
-        .expect(400);
+        .expect(404);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -206,18 +198,16 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Original Event',
         description: 'Original Description',
-        date: new Date('2026-12-31'),
-        location: 'Original Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       const updatedData = {
         title: 'Updated Event',
         description: 'Updated Description',
-        date: '2026-12-31T00:00:00.000Z',
-        location: 'Updated Location',
-        maxParticipants: 100
+        dateTime: '2026-12-31T00:00:00.000Z',
+        totalSlots: 100
       };
 
       const response = await request(app)
@@ -228,18 +218,16 @@ describe('Events API Integration Tests', () => {
 
       expect(response.body.title).toBe('Updated Event');
       expect(response.body.description).toBe('Updated Description');
-      expect(response.body.location).toBe('Updated Location');
-      expect(response.body.maxParticipants).toBe(100);
+            expect(response.body.totalSlots).toBe(100);
     });
 
     it('should return 401 when no auth token is provided', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       await request(app)
@@ -253,10 +241,9 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: superuserId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: superuserId
       });
 
       // Try to update with regular user token
@@ -285,10 +272,9 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event to Delete',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       const response = await request(app)
@@ -308,10 +294,9 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       await request(app)
@@ -323,10 +308,9 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: superuserId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: superuserId
       });
 
       const response = await request(app)
@@ -344,19 +328,17 @@ describe('Events API Integration Tests', () => {
       await eventRepository.create({
         title: 'User Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       await eventRepository.create({
         title: 'Superuser Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: superuserId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: superuserId
       });
 
       const response = await request(app)
@@ -366,7 +348,7 @@ describe('Events API Integration Tests', () => {
 
       expect(response.body).toHaveLength(1);
       expect(response.body[0].title).toBe('User Event');
-      expect(response.body[0].organizerId).toBe(userId);
+      expect(response.body[0].userId).toBe(userId);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -381,24 +363,24 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId,
-        registrations: [
-          {
-            participantName: 'John Doe',
-            participantEmail: 'john@example.com',
-            registrationDate: new Date(),
-            status: 'confirmed'
-          },
-          {
-            participantName: 'Jane Doe',
-            participantEmail: 'jane@example.com',
-            registrationDate: new Date(),
-            status: 'confirmed'
-          }
-        ]
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
+      });
+
+      // Manually add participants using the repository method
+      await eventRepository.addParticipant(event.id, {
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        status: 'active'
+      });
+
+      await eventRepository.addParticipant(event.id, {
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '+0987654321',
+        status: 'active'
       });
 
       const response = await request(app)
@@ -406,8 +388,9 @@ describe('Events API Integration Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body[0]).toHaveProperty('participantName');
-      expect(response.body[0]).toHaveProperty('participantEmail');
+      expect(response.body[0]).toHaveProperty('name');
+      expect(response.body[0]).toHaveProperty('email');
+      expect(response.body[0]).toHaveProperty('phone');
       expect(response.body[0]).toHaveProperty('status');
     });
 
@@ -415,10 +398,9 @@ describe('Events API Integration Tests', () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 50,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 50,
+        userId: userId
       });
 
       const response = await request(app)

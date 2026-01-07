@@ -39,10 +39,9 @@ describe('Registrations API Integration Tests', () => {
     const event = await eventRepository.create({
       title: 'Test Event',
       description: 'Test Description',
-      date: new Date('2026-12-31'),
-      location: 'Test Location',
-      maxParticipants: 50,
-      organizerId: userId
+      dateTime: new Date('2026-12-31'),
+      totalSlots: 50,
+      userId: userId
     });
     eventId = event.id;
   });
@@ -51,8 +50,9 @@ describe('Registrations API Integration Tests', () => {
     it('should register a participant for an event', async () => {
       const registrationData = {
         eventId: eventId,
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -61,14 +61,14 @@ describe('Registrations API Integration Tests', () => {
         .expect(201);
 
       expect(response.body).toHaveProperty('id');
-      expect(response.body.participantName).toBe('John Doe');
-      expect(response.body.participantEmail).toBe('john@example.com');
-      expect(response.body.status).toBe('confirmed');
+      expect(response.body.name).toBe('John Doe');
+      expect(response.body.email).toBe('john@example.com');
+      expect(response.body.status).toBe('active');
 
       // Verify the event has the registration
       const event = await eventRepository.findById(eventId);
-      expect(event.registrations).toHaveLength(1);
-      expect(event.registrations[0].participantEmail).toBe('john@example.com');
+      expect(event.participants).toHaveLength(1);
+      expect(event.participants[0].email).toBe('john@example.com');
     });
 
     it('should return 400 for missing required fields', async () => {
@@ -88,8 +88,9 @@ describe('Registrations API Integration Tests', () => {
     it('should return 400 for invalid event id', async () => {
       const registrationData = {
         eventId: 'invalid-id',
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -103,8 +104,9 @@ describe('Registrations API Integration Tests', () => {
     it('should return 404 for non-existent event', async () => {
       const registrationData = {
         eventId: '507f1f77bcf86cd799439011',
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -120,24 +122,25 @@ describe('Registrations API Integration Tests', () => {
       const fullEvent = await eventRepository.create({
         title: 'Full Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 1,
-        organizerId: userId,
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 1,
+        userId: userId,
         registrations: [
           {
-            participantName: 'Existing Participant',
-            participantEmail: 'existing@example.com',
+            name: 'Existing Participant',
+            email: 'existing@example.com',
+        phone: '+9999999999',
             registrationDate: new Date(),
-            status: 'confirmed'
+            status: 'active'
           }
         ]
       });
 
       const registrationData = {
         eventId: fullEvent.id,
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const response = await request(app)
@@ -146,15 +149,16 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('full');
+      expect(response.body.error).toContain('available slots');
     });
 
     it('should return 400 when participant is already registered', async () => {
       // Register once
       const registrationData = {
         eventId: eventId,
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       await request(app)
@@ -175,8 +179,8 @@ describe('Registrations API Integration Tests', () => {
     it('should return 400 for invalid email format', async () => {
       const registrationData = {
         eventId: eventId,
-        participantName: 'John Doe',
-        participantEmail: 'invalid-email'
+        name: 'John Doe',
+        email: 'invalid-email'
       };
 
       const response = await request(app)
@@ -193,8 +197,9 @@ describe('Registrations API Integration Tests', () => {
       // First, create a registration
       const registrationData = {
         eventId: eventId,
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const createResponse = await request(app)
@@ -215,13 +220,14 @@ describe('Registrations API Integration Tests', () => {
 
       // Verify the registration status is updated
       const event = await eventRepository.findById(eventId);
-      const registration = event.registrations.find(r => r.id === registrationId);
+      const registration = event.participants.find(r => r.id === registrationId);
       expect(registration.status).toBe('cancelled');
     });
 
     it('should return 400 for invalid registration id', async () => {
       const response = await request(app)
         .post('/api/registrations/invalid-id/cancel')
+        .send({ eventId: eventId })
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -240,8 +246,9 @@ describe('Registrations API Integration Tests', () => {
       // Create and cancel a registration
       const registrationData = {
         eventId: eventId,
-        participantName: 'John Doe',
-        participantEmail: 'john@example.com'
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
       };
 
       const createResponse = await request(app)
@@ -263,7 +270,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('already cancelled');
+      expect(response.body.error).toContain('Active registration not found');
     });
   });
 
@@ -271,23 +278,24 @@ describe('Registrations API Integration Tests', () => {
     it('should update event participant count after registration', async () => {
       // Get initial event state
       const eventBefore = await eventRepository.findById(eventId);
-      expect(eventBefore.registrations).toHaveLength(0);
+      expect(eventBefore.participants).toHaveLength(0);
 
       // Register a participant
       await request(app)
         .post('/api/registrations')
         .send({
           eventId: eventId,
-          participantName: 'John Doe',
-          participantEmail: 'john@example.com'
+          name: 'John Doe',
+          email: 'john@example.com',
+        phone: '+1234567890'
         })
         .expect(201);
 
       // Check event state after registration
       const eventAfter = await eventRepository.findById(eventId);
-      expect(eventAfter.registrations).toHaveLength(1);
-      expect(eventAfter.registrations[0].participantEmail).toBe('john@example.com');
-      expect(eventAfter.registrations[0].status).toBe('confirmed');
+      expect(eventAfter.participants).toHaveLength(1);
+      expect(eventAfter.participants[0].email).toBe('john@example.com');
+      expect(eventAfter.participants[0].status).toBe('active');
     });
 
     it('should update event participant count after cancellation', async () => {
@@ -296,8 +304,9 @@ describe('Registrations API Integration Tests', () => {
         .post('/api/registrations')
         .send({
           eventId: eventId,
-          participantName: 'John Doe',
-          participantEmail: 'john@example.com'
+          name: 'John Doe',
+          email: 'john@example.com',
+        phone: '+1234567890'
         })
         .expect(201);
 
@@ -305,8 +314,8 @@ describe('Registrations API Integration Tests', () => {
 
       // Verify registration exists
       let event = await eventRepository.findById(eventId);
-      expect(event.registrations).toHaveLength(1);
-      expect(event.registrations[0].status).toBe('confirmed');
+      expect(event.participants).toHaveLength(1);
+      expect(event.participants[0].status).toBe('active');
 
       // Cancel the registration
       await request(app)
@@ -316,8 +325,8 @@ describe('Registrations API Integration Tests', () => {
 
       // Verify registration is cancelled (not removed)
       event = await eventRepository.findById(eventId);
-      expect(event.registrations).toHaveLength(1);
-      expect(event.registrations[0].status).toBe('cancelled');
+      expect(event.participants).toHaveLength(1);
+      expect(event.participants[0].status).toBe('cancelled');
     });
 
     it('should prevent registration when event reaches max capacity', async () => {
@@ -325,10 +334,9 @@ describe('Registrations API Integration Tests', () => {
       const limitedEvent = await eventRepository.create({
         title: 'Limited Event',
         description: 'Description',
-        date: new Date('2026-12-31'),
-        location: 'Location',
-        maxParticipants: 2,
-        organizerId: userId
+        dateTime: new Date('2026-12-31'),
+        totalSlots: 2,
+        userId: userId
       });
 
       // Register first participant
@@ -336,8 +344,9 @@ describe('Registrations API Integration Tests', () => {
         .post('/api/registrations')
         .send({
           eventId: limitedEvent.id,
-          participantName: 'John Doe',
-          participantEmail: 'john@example.com'
+          name: 'John Doe',
+          email: 'john@example.com',
+        phone: '+1234567890'
         })
         .expect(201);
 
@@ -346,8 +355,9 @@ describe('Registrations API Integration Tests', () => {
         .post('/api/registrations')
         .send({
           eventId: limitedEvent.id,
-          participantName: 'Jane Doe',
-          participantEmail: 'jane@example.com'
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+        phone: '+0987654321'
         })
         .expect(201);
 
@@ -356,13 +366,14 @@ describe('Registrations API Integration Tests', () => {
         .post('/api/registrations')
         .send({
           eventId: limitedEvent.id,
-          participantName: 'Bob Smith',
-          participantEmail: 'bob@example.com'
+          name: 'Bob Smith',
+          email: 'bob@example.com',
+        phone: '+1111111111'
         })
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('full');
+      expect(response.body.error).toContain('available slots');
     });
   });
 });
