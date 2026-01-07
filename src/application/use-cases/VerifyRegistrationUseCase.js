@@ -65,6 +65,26 @@ class VerifyRegistrationUseCase {
         };
       }
 
+      // Check if event is still active
+      if (!event.isActive) {
+        return {
+          success: false,
+          error: 'Event is no longer active'
+        };
+      }
+
+      // Check if event still has capacity for this registration
+      // Count current active participants
+      const activeParticipantsCount = event.participants.filter(p => p.status === 'active').length;
+      
+      // Check if there's room for this pending registration to become active
+      if (activeParticipantsCount >= event.totalSlots) {
+        return {
+          success: false,
+          error: 'Event is full. No available slots remaining.'
+        };
+      }
+
       // Update participant status to active and mark as verified
       const updated = await this.eventRepository.verifyParticipant(eventId, participantId);
       

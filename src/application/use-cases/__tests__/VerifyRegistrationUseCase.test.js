@@ -145,6 +145,75 @@ describe('VerifyRegistrationUseCase', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Verification code expired. Please register again.');
     });
+
+    it('should return error when event is no longer active', async () => {
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        isActive: false,
+        participants: [
+          {
+            id: '456',
+            name: 'John Doe',
+            phone: '11987654321',
+            status: 'pending',
+            verified: false,
+            verificationCode: '123456',
+            registeredAt: new Date()
+          }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+
+      const result = await verifyRegistrationUseCase.execute('123', '456', '123456');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Event is no longer active');
+    });
+
+    it('should return error when event is full (no available slots)', async () => {
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        isActive: true,
+        totalSlots: 2,
+        participants: [
+          {
+            id: '456',
+            name: 'John Doe',
+            phone: '11987654321',
+            status: 'pending',
+            verified: false,
+            verificationCode: '123456',
+            registeredAt: new Date()
+          },
+          {
+            id: '789',
+            name: 'Jane Smith',
+            phone: '11987654322',
+            status: 'active',
+            verified: true,
+            registeredAt: new Date()
+          },
+          {
+            id: '101',
+            name: 'Bob Johnson',
+            phone: '11987654323',
+            status: 'active',
+            verified: true,
+            registeredAt: new Date()
+          }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+
+      const result = await verifyRegistrationUseCase.execute('123', '456', '123456');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Event is full. No available slots remaining.');
+    });
   });
 
   describe('Successful Verification', () => {
@@ -155,6 +224,8 @@ describe('VerifyRegistrationUseCase', () => {
         description: 'Test Description',
         dateTime: new Date('2026-01-15T14:00:00'),
         local: 'Test Location',
+        isActive: true,
+        totalSlots: 10,
         participants: [
           {
             id: '456',
@@ -191,6 +262,8 @@ describe('VerifyRegistrationUseCase', () => {
         description: 'Test Description',
         dateTime: new Date('2026-01-15T14:00:00'),
         local: 'Test Location',
+        isActive: true,
+        totalSlots: 10,
         participants: [
           {
             id: '456',
@@ -230,6 +303,8 @@ describe('VerifyRegistrationUseCase', () => {
         description: 'Test Description',
         dateTime: new Date('2026-01-15T14:00:00'),
         local: 'Test Location',
+        isActive: true,
+        totalSlots: 10,
         participants: [
           {
             id: '456',
@@ -267,6 +342,8 @@ describe('VerifyRegistrationUseCase', () => {
       const mockEvent = {
         id: '123',
         title: 'Test Event',
+        isActive: true,
+        totalSlots: 10,
         participants: [
           {
             id: '456',
