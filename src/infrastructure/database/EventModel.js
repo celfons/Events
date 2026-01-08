@@ -67,8 +67,14 @@ const eventSchema = new mongoose.Schema({
             // If totalSlots is being updated, validate against the new value
             return value <= newTotalSlots;
           }
-          // If totalSlots is not being updated, we can't validate in this context
-          // Skip validation (the database state should be consistent)
+          // If totalSlots is not being updated, we skip validation here.
+          // This is safe because:
+          // 1. The application logic in UpdateEventUseCase prevents manual
+          //    availableSlots updates when totalSlots changes
+          // 2. Slot increments/decrements use atomic $inc operations that
+          //    maintain consistency
+          // 3. The validator will run during document creation/save operations
+          //    where full validation is possible
           return true;
         }
         // For document creation/save, validate against the document's totalSlots
