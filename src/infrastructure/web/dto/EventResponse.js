@@ -36,7 +36,13 @@ class EventResponse {
 class EventDetailsResponse extends EventResponse {
   constructor(event) {
     super(event);
-    this.participantsCount = event.participants ? event.participants.length : 0;
+    // Use explicitly passed participantsCount if available, otherwise calculate from participants array
+    this.participantsCount =
+      event.participantsCount !== undefined
+        ? event.participantsCount
+        : event.participants
+          ? event.participants.length
+          : 0;
   }
 
   static fromEntity(event) {

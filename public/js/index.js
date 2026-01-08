@@ -63,7 +63,8 @@ async function login(email, password) {
         }
         
         const data = await response.json();
-        saveToken(data.token, data.user);
+        // API returns { data: { token, user } }
+        saveToken(data.data.token, data.data.user);
         
         return { success: true };
     } catch (error) {
