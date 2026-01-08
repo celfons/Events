@@ -31,7 +31,7 @@ function createRegistrationRoutes(registrationController) {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/Registration'
+   *               $ref: '#/components/schemas/RegistrationResponse'
    *       400:
    *         description: Bad request - Invalid input data or no available slots
    *         content:

@@ -62,11 +62,39 @@ const options = {
               description: 'Number of slots still available',
               example: 45
             },
+            local: {
+              type: 'string',
+              description: 'Event location',
+              example: 'Auditório Principal'
+            },
+            userId: {
+              type: 'string',
+              description: 'ID of the user who created the event',
+              example: '507f1f77bcf86cd799439010'
+            },
+            isActive: {
+              type: 'boolean',
+              description: 'Whether the event is active',
+              example: true
+            },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Event creation timestamp',
               example: '2024-01-01T10:00:00.000Z'
+            }
+          }
+        },
+        EventDetails: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/Event' }
+          ],
+          properties: {
+            participantsCount: {
+              type: 'integer',
+              description: 'Number of registered participants',
+              example: 5
             }
           }
         },
@@ -95,6 +123,62 @@ const options = {
               description: 'Total number of slots available',
               example: 50,
               minimum: 1
+            },
+            local: {
+              type: 'string',
+              description: 'Event location',
+              example: 'Auditório Principal'
+            }
+          }
+        },
+        User: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'User unique identifier',
+              example: '507f1f77bcf86cd799439010'
+            },
+            username: {
+              type: 'string',
+              description: 'Username',
+              example: 'johndoe'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'User email',
+              example: 'john@example.com'
+            },
+            role: {
+              type: 'string',
+              enum: ['user', 'superuser'],
+              description: 'User role',
+              example: 'user'
+            },
+            isActive: {
+              type: 'boolean',
+              description: 'Whether the user is active',
+              example: true
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'User creation timestamp',
+              example: '2024-01-01T10:00:00.000Z'
+            }
+          }
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            token: {
+              type: 'string',
+              description: 'JWT authentication token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+            },
+            user: {
+              $ref: '#/components/schemas/User'
             }
           }
         },
@@ -173,19 +257,149 @@ const options = {
           type: 'object',
           properties: {
             error: {
+              type: 'object',
+              properties: {
+                code: {
+                  type: 'string',
+                  description: 'Error code',
+                  example: 'INVALID_INPUT'
+                },
+                message: {
+                  type: 'string',
+                  description: 'Error message',
+                  example: 'Invalid input data'
+                },
+                timestamp: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Error timestamp',
+                  example: '2024-01-01T10:00:00.000Z'
+                },
+                details: {
+                  description: 'Additional error details (optional)',
+                  oneOf: [
+                    { type: 'object' },
+                    { type: 'array' }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        SuccessResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              description: 'Response data',
+              type: 'object'
+            },
+            message: {
               type: 'string',
-              description: 'Error message',
-              example: 'An error occurred'
+              description: 'Success message (optional)',
+              example: 'Operation completed successfully'
+            },
+            meta: {
+              type: 'object',
+              description: 'Additional metadata (optional)'
             }
           }
         },
         SuccessMessage: {
           type: 'object',
           properties: {
+            data: {
+              type: 'null',
+              description: 'No data for delete operations'
+            },
             message: {
               type: 'string',
               description: 'Success message',
               example: 'Operation completed successfully'
+            }
+          }
+        },
+        EventResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              $ref: '#/components/schemas/Event'
+            },
+            message: {
+              type: 'string',
+              example: 'Event created successfully'
+            }
+          }
+        },
+        EventDetailsResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              $ref: '#/components/schemas/EventDetails'
+            }
+          }
+        },
+        EventListResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Event'
+              }
+            }
+          }
+        },
+        RegistrationResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              $ref: '#/components/schemas/Registration'
+            },
+            message: {
+              type: 'string',
+              example: 'Registration created successfully'
+            }
+          }
+        },
+        RegistrationListResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Registration'
+              }
+            }
+          }
+        },
+        UserResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              $ref: '#/components/schemas/User'
+            },
+            message: {
+              type: 'string',
+              example: 'User created successfully'
+            }
+          }
+        },
+        UserListResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/User'
+              }
+            }
+          }
+        },
+        LoginSuccessResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              $ref: '#/components/schemas/LoginResponse'
             }
           }
         }
