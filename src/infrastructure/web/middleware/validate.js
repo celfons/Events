@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const { ErrorResponse } = require('../dto');
 
 /**
  * Validation middleware factory
@@ -37,10 +38,8 @@ function validate(schemas) {
           message: err.message
         }));
 
-        return res.status(400).json({
-          error: 'Validation error',
-          details: formattedErrors
-        });
+        const errorResponse = ErrorResponse.validationError(formattedErrors);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
       // Pass other errors to error handler

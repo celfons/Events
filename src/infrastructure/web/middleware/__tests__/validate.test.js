@@ -52,13 +52,17 @@ describe('Validation Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-            message: expect.stringContaining('email')
-          })
-        ])
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed',
+          timestamp: expect.any(String),
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              field: 'email',
+              message: expect.stringContaining('email')
+            })
+          ])
+        }
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -79,12 +83,16 @@ describe('Validation Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password'
-          })
-        ])
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed',
+          timestamp: expect.any(String),
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              field: 'password'
+            })
+          ])
+        }
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -105,12 +113,16 @@ describe('Validation Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password'
-          })
-        ])
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed',
+          timestamp: expect.any(String),
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              field: 'password'
+            })
+          ])
+        }
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -147,13 +159,17 @@ describe('Validation Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: expect.arrayContaining([
-          expect.objectContaining({
-            field: 'id',
-            message: 'Invalid ID format'
-          })
-        ])
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed',
+          timestamp: expect.any(String),
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              field: 'id',
+              message: 'Invalid ID format'
+            })
+          ])
+        }
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -279,12 +295,16 @@ describe('Validation Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: expect.arrayContaining([
-          expect.objectContaining({ field: 'email' }),
-          expect.objectContaining({ field: 'password' }),
-          expect.objectContaining({ field: 'username' })
-        ])
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed',
+          timestamp: expect.any(String),
+          details: expect.arrayContaining([
+            expect.objectContaining({ field: 'email' }),
+            expect.objectContaining({ field: 'password' }),
+            expect.objectContaining({ field: 'username' })
+          ])
+        }
       });
       expect(next).not.toHaveBeenCalled();
     });

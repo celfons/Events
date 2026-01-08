@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { ErrorResponse } = require('../dto');
 
 // Get JWT secret from environment
 const getJwtSecret = () => {
@@ -15,7 +16,8 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    const errorResponse = ErrorResponse.unauthorized('Access denied. No token provided.');
+    return res.status(errorResponse.status).json(errorResponse.toJSON());
   }
 
   try {
@@ -23,18 +25,21 @@ const authenticateToken = (req, res, next) => {
     req.user = decoded; // { userId, email, role }
     next();
   } catch (error) {
-    return res.status(403).json({ error: 'Invalid or expired token.' });
+    const errorResponse = ErrorResponse.unauthorized('Invalid or expired token.');
+    return res.status(errorResponse.status).json(errorResponse.toJSON());
   }
 };
 
 // Middleware to check if user is a superuser
 const requireSuperuser = (req, res, next) => {
   if (!req.user) {
-    return res.status(401).json({ error: 'Authentication required.' });
+    const errorResponse = ErrorResponse.unauthorized('Authentication required.');
+    return res.status(errorResponse.status).json(errorResponse.toJSON());
   }
 
   if (req.user.role !== 'superuser') {
-    return res.status(403).json({ error: 'Access denied. Superuser role required.' });
+    const errorResponse = ErrorResponse.insufficientPermissions('Access denied. Superuser role required.');
+    return res.status(errorResponse.status).json(errorResponse.toJSON());
   }
 
   next();

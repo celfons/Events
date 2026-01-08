@@ -89,7 +89,8 @@ describe('Auth API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Validation error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toBe('Validation failed');
     });
 
     it('should return 400 for missing password', async () => {
@@ -101,7 +102,8 @@ describe('Auth API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Validation error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toBe('Validation failed');
     });
   });
 });

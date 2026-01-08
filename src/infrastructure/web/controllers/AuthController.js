@@ -1,3 +1,5 @@
+const { ErrorResponse, SuccessResponse, LoginResponse, UserResponse } = require('../dto');
+
 class AuthController {
   constructor(loginUseCase, registerUseCase) {
     this.loginUseCase = loginUseCase;
@@ -10,12 +12,16 @@ class AuthController {
       const result = await this.loginUseCase.execute(email, password);
 
       if (!result.success) {
-        return res.status(401).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidCredentials(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const loginResponse = LoginResponse.fromData(result.data);
+      const successResponse = SuccessResponse.ok(loginResponse);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -24,12 +30,16 @@ class AuthController {
       const result = await this.registerUseCase.execute(req.body);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(201).json(result.data);
+      const user = UserResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.created(user);
+      return res.status(201).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 }
