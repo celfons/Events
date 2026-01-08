@@ -60,7 +60,8 @@ class UserController {
   }
 }
 
-// Wrap methods with asyncHandler
+// Wrap methods with asyncHandler after class definition
+// This approach maintains compatibility with ESLint and avoids arrow function binding issues
 UserController.prototype.listUsers = asyncHandler(UserController.prototype.listUsers);
 UserController.prototype.createUser = asyncHandler(UserController.prototype.createUser);
 UserController.prototype.updateUser = asyncHandler(UserController.prototype.updateUser);

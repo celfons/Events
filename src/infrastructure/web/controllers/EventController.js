@@ -114,7 +114,8 @@ class EventController {
   }
 }
 
-// Wrap methods with asyncHandler
+// Wrap methods with asyncHandler after class definition
+// This approach maintains compatibility with ESLint and avoids arrow function binding issues
 EventController.prototype.listEvents = asyncHandler(EventController.prototype.listEvents);
 EventController.prototype.getEventDetails = asyncHandler(EventController.prototype.getEventDetails);
 EventController.prototype.createEvent = asyncHandler(EventController.prototype.createEvent);

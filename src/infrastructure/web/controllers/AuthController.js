@@ -34,7 +34,9 @@ class AuthController {
   }
 }
 
-// Wrap methods with asyncHandler
+// Wrap methods with asyncHandler after class definition
+// This approach is used instead of class field syntax to maintain compatibility with ESLint
+// and to avoid arrow function binding issues. Each method is wrapped to catch async errors.
 AuthController.prototype.login = asyncHandler(AuthController.prototype.login);
 AuthController.prototype.register = asyncHandler(AuthController.prototype.register);
 

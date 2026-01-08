@@ -39,7 +39,8 @@ class RegistrationController {
   }
 }
 
-// Wrap methods with asyncHandler
+// Wrap methods with asyncHandler after class definition
+// This approach maintains compatibility with ESLint and avoids arrow function binding issues
 RegistrationController.prototype.register = asyncHandler(RegistrationController.prototype.register);
 RegistrationController.prototype.cancel = asyncHandler(RegistrationController.prototype.cancel);
 
