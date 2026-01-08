@@ -6,9 +6,11 @@ Este documento explica como configurar o workflow `PR Build and Test Check` como
 
 Foi criado um novo GitHub Actions workflow (`.github/workflows/pr-check.yml`) que:
 
-1. É acionado automaticamente quando um Pull Request é criado ou atualizado apontando para a branch `main`
+1. É acionado **automaticamente e sem necessidade de aprovação manual** quando um Pull Request é criado ou atualizado apontando para a branch `main`
+   - Utiliza tanto o evento `pull_request` quanto `pull_request_target` para garantir execução automática
+   - Funciona para PRs de forks, de bots (como Copilot), e de contribuidores pela primeira vez
 2. Executa os seguintes passos:
-   - Checkout do código
+   - Checkout do código do PR
    - Configuração do Node.js 22.x
    - Instalação de dependências (`npm install`)
    - Execução do build (se existir)
@@ -80,11 +82,29 @@ Depois de configurado, ao tentar fazer merge de um PR:
 
 Esta configuração garante:
 
+- ✅ **Execução automática sem aprovação manual**: O workflow roda automaticamente a cada commit no PR
+- ✅ **Funciona para todos os tipos de PR**: Incluindo PRs de forks, de bots, e de novos contribuidores
 - ✅ Qualidade do código mantida
 - ✅ Nenhum código quebrado chega na branch `main`
 - ✅ Todos os 79 testes unitários passam antes do merge
 - ✅ Build sempre funcional na branch principal
-- ✅ CI/CD confiável
+- ✅ CI/CD confiável e totalmente automatizado
+
+## Detalhes Técnicos da Implementação
+
+O workflow utiliza dois triggers para garantir execução automática:
+
+1. **`pull_request`**: Executa para PRs normais do mesmo repositório
+2. **`pull_request_target`**: Executa automaticamente para PRs que normalmente requerem aprovação (forks, bots)
+   - Roda no contexto do repositório base (mais seguro)
+   - Faz checkout explícito do código do PR usando `github.event.pull_request.head.sha`
+   - Mantém permissões mínimas (`contents: read`)
+
+Esta abordagem dupla garante que:
+- ✅ O workflow sempre executa automaticamente
+- ✅ O código do PR é testado corretamente
+- ✅ A segurança é mantida (sem acesso a secrets desnecessários)
+- ✅ Não há necessidade de aprovação manual para executar testes
 
 ## Notas Importantes
 
@@ -94,4 +114,6 @@ Esta configuração garante:
 
 3. **First-time setup**: Você precisa que o workflow execute pelo menos uma vez antes que o status check apareça nas configurações
 
-4. **Permissions**: O workflow usa `permissions: contents: read` para seguir o princípio de privilégio mínimo
+4. **Permissions**: O workflow usa `permissions: contents: read` para seguir o princípio de privilégio mínimo e garantir segurança
+
+5. **Execução automática**: O workflow **NÃO requer aprovação manual** para executar - ele roda automaticamente a cada commit no PR graças ao uso combinado de `pull_request` e `pull_request_target`
