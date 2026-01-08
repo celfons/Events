@@ -139,7 +139,7 @@ describe('Users API Integration Tests', () => {
 
       // However, superusers can update the role after creation
       await request(app)
-        .put(`/api/users/${response.body.id}`)
+        .put(`/api/users/${response.body.data.id}`)
         .set('Authorization', `Bearer ${superuserToken}`)
         .send({ role: 'superuser' })
         .expect(200);
@@ -206,7 +206,7 @@ describe('Users API Integration Tests', () => {
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toHaveProperty('code');
-      expect(response.body.error).toContain('already');
+      expect(response.body.error.message).toContain('already');
     });
 
     it('should not validate email format (validation not implemented)', async () => {
