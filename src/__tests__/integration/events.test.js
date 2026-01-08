@@ -173,11 +173,12 @@ describe('Events API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 404 for invalid event id', async () => {
-      const response = await request(app).get('/api/events/invalid-id').expect(404);
+    it('should return 400 for invalid event id', async () => {
+      const response = await request(app).get('/api/events/invalid-id').expect(400);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
   });
 
