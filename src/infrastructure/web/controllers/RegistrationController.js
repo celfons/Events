@@ -1,3 +1,5 @@
+const { ErrorResponse, SuccessResponse, RegistrationResponse } = require('../dto');
+
 class RegistrationController {
   constructor(registerForEventUseCase, cancelRegistrationUseCase) {
     this.registerForEventUseCase = registerForEventUseCase;
@@ -9,12 +11,16 @@ class RegistrationController {
       const result = await this.registerForEventUseCase.execute(req.body);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(201).json(result.data);
+      const registration = RegistrationResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.created(registration, 'Registration created successfully');
+      return res.status(201).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -24,18 +30,22 @@ class RegistrationController {
       const { eventId } = req.body;
 
       if (!eventId) {
-        return res.status(400).json({ error: 'eventId is required in request body' });
+        const errorResponse = ErrorResponse.invalidInput('eventId is required in request body');
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
       const result = await this.cancelRegistrationUseCase.execute(eventId, id);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json({ message: result.message });
+      const successResponse = SuccessResponse.ok(null, result.message);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 }

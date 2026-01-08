@@ -40,11 +40,12 @@ describe('Auth API Integration Tests', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('token');
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user.email).toBe('test@example.com');
-      expect(response.body.user.username).toBe('testuser');
-      expect(response.body.user).not.toHaveProperty('password');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('token');
+      expect(response.body.data).toHaveProperty('user');
+      expect(response.body.data.user.email).toBe('test@example.com');
+      expect(response.body.data.user.username).toBe('testuser');
+      expect(response.body.data.user).not.toHaveProperty('password');
     });
 
     it('should return 401 for invalid credentials', async () => {
@@ -64,7 +65,8 @@ describe('Auth API Integration Tests', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Invalid credentials');
+      expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
+      expect(response.body.error.message).toBe('Invalid credentials');
     });
 
     it('should return 401 for non-existent user', async () => {
@@ -77,29 +79,34 @@ describe('Auth API Integration Tests', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Invalid credentials');
+      expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
+      expect(response.body.error.message).toBe('Invalid credentials');
     });
 
-    it('should return 401 for missing email', async () => {
+    it('should return 400 for missing email', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           password: 'password123'
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toBe('Validation failed');
     });
 
-    it('should return 401 for missing password', async () => {
+    it('should return 400 for missing password', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'test@example.com'
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toBe('Validation failed');
     });
   });
 });

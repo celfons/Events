@@ -57,10 +57,11 @@ describe('Registrations API Integration Tests', () => {
 
       const response = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.name).toBe('John Doe');
-      expect(response.body.email).toBe('john@example.com');
-      expect(response.body.status).toBe('active');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.name).toBe('John Doe');
+      expect(response.body.data.email).toBe('john@example.com');
+      expect(response.body.data.status).toBe('active');
 
       // Verify the event has the registration
       const event = await eventRepository.findById(eventId);
@@ -77,6 +78,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for invalid event id', async () => {
@@ -90,6 +92,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent event', async () => {
@@ -103,6 +106,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 when event is full', async () => {
@@ -134,7 +138,8 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('available slots');
+      expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.message).toContain('available slots');
     });
 
     it('should return 400 when participant is already registered', async () => {
@@ -152,7 +157,8 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('already registered');
+      expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.message).toContain('already registered');
     });
 
     it('should return 400 for invalid email format', async () => {
@@ -165,6 +171,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -180,7 +187,7 @@ describe('Registrations API Integration Tests', () => {
 
       const createResponse = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
-      const registrationId = createResponse.body.id;
+      const registrationId = createResponse.body.data.id;
 
       // Cancel the registration
       const response = await request(app)
@@ -204,6 +211,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent registration', async () => {
@@ -213,6 +221,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 when trying to cancel already cancelled registration', async () => {
@@ -226,7 +235,7 @@ describe('Registrations API Integration Tests', () => {
 
       const createResponse = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
-      const registrationId = createResponse.body.id;
+      const registrationId = createResponse.body.data.id;
 
       await request(app).post(`/api/registrations/${registrationId}/cancel`).send({ eventId: eventId }).expect(200);
 
@@ -237,7 +246,8 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Active registration not found');
+      expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.message).toContain('Active registration not found');
     });
   });
 
@@ -277,7 +287,7 @@ describe('Registrations API Integration Tests', () => {
         })
         .expect(201);
 
-      const registrationId = createResponse.body.id;
+      const registrationId = createResponse.body.data.id;
 
       // Verify registration exists
       let event = await eventRepository.findById(eventId);
@@ -337,7 +347,8 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('available slots');
+      expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.message).toContain('available slots');
     });
   });
 });

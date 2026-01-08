@@ -1,4 +1,6 @@
 const express = require('express');
+const validate = require('../middleware/validate');
+const { loginSchema } = require('../validation');
 
 /**
  * @swagger
@@ -48,7 +50,7 @@ function createAuthRoutes(authController) {
    *       401:
    *         description: Invalid credentials
    */
-  router.post('/login', (req, res) => authController.login(req, res));
+  router.post('/login', validate({ body: loginSchema }), (req, res) => authController.login(req, res));
 
   return router;
 }

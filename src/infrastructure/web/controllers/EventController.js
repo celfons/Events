@@ -1,3 +1,5 @@
+const { ErrorResponse, SuccessResponse, EventResponse, EventDetailsResponse } = require('../dto');
+
 class EventController {
   constructor(
     listEventsUseCase,
@@ -22,12 +24,16 @@ class EventController {
       const result = await this.listEventsUseCase.execute();
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const events = EventResponse.fromEntities(result.data);
+      const successResponse = SuccessResponse.list(events);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -37,12 +43,18 @@ class EventController {
       const result = await this.getEventDetailsUseCase.execute(id);
 
       if (!result.success) {
-        return res.status(404).json({ error: result.error });
+        const errorResponse = ErrorResponse.notFound(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      // result.data contains { event, registrationsCount }
+      const eventData = { ...result.data.event, participants: [], participantsCount: result.data.registrationsCount };
+      const event = EventDetailsResponse.fromEntity(eventData);
+      const successResponse = SuccessResponse.ok(event);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -52,12 +64,16 @@ class EventController {
       const result = await this.createEventUseCase.execute(req.body, userId);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(201).json(result.data);
+      const event = EventResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.created(event);
+      return res.status(201).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -68,12 +84,16 @@ class EventController {
       const result = await this.updateEventUseCase.execute(id, req.body, userId);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const event = EventResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.updated(event);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -84,12 +104,15 @@ class EventController {
       const result = await this.deleteEventUseCase.execute(id, userId);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const successResponse = SuccessResponse.deleted('Event deleted successfully');
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -99,12 +122,15 @@ class EventController {
       const result = await this.getEventParticipantsUseCase.execute(id);
 
       if (!result.success) {
-        return res.status(404).json({ error: result.error });
+        const errorResponse = ErrorResponse.notFound(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const successResponse = SuccessResponse.list(result.data);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 
@@ -114,12 +140,16 @@ class EventController {
       const result = await this.listUserEventsUseCase.execute(userId);
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      return res.status(200).json(result.data);
+      const events = EventResponse.fromEntities(result.data);
+      const successResponse = SuccessResponse.list(events);
+      return res.status(200).json(successResponse.toJSON());
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
   }
 }
