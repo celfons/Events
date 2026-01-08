@@ -80,26 +80,28 @@ describe('Auth API Integration Tests', () => {
       expect(response.body.error).toBe('Invalid credentials');
     });
 
-    it('should return 401 for missing email', async () => {
+    it('should return 400 for missing email', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           password: 'password123'
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Validation error');
     });
 
-    it('should return 401 for missing password', async () => {
+    it('should return 400 for missing password', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'test@example.com'
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Validation error');
     });
   });
 });

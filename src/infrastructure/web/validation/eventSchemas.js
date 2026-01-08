@@ -11,7 +11,7 @@ const createEventSchema = z.object({
   description: nonEmptyStringSchema,
   dateTime: dateTimeSchema,
   totalSlots: z.number().int().positive({ message: 'Total slots must be a positive integer' }),
-  local: nonEmptyStringSchema.max(500, { message: 'Location must not exceed 500 characters' })
+  local: z.string().min(1).max(500, { message: 'Location must not exceed 500 characters' }).optional()
 });
 
 // Schema for updating an event (all fields optional)
