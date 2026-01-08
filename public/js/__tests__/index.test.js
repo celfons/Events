@@ -26,6 +26,9 @@ describe('index.js - Core functionality', () => {
   
   beforeAll(() => {
     // Load required files
+    // Note: Using eval() here for testing legacy browser scripts that aren't modularized.
+    // This is acceptable in a test environment where we need to test existing code
+    // without refactoring it. For new code, proper module exports should be used.
     const authUtilsPath = path.join(__dirname, '..', 'auth-utils.js');
     const indexPath = path.join(__dirname, '..', 'index.js');
     global.eval(fs.readFileSync(authUtilsPath, 'utf8'));

@@ -34,6 +34,7 @@ describe('API Contract Tests', () => {
   describe('Events API (/api/events)', () => {
     it('should call GET /api/events with correct format', async () => {
       // Load auth utils and index.js
+      // Note: Using eval() to test legacy browser scripts. See index.test.js for explanation.
       const authUtilsPath = path.join(__dirname, '..', 'auth-utils.js');
       const indexPath = path.join(__dirname, '..', 'index.js');
       eval(fs.readFileSync(authUtilsPath, 'utf8'));
