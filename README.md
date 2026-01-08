@@ -115,6 +115,8 @@ npm start
 
 A aplicação possui uma API completa documentada com Swagger. Acesse `/api-docs` para ver todos os endpoints disponíveis e testá-los interativamente.
 
+💡 **Importante**: Endpoints que criam, editam ou excluem eventos requerem autenticação JWT. Faça login primeiro para obter o token.
+
 ### Principais endpoints:
 
 **Autenticação:**
