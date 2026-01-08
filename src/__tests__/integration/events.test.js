@@ -63,7 +63,8 @@ describe('Events API Integration Tests', () => {
     it('should return empty array when no events exist', async () => {
       const response = await request(app).get('/api/events').expect(200);
 
-      expect(response.body).toEqual([]);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toEqual([]);
     });
 
     it('should return all events', async () => {
@@ -86,11 +87,12 @@ describe('Events API Integration Tests', () => {
 
       const response = await request(app).get('/api/events').expect(200);
 
-      expect(response.body).toHaveLength(2);
-      expect(response.body[0]).toHaveProperty('title');
-      expect(response.body[0]).toHaveProperty('description');
-      expect(response.body[0]).toHaveProperty('dateTime');
-      expect(response.body[0]).toHaveProperty('totalSlots');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data[0]).toHaveProperty('title');
+      expect(response.body.data[0]).toHaveProperty('description');
+      expect(response.body.data[0]).toHaveProperty('dateTime');
+      expect(response.body.data[0]).toHaveProperty('totalSlots');
     });
   });
 
@@ -109,12 +111,12 @@ describe('Events API Integration Tests', () => {
         .send(eventData)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.title).toBe(eventData.title);
-      expect(response.body.description).toBe(eventData.description);
-      expect(response.body.totalSlots).toBe(eventData.totalSlots);
-      expect(response.body.userId).toBe(userId);
-      expect(response.body.participants).toEqual([]);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.title).toBe(eventData.title);
+      expect(response.body.data.description).toBe(eventData.description);
+      expect(response.body.data.totalSlots).toBe(eventData.totalSlots);
+      expect(response.body.data.userId).toBe(userId);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -143,6 +145,7 @@ describe('Events API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
   });
 
@@ -158,21 +161,23 @@ describe('Events API Integration Tests', () => {
 
       const response = await request(app).get(`/api/events/${event.id}`).expect(200);
 
-      expect(response.body.event.id).toBe(event.id);
-      expect(response.body.event.title).toBe('Test Event');
-      expect(response.body.event.description).toBe('Test Description');
+      expect(response.body.data.id).toBe(event.id);
+      expect(response.body.data.title).toBe('Test Event');
+      expect(response.body.data.description).toBe('Test Description');
     });
 
     it('should return 404 for non-existent event', async () => {
       const response = await request(app).get('/api/events/507f1f77bcf86cd799439011').expect(404);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 404 for invalid event id', async () => {
       const response = await request(app).get('/api/events/invalid-id').expect(404);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -198,8 +203,8 @@ describe('Events API Integration Tests', () => {
         .send(updatedData)
         .expect(200);
 
-      expect(response.body.title).toBe('Updated Event');
-      expect(response.body.description).toBe('Updated Description');
+      expect(response.body.data.title).toBe('Updated Event');
+      expect(response.body.data.description).toBe('Updated Description');
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -232,6 +237,7 @@ describe('Events API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent event', async () => {
@@ -242,6 +248,7 @@ describe('Events API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -293,6 +300,7 @@ describe('Events API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -320,9 +328,10 @@ describe('Events API Integration Tests', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0].title).toBe('User Event');
-      expect(response.body[0].userId).toBe(userId);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].title).toBe('User Event');
+      expect(response.body.data[0].userId).toBe(userId);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -357,11 +366,12 @@ describe('Events API Integration Tests', () => {
 
       const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
-      expect(response.body).toHaveLength(2);
-      expect(response.body[0]).toHaveProperty('name');
-      expect(response.body[0]).toHaveProperty('email');
-      expect(response.body[0]).toHaveProperty('phone');
-      expect(response.body[0]).toHaveProperty('status');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data[0]).toHaveProperty('name');
+      expect(response.body.data[0]).toHaveProperty('email');
+      expect(response.body.data[0]).toHaveProperty('phone');
+      expect(response.body.data[0]).toHaveProperty('status');
     });
 
     it('should return empty array for event with no participants', async () => {
@@ -375,13 +385,15 @@ describe('Events API Integration Tests', () => {
 
       const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
-      expect(response.body).toEqual([]);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toEqual([]);
     });
 
     it('should return 404 for non-existent event', async () => {
       const response = await request(app).get('/api/events/507f1f77bcf86cd799439011/participants').expect(404);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 });

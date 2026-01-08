@@ -57,10 +57,11 @@ describe('Registrations API Integration Tests', () => {
 
       const response = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.name).toBe('John Doe');
-      expect(response.body.email).toBe('john@example.com');
-      expect(response.body.status).toBe('active');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.name).toBe('John Doe');
+      expect(response.body.data.email).toBe('john@example.com');
+      expect(response.body.data.status).toBe('active');
 
       // Verify the event has the registration
       const event = await eventRepository.findById(eventId);
@@ -77,6 +78,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for invalid event id', async () => {
@@ -90,6 +92,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent event', async () => {
@@ -103,6 +106,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 when event is full', async () => {
@@ -134,6 +138,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
       expect(response.body.error).toContain('available slots');
     });
 
@@ -152,6 +157,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
       expect(response.body.error).toContain('already registered');
     });
 
@@ -165,6 +171,7 @@ describe('Registrations API Integration Tests', () => {
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -204,6 +211,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent registration', async () => {
@@ -213,6 +221,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 when trying to cancel already cancelled registration', async () => {
@@ -237,6 +246,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
       expect(response.body.error).toContain('Active registration not found');
     });
   });
@@ -337,6 +347,7 @@ describe('Registrations API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
       expect(response.body.error).toContain('available slots');
     });
   });

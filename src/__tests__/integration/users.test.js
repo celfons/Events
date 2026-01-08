@@ -63,7 +63,8 @@ describe('Users API Integration Tests', () => {
         .set('Authorization', `Bearer ${superuserToken}`)
         .expect(200);
 
-      expect(response.body).toHaveLength(2);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveLength(2);
       expect(response.body.some(u => u.email === 'superuser@example.com')).toBe(true);
       expect(response.body.some(u => u.email === 'regular@example.com')).toBe(true);
     });
@@ -79,6 +80,7 @@ describe('Users API Integration Tests', () => {
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -97,11 +99,12 @@ describe('Users API Integration Tests', () => {
         .send(userData)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.username).toBe('newuser');
-      expect(response.body.email).toBe('newuser@example.com');
-      expect(response.body.role).toBe('user');
-      expect(response.body).not.toHaveProperty('password');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.username).toBe('newuser');
+      expect(response.body.data.email).toBe('newuser@example.com');
+      expect(response.body.data.role).toBe('user');
+      expect(response.body.data).not.toHaveProperty('password');
 
       // Verify user can login
       const loginResponse = await request(app)
@@ -132,7 +135,7 @@ describe('Users API Integration Tests', () => {
         .expect(201);
 
       // Role is always 'user' regardless of what was requested
-      expect(response.body.role).toBe('user');
+      expect(response.body.data.role).toBe('user');
 
       // However, superusers can update the role after creation
       await request(app)
@@ -168,6 +171,7 @@ describe('Users API Integration Tests', () => {
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for missing required fields', async () => {
@@ -183,6 +187,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for duplicate email', async () => {
@@ -200,6 +205,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
       expect(response.body.error).toContain('already');
     });
 
@@ -219,7 +225,7 @@ describe('Users API Integration Tests', () => {
         .send(userData)
         .expect(201);
 
-      expect(response.body.email).toBe('invalid-email');
+      expect(response.body.data.email).toBe('invalid-email');
     });
 
     it('should return 400 for short password', async () => {
@@ -237,6 +243,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -254,7 +261,7 @@ describe('Users API Integration Tests', () => {
         .expect(200);
 
       expect(response.body.username).toBe('updateduser');
-      expect(response.body.email).toBe('updated@example.com');
+      expect(response.body.data.email).toBe('updated@example.com');
     });
 
     it('should update user password as superuser', async () => {
@@ -291,7 +298,7 @@ describe('Users API Integration Tests', () => {
         .send(updatedData)
         .expect(200);
 
-      expect(response.body.role).toBe('superuser');
+      expect(response.body.data.role).toBe('superuser');
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -306,6 +313,7 @@ describe('Users API Integration Tests', () => {
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent user', async () => {
@@ -316,6 +324,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for invalid user id', async () => {
@@ -326,6 +335,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
@@ -359,6 +369,7 @@ describe('Users API Integration Tests', () => {
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for non-existent user', async () => {
@@ -368,6 +379,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
 
     it('should return 400 for invalid user id', async () => {
@@ -377,6 +389,7 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
     });
   });
 
