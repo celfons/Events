@@ -15,7 +15,8 @@ function validate(schema, source = 'body') {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map((err) => ({
+        // Safely access error.errors with fallback
+        const errors = (error.errors || []).map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));
