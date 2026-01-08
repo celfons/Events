@@ -41,7 +41,7 @@ describe('Events API Integration Tests', () => {
       email: 'test@example.com',
       password: 'password123'
     });
-    authToken = loginResponse.body.token;
+    authToken = loginResponse.body.data.token;
 
     // Create a superuser and login
     const superuser = await userRepository.create({
@@ -56,7 +56,7 @@ describe('Events API Integration Tests', () => {
       email: 'superuser@example.com',
       password: 'password123'
     });
-    superuserToken = superuserLoginResponse.body.token;
+    superuserToken = superuserLoginResponse.body.data.token;
   });
 
   describe('GET /api/events', () => {

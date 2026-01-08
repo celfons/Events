@@ -38,7 +38,7 @@ describe('Users API Integration Tests', () => {
       email: 'superuser@example.com',
       password: 'password123'
     });
-    superuserToken = superuserLoginResponse.body.token;
+    superuserToken = superuserLoginResponse.body.data.token;
 
     // Create and login as regular user
     const regularUser = await userRepository.create({
@@ -53,7 +53,7 @@ describe('Users API Integration Tests', () => {
       email: 'regular@example.com',
       password: 'password123'
     });
-    regularUserToken = regularUserLoginResponse.body.token;
+    regularUserToken = regularUserLoginResponse.body.data.token;
   });
 
   describe('GET /api/users', () => {
@@ -65,8 +65,8 @@ describe('Users API Integration Tests', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveLength(2);
-      expect(response.body.some(u => u.email === 'superuser@example.com')).toBe(true);
-      expect(response.body.some(u => u.email === 'regular@example.com')).toBe(true);
+      expect(response.body.data.some(u => u.email === 'superuser@example.com')).toBe(true);
+      expect(response.body.data.some(u => u.email === 'regular@example.com')).toBe(true);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -260,7 +260,7 @@ describe('Users API Integration Tests', () => {
         .send(updatedData)
         .expect(200);
 
-      expect(response.body.username).toBe('updateduser');
+      expect(response.body.data.username).toBe('updateduser');
       expect(response.body.data.email).toBe('updated@example.com');
     });
 
