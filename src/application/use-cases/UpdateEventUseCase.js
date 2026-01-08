@@ -66,7 +66,8 @@ class UpdateEventUseCase {
       if (eventData.totalSlots !== undefined && eventData.availableSlots !== undefined) {
         return {
           success: false,
-          error: 'Cannot manually set availableSlots when updating totalSlots. availableSlots will be calculated automatically.'
+          error:
+            'Cannot manually set availableSlots when updating totalSlots. availableSlots will be calculated automatically.'
         };
       }
 

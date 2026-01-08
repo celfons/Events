@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('../logging/logger');
 
 class DatabaseConnection {
   constructor() {
@@ -8,10 +9,10 @@ class DatabaseConnection {
   async connect(uri) {
     try {
       this.connection = await mongoose.connect(uri);
-      console.log('✅ Connected to MongoDB successfully');
+      logger.info('Connected to MongoDB successfully');
       return this.connection;
     } catch (error) {
-      console.error('❌ MongoDB connection error:', error);
+      logger.error({ err: error }, 'MongoDB connection error');
       throw error;
     }
   }
@@ -19,7 +20,7 @@ class DatabaseConnection {
   async disconnect() {
     if (this.connection) {
       await mongoose.disconnect();
-      console.log('Disconnected from MongoDB');
+      logger.info('Disconnected from MongoDB');
     }
   }
 

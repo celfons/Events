@@ -59,16 +59,13 @@ class RegisterForEventUseCase {
       }
 
       // Add participant to event (atomically decrements slots)
-      const registration = await this.eventRepository.addParticipant(
-        registrationData.eventId,
-        {
-          name: registrationData.name,
-          email: registrationData.email,
-          phone: registrationData.phone,
-          status: 'active'
-        }
-      );
-      
+      const registration = await this.eventRepository.addParticipant(registrationData.eventId, {
+        name: registrationData.name,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        status: 'active'
+      });
+
       if (!registration) {
         return {
           success: false,

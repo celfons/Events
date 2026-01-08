@@ -8,9 +8,7 @@ describe('GetEventParticipantsUseCase', () => {
     mockEventRepository = {
       findById: jest.fn()
     };
-    getEventParticipantsUseCase = new GetEventParticipantsUseCase(
-      mockEventRepository
-    );
+    getEventParticipantsUseCase = new GetEventParticipantsUseCase(mockEventRepository);
   });
 
   describe('Validation', () => {

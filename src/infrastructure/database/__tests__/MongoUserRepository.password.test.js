@@ -39,10 +39,10 @@ describe('MongoUserRepository - Password Update Integration', () => {
       expect(UserModel.findByIdAndUpdate).toHaveBeenCalled();
       const updateCall = UserModel.findByIdAndUpdate.mock.calls[0];
       const passwordArg = updateCall[1].password;
-      
+
       // Verify the password is not plain text
       expect(passwordArg).not.toBe('newpassword123');
-      
+
       // Verify it's a valid bcrypt hash (should be 60 characters starting with $2)
       expect(passwordArg).toMatch(/^\$2[aby]\$\d{2}\$/);
       expect(passwordArg.length).toBe(60);

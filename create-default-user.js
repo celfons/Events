@@ -11,7 +11,7 @@ async function createDefaultUser() {
 
     // Check if default user already exists
     const existingUser = await UserModel.findOne({ email: 'user@events.com' });
-    
+
     if (existingUser) {
       console.log('Default user already exists:');
       console.log(`  Username: ${existingUser.username}`);
@@ -35,7 +35,7 @@ async function createDefaultUser() {
     console.log('Default user created successfully:');
     console.log(`  Username: ${defaultUser.username}`);
     console.log(`  Email: ${defaultUser.email}`);
-    console.log(`  Password: user123`);
+    console.log('  Password: user123');
     console.log(`  Role: ${defaultUser.role}`);
     console.log('\nNOTE: This is a development user. Do not use in production!');
 

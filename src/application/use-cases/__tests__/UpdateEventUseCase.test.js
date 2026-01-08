@@ -244,7 +244,7 @@ describe('UpdateEventUseCase', () => {
       const existingEvent = { id: '123', totalSlots: 50, participants: [] };
       mockEventRepository.findById.mockResolvedValue(existingEvent);
 
-      const result = await updateEventUseCase.execute('123', { 
+      const result = await updateEventUseCase.execute('123', {
         totalSlots: 100,
         availableSlots: 50
       });
@@ -349,7 +349,9 @@ describe('UpdateEventUseCase', () => {
       const result = await updateEventUseCase.execute('789', { totalSlots: 3 });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Cannot reduce total slots to 3. There are 5 active participants. Please remove 2 participant(s) first.');
+      expect(result.error).toBe(
+        'Cannot reduce total slots to 3. There are 5 active participants. Please remove 2 participant(s) first.'
+      );
     });
 
     it('should allow totalSlots update when equal to active participants count', async () => {

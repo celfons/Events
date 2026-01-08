@@ -33,7 +33,7 @@ class CancelRegistrationUseCase {
 
       // Cancel participant (atomically increments slots)
       const success = await this.eventRepository.cancelParticipant(eventId, participantId);
-      
+
       if (!success) {
         return {
           success: false,

@@ -11,7 +11,7 @@ describe('Swagger Documentation', () => {
   describe('GET /api-docs', () => {
     it('should serve Swagger UI HTML page', async () => {
       const response = await request(app).get('/api-docs/');
-      
+
       expect(response.status).toBe(200);
       expect(response.text).toContain('swagger');
     });
@@ -20,7 +20,7 @@ describe('Swagger Documentation', () => {
   describe('Swagger Specification', () => {
     it('should have valid OpenAPI specification', () => {
       const swaggerSpec = require('../swagger');
-      
+
       expect(swaggerSpec).toBeDefined();
       expect(swaggerSpec.openapi).toBe('3.0.0');
       expect(swaggerSpec.info).toBeDefined();
@@ -30,7 +30,7 @@ describe('Swagger Documentation', () => {
 
     it('should define all required schemas', () => {
       const swaggerSpec = require('../swagger');
-      
+
       expect(swaggerSpec.components.schemas.Event).toBeDefined();
       expect(swaggerSpec.components.schemas.EventInput).toBeDefined();
       expect(swaggerSpec.components.schemas.Registration).toBeDefined();
@@ -41,7 +41,7 @@ describe('Swagger Documentation', () => {
 
     it('should document all event endpoints', () => {
       const swaggerSpec = require('../swagger');
-      
+
       expect(swaggerSpec.paths['/api/events']).toBeDefined();
       expect(swaggerSpec.paths['/api/events'].get).toBeDefined();
       expect(swaggerSpec.paths['/api/events'].post).toBeDefined();
@@ -55,7 +55,7 @@ describe('Swagger Documentation', () => {
 
     it('should document all registration endpoints', () => {
       const swaggerSpec = require('../swagger');
-      
+
       expect(swaggerSpec.paths['/api/registrations']).toBeDefined();
       expect(swaggerSpec.paths['/api/registrations'].post).toBeDefined();
       expect(swaggerSpec.paths['/api/registrations/{id}/cancel']).toBeDefined();

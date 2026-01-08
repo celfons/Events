@@ -1,5 +1,13 @@
 class EventController {
-  constructor(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase) {
+  constructor(
+    listEventsUseCase,
+    getEventDetailsUseCase,
+    createEventUseCase,
+    updateEventUseCase,
+    deleteEventUseCase,
+    getEventParticipantsUseCase,
+    listUserEventsUseCase
+  ) {
     this.listEventsUseCase = listEventsUseCase;
     this.getEventDetailsUseCase = getEventDetailsUseCase;
     this.createEventUseCase = createEventUseCase;
@@ -12,7 +20,7 @@ class EventController {
   async listEvents(req, res) {
     try {
       const result = await this.listEventsUseCase.execute();
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -27,7 +35,7 @@ class EventController {
     try {
       const { id } = req.params;
       const result = await this.getEventDetailsUseCase.execute(id);
-      
+
       if (!result.success) {
         return res.status(404).json({ error: result.error });
       }
@@ -42,7 +50,7 @@ class EventController {
     try {
       const userId = req.user ? req.user.userId : null;
       const result = await this.createEventUseCase.execute(req.body, userId);
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -58,7 +66,7 @@ class EventController {
       const { id } = req.params;
       const userId = req.user ? req.user.userId : null;
       const result = await this.updateEventUseCase.execute(id, req.body, userId);
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -74,7 +82,7 @@ class EventController {
       const { id } = req.params;
       const userId = req.user ? req.user.userId : null;
       const result = await this.deleteEventUseCase.execute(id, userId);
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -89,7 +97,7 @@ class EventController {
     try {
       const { id } = req.params;
       const result = await this.getEventParticipantsUseCase.execute(id);
-      
+
       if (!result.success) {
         return res.status(404).json({ error: result.error });
       }
@@ -104,7 +112,7 @@ class EventController {
     try {
       const userId = req.user.userId;
       const result = await this.listUserEventsUseCase.execute(userId);
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }

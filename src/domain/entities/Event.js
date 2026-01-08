@@ -1,5 +1,17 @@
 class Event {
-  constructor({ id, title, description, dateTime, totalSlots, availableSlots, participants, createdAt, userId, local, isActive }) {
+  constructor({
+    id,
+    title,
+    description,
+    dateTime,
+    totalSlots,
+    availableSlots,
+    participants,
+    createdAt,
+    userId,
+    local,
+    isActive
+  }) {
     this.id = id;
     this.title = title;
     this.description = description;
