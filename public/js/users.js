@@ -110,7 +110,7 @@ async function loadUsers() {
             let errorMessage = 'Erro ao carregar usuários';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -247,7 +247,7 @@ submitCreateUserBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao criar usuário';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -349,7 +349,7 @@ submitEditUserBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao atualizar usuário';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -396,7 +396,7 @@ deleteUserBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao excluir usuário';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }

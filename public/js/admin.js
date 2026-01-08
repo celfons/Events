@@ -133,7 +133,7 @@ async function loadEvents() {
             }
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -365,7 +365,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao criar evento';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -405,7 +405,7 @@ async function openEventDetailsModal(eventId) {
             let errorMessage = 'Erro ao carregar detalhes do evento';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -500,7 +500,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao atualizar evento';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -547,7 +547,7 @@ deleteEventBtn.addEventListener('click', async () => {
             let errorMessage = 'Erro ao excluir evento';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -615,7 +615,7 @@ async function loadParticipants(eventId) {
             let errorMessage = 'Erro ao carregar participantes';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -803,7 +803,7 @@ async function removeParticipant(registrationId, participantName) {
             let errorMessage = 'Erro ao remover participante';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -869,7 +869,7 @@ document.getElementById('submitRegisterParticipant').addEventListener('click', a
             let errorMessage = 'Erro ao inscrever participante';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
