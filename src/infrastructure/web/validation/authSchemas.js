@@ -13,7 +13,7 @@ const registerSchema = z.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .max(100, 'Password is too long'),
-  role: z.enum(['user', 'admin', 'superadmin']).optional(),
+  role: z.enum(['user', 'superuser']).optional(),
 });
 
 module.exports = {

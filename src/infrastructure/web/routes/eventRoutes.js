@@ -42,7 +42,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/', (req, res) => eventController.listEvents(req, res));
+  router.get('/', (req, res, next) => eventController.listEvents(req, res, next));
 
   /**
    * @swagger
@@ -261,7 +261,7 @@ function createEventRoutes(eventController) {
     authenticateToken,
     validate(eventIdSchema, 'params'),
     validate(updateEventSchema, 'body'),
-    (req, res) => eventController.updateEvent(req, res)
+    (req, res, next) => eventController.updateEvent(req, res, next)
   );
 
   /**

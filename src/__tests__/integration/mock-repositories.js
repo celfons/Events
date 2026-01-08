@@ -7,14 +7,28 @@ const User = require('../../domain/entities/User');
 const Event = require('../../domain/entities/Event');
 const Registration = require('../../domain/entities/Registration');
 
+/**
+ * Generate a MongoDB-style ObjectId (24 hex characters)
+ */
+function generateObjectId() {
+  const timestamp = Math.floor(Date.now() / 1000)
+    .toString(16)
+    .padStart(8, '0');
+  const randomBytes = Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 256)
+      .toString(16)
+      .padStart(2, '0')
+  ).join('');
+  return timestamp + randomBytes.substring(0, 16);
+}
+
 class MockUserRepository {
   constructor() {
     this.users = new Map();
-    this.nextId = 1;
   }
 
   async create(userData) {
-    const id = String(this.nextId++);
+    const id = generateObjectId();
 
     // Hash password if provided (simulate Mongoose pre-save hook)
     let hashedPassword = userData.password;
@@ -122,18 +136,16 @@ class MockUserRepository {
 
   clear() {
     this.users.clear();
-    this.nextId = 1;
   }
 }
 
 class MockEventRepository {
   constructor() {
     this.events = new Map();
-    this.nextId = 1;
   }
 
   async create(eventData) {
-    const id = String(this.nextId++);
+    const id = generateObjectId();
     const event = new Event({
       id,
       title: eventData.title,
@@ -319,7 +331,7 @@ class MockEventRepository {
     }
 
     const participant = {
-      _id: String(Date.now()),
+      _id: generateObjectId(),
       ...participantData,
       registeredAt: new Date(),
       status: 'active',
@@ -404,7 +416,6 @@ class MockEventRepository {
 
   clear() {
     this.events.clear();
-    this.nextId = 1;
   }
 }
 

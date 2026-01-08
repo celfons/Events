@@ -200,12 +200,12 @@ describe('Users API Integration Tests', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('already');
+      expect(response.body.error).toHaveProperty('message');
+      expect(response.body.error.message.toLowerCase()).toContain('already');
     });
 
-    it('should not validate email format (validation not implemented)', async () => {
-      // Note: Email validation is not currently implemented in RegisterUseCase
-      // This test documents the current behavior
+    it('should validate email format and return 400 for invalid email', async () => {
+      // Email validation is now implemented via Zod validation
       const userData = {
         username: 'newuser',
         email: 'invalid-email',
@@ -217,9 +217,10 @@ describe('Users API Integration Tests', () => {
         .post('/api/users')
         .set('Authorization', `Bearer ${superuserToken}`)
         .send(userData)
-        .expect(201);
+        .expect(400);
 
-      expect(response.body.email).toBe('invalid-email');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
     });
 
     it('should return 400 for short password', async () => {

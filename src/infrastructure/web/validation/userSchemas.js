@@ -1,14 +1,32 @@
 const { z } = require('zod');
 
 // User validation schemas
-const updateUserSchema = z.object({
-  name: z
+const createUserSchema = z.object({
+  username: z
     .string()
-    .min(2, 'Name must be at least 2 characters')
-    .max(100, 'Name is too long')
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username is too long'),
+  email: z.string().email('Invalid email format'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(100, 'Password is too long'),
+  role: z.enum(['user', 'superuser']).optional(),
+});
+
+const updateUserSchema = z.object({
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username is too long')
     .optional(),
   email: z.string().email('Invalid email format').optional(),
-  role: z.enum(['user', 'admin', 'superadmin']).optional(),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(100, 'Password is too long')
+    .optional(),
+  role: z.enum(['user', 'superuser']).optional(),
 });
 
 const userIdSchema = z.object({
@@ -16,6 +34,7 @@ const userIdSchema = z.object({
 });
 
 module.exports = {
+  createUserSchema,
   updateUserSchema,
   userIdSchema,
 };

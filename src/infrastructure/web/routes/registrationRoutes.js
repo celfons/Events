@@ -91,7 +91,7 @@ function createRegistrationRoutes(registrationController) {
     '/:id/cancel',
     validate(registrationIdSchema, 'params'),
     validate(cancelRegistrationSchema, 'body'),
-    (req, res) => registrationController.cancel(req, res)
+    (req, res, next) => registrationController.cancel(req, res, next)
   );
 
   return router;
