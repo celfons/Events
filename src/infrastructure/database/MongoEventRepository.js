@@ -217,13 +217,13 @@ class MongoEventRepository extends EventRepository {
       availableSlots: eventModel.availableSlots,
       participants: eventModel.participants
         ? eventModel.participants.map(p => ({
-            id: p._id.toString(),
-            name: p.name,
-            email: p.email,
-            phone: p.phone,
-            registeredAt: p.registeredAt,
-            status: p.status
-          }))
+          id: p._id.toString(),
+          name: p.name,
+          email: p.email,
+          phone: p.phone,
+          registeredAt: p.registeredAt,
+          status: p.status
+        }))
         : [],
       createdAt: eventModel.createdAt,
       userId: eventModel.userId ? eventModel.userId.toString() : null,
