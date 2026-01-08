@@ -6,7 +6,7 @@ const logger = require('./logger');
  * Logs all incoming requests with structured logging
  */
 const requestLogger = pinoHttp({
-  logger: logger,
+  logger,
   customLogLevel: (req, res, err) => {
     if (res.statusCode >= 500 || err) {
       return 'error';
