@@ -51,16 +51,16 @@ function createApp() {
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ['\'self\''],
+          defaultSrc: ["'self'"],
           // Note: 'unsafe-inline' is required for Bootstrap's inline styles
           // Consider using nonces or hashes in a future enhancement
-          styleSrc: ['\'self\'', '\'unsafe-inline\'', 'https://cdn.jsdelivr.net'],
-          scriptSrc: ['\'self\'', 'https://cdn.jsdelivr.net'],
-          fontSrc: ['\'self\'', 'https://cdn.jsdelivr.net'],
-          imgSrc: ['\'self\'', 'data:', 'https:'],
-          connectSrc: ['\'self\''],
-          frameSrc: ['\'none\''],
-          objectSrc: ['\'none\''],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          fontSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
           upgradeInsecureRequests: []
         }
       },
