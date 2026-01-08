@@ -33,22 +33,31 @@ function createAuthRoutes(authController) {
    *             properties:
    *               email:
    *                 type: string
+   *                 format: email
+   *                 example: admin@example.com
    *               password:
    *                 type: string
+   *                 format: password
+   *                 example: senha123
    *     responses:
    *       200:
    *         description: Login successful
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 token:
-   *                   type: string
-   *                 user:
-   *                   type: object
+   *               $ref: '#/components/schemas/LoginSuccessResponse'
    *       401:
    *         description: Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   router.post('/login', validate({ body: loginSchema }), (req, res) => authController.login(req, res));
 

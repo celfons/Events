@@ -26,9 +26,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Event'
+   *               $ref: '#/components/schemas/EventListResponse'
    *       400:
    *         description: Bad request
    *         content:
@@ -59,9 +57,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Event'
+   *               $ref: '#/components/schemas/EventListResponse'
    *       401:
    *         description: Unauthorized - Authentication required
    *         content:
@@ -98,7 +94,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/Event'
+   *               $ref: '#/components/schemas/EventResponse'
    *       400:
    *         description: Bad request - Invalid input data
    *         content:
@@ -142,9 +138,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Registration'
+   *               $ref: '#/components/schemas/RegistrationListResponse'
    *       404:
    *         description: Event not found
    *         content:
@@ -182,7 +176,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/Event'
+   *               $ref: '#/components/schemas/EventDetailsResponse'
    *       404:
    *         description: Event not found
    *         content:
@@ -226,7 +220,7 @@ function createEventRoutes(eventController) {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/Event'
+   *               $ref: '#/components/schemas/EventResponse'
    *       400:
    *         description: Bad request - Invalid input data
    *         content:
