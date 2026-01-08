@@ -47,7 +47,9 @@ class EventController {
         return res.status(errorResponse.status).json(errorResponse.toJSON());
       }
 
-      const event = EventDetailsResponse.fromEntity(result.data);
+      // result.data contains { event, registrationsCount }
+      const eventData = { ...result.data.event, participants: [], participantsCount: result.data.registrationsCount };
+      const event = EventDetailsResponse.fromEntity(eventData);
       const successResponse = SuccessResponse.ok(event);
       return res.status(200).json(successResponse.toJSON());
     } catch (error) {
