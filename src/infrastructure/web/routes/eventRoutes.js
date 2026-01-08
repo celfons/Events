@@ -1,5 +1,7 @@
 const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createEventSchema, updateEventSchema, eventIdParamSchema } = require('../validation');
 
 /**
  * @swagger
@@ -116,7 +118,9 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', authenticateToken, (req, res) => eventController.createEvent(req, res));
+  router.post('/', authenticateToken, validate({ body: createEventSchema }), (req, res) =>
+    eventController.createEvent(req, res)
+  );
 
   /**
    * @swagger
@@ -154,7 +158,9 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/:id/participants', (req, res) => eventController.getEventParticipants(req, res));
+  router.get('/:id/participants', validate({ params: eventIdParamSchema }), (req, res) =>
+    eventController.getEventParticipants(req, res)
+  );
 
   /**
    * @swagger
@@ -190,7 +196,7 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/:id', (req, res) => eventController.getEventDetails(req, res));
+  router.get('/:id', validate({ params: eventIdParamSchema }), (req, res) => eventController.getEventDetails(req, res));
 
   /**
    * @swagger
@@ -246,7 +252,9 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.put('/:id', authenticateToken, (req, res) => eventController.updateEvent(req, res));
+  router.put('/:id', authenticateToken, validate({ params: eventIdParamSchema, body: updateEventSchema }), (req, res) =>
+    eventController.updateEvent(req, res)
+  );
 
   /**
    * @swagger
@@ -296,7 +304,9 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.delete('/:id', authenticateToken, (req, res) => eventController.deleteEvent(req, res));
+  router.delete('/:id', authenticateToken, validate({ params: eventIdParamSchema }), (req, res) =>
+    eventController.deleteEvent(req, res)
+  );
 
   return router;
 }
