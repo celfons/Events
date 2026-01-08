@@ -12,7 +12,8 @@ const eventSchema = z.object({
   local: z
     .string()
     .min(3, 'Location must be at least 3 characters')
-    .max(500, 'Location is too long'),
+    .max(500, 'Location is too long')
+    .optional(),
   isActive: z.boolean().optional(),
 });
 
