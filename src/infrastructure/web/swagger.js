@@ -86,17 +86,19 @@ const options = {
           }
         },
         EventDetails: {
-          type: 'object',
           allOf: [
-            { $ref: '#/components/schemas/Event' }
-          ],
-          properties: {
-            participantsCount: {
-              type: 'integer',
-              description: 'Number of registered participants',
-              example: 5
+            { $ref: '#/components/schemas/Event' },
+            {
+              type: 'object',
+              properties: {
+                participantsCount: {
+                  type: 'integer',
+                  description: 'Number of registered participants',
+                  example: 5
+                }
+              }
             }
-          }
+          ]
         },
         EventInput: {
           type: 'object',
@@ -277,10 +279,7 @@ const options = {
                 },
                 details: {
                   description: 'Additional error details (optional)',
-                  oneOf: [
-                    { type: 'object' },
-                    { type: 'array' }
-                  ]
+                  oneOf: [{ type: 'object' }, { type: 'array' }]
                 }
               }
             }

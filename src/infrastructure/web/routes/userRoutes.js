@@ -205,7 +205,7 @@ function createUserRoutes(userController) {
    *             schema:
    *               $ref: '#/components/schemas/SuccessMessage'
    *       400:
-   *         description: Bad request
+   *         description: Bad request - Invalid user ID or user not found
    *         content:
    *           application/json:
    *             schema:
