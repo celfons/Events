@@ -81,9 +81,14 @@ class UpdateEventUseCase {
 
         // Validate that new totalSlots is not less than active participants
         if (updateData.totalSlots < activeParticipantsCount) {
+          const participantsToRemove = activeParticipantsCount - updateData.totalSlots;
+          const errorMsg =
+            `Cannot reduce total slots to ${updateData.totalSlots}. ` +
+            `There are ${activeParticipantsCount} active participants. ` +
+            `Please remove ${participantsToRemove} participant(s) first.`;
           return {
             success: false,
-            error: `Cannot reduce total slots to ${updateData.totalSlots}. There are ${activeParticipantsCount} active participants. Please remove ${activeParticipantsCount - updateData.totalSlots} participant(s) first.`
+            error: errorMsg
           };
         }
 

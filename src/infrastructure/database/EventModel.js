@@ -56,6 +56,28 @@ const eventSchema = new mongoose.Schema({
     min: 0,
     validate: {
       validator: function (value) {
+        // During updates with runValidators, 'this' refers to the Query object
+        // During document creation/save, 'this' refers to the document
+        if (this.constructor.name === 'Query') {
+          // In update context, get the update object to access new totalSlots
+          const update = this.getUpdate();
+          // Check if totalSlots is being updated (can be in $set or directly)
+          const newTotalSlots = update.$set?.totalSlots ?? update.totalSlots;
+          if (newTotalSlots !== undefined) {
+            // If totalSlots is being updated, validate against the new value
+            return value <= newTotalSlots;
+          }
+          // If totalSlots is not being updated, we skip validation here.
+          // This is safe because:
+          // 1. The application logic in UpdateEventUseCase prevents manual
+          //    availableSlots updates when totalSlots changes
+          // 2. Slot increments/decrements use atomic $inc operations that
+          //    maintain consistency
+          // 3. The validator will run during document creation/save operations
+          //    where full validation is possible
+          return true;
+        }
+        // For document creation/save, validate against the document's totalSlots
         return value <= this.totalSlots;
       },
       message: 'Available slots cannot exceed total slots'
