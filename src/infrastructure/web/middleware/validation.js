@@ -7,10 +7,10 @@ const { ZodError } = require('zod');
  * @returns {Function} Express middleware
  */
 function validate(schema, source = 'body') {
-  return async (req, res, next) => {
+  return (req, res, next) => {
     try {
       const data = req[source];
-      const validated = await schema.parseAsync(data);
+      const validated = schema.parse(data);
       req[source] = validated;
       next();
     } catch (error) {
