@@ -169,7 +169,7 @@ GET /api/events/507f1f77bcf86cd799439011
 ```
 
 ## Dependencies Added
-- `zod`: ^3.x (schema validation library)
+- `zod`: ^4.3.5 (schema validation library)
 
 ## Future Enhancements
 - Add more specific validation rules based on business requirements
