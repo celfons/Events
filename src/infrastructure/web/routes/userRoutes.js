@@ -1,5 +1,8 @@
 const express = require('express');
 const { authenticateToken, requireSuperuser } = require('../middleware/auth');
+const { validate } = require('../middleware/validation');
+const { registerSchema } = require('../validation/authSchemas');
+const { updateUserSchema, userIdSchema } = require('../validation/userSchemas');
 
 /**
  * @swagger
@@ -71,7 +74,9 @@ function createUserRoutes(userController) {
    *       403:
    *         description: Not authorized (superuser only)
    */
-  router.post('/', (req, res) => userController.createUser(req, res));
+  router.post('/', validate(registerSchema, 'body'), (req, res) =>
+    userController.createUser(req, res)
+  );
 
   /**
    * @swagger
@@ -112,7 +117,12 @@ function createUserRoutes(userController) {
    *       403:
    *         description: Not authorized (superuser only)
    */
-  router.put('/:id', (req, res) => userController.updateUser(req, res));
+  router.put(
+    '/:id',
+    validate(userIdSchema, 'params'),
+    validate(updateUserSchema, 'body'),
+    (req, res) => userController.updateUser(req, res)
+  );
 
   /**
    * @swagger
@@ -136,7 +146,9 @@ function createUserRoutes(userController) {
    *       403:
    *         description: Not authorized (superuser only)
    */
-  router.delete('/:id', (req, res) => userController.deleteUser(req, res));
+  router.delete('/:id', validate(userIdSchema, 'params'), (req, res) =>
+    userController.deleteUser(req, res)
+  );
 
   return router;
 }

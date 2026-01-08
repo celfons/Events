@@ -1,4 +1,10 @@
 const express = require('express');
+const { validate } = require('../middleware/validation');
+const {
+  registrationSchema,
+  cancelRegistrationSchema,
+  registrationIdSchema,
+} = require('../validation/registrationSchemas');
 
 /**
  * @swagger
@@ -43,7 +49,9 @@ function createRegistrationRoutes(registrationController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', (req, res) => registrationController.register(req, res));
+  router.post('/', validate(registrationSchema, 'body'), (req, res) =>
+    registrationController.register(req, res)
+  );
 
   /**
    * @swagger
@@ -79,7 +87,12 @@ function createRegistrationRoutes(registrationController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/:id/cancel', (req, res) => registrationController.cancel(req, res));
+  router.post(
+    '/:id/cancel',
+    validate(registrationIdSchema, 'params'),
+    validate(cancelRegistrationSchema, 'body'),
+    (req, res) => registrationController.cancel(req, res)
+  );
 
   return router;
 }
