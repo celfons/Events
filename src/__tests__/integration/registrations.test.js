@@ -1,6 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB, getTestRepository } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 const MongoEventRepository = require('../../infrastructure/database/MongoEventRepository');
 
@@ -15,8 +15,8 @@ describe('Registrations API Integration Tests', () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
     app = createApp();
-    userRepository = new MongoUserRepository();
-    eventRepository = new MongoEventRepository();
+    userRepository = getTestRepository(MongoUserRepository);
+    eventRepository = getTestRepository(MongoEventRepository);
   });
 
   afterAll(async () => {
@@ -31,7 +31,7 @@ describe('Registrations API Integration Tests', () => {
       username: 'testuser',
       email: 'test@example.com',
       password: 'password123',
-      role: 'user'
+      role: 'user',
     });
     userId = user.id;
 
@@ -41,7 +41,7 @@ describe('Registrations API Integration Tests', () => {
       description: 'Test Description',
       dateTime: new Date('2026-12-31'),
       totalSlots: 50,
-      userId: userId
+      userId: userId,
     });
     eventId = event.id;
   });
@@ -52,7 +52,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const response = await request(app)
@@ -73,7 +73,7 @@ describe('Registrations API Integration Tests', () => {
 
     it('should return 400 for missing required fields', async () => {
       const registrationData = {
-        eventId: eventId
+        eventId: eventId,
         // Missing participantName and participantEmail
       };
 
@@ -90,7 +90,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: 'invalid-id',
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const response = await request(app)
@@ -106,7 +106,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: '507f1f77bcf86cd799439011',
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const response = await request(app)
@@ -124,7 +124,7 @@ describe('Registrations API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 1,
-        userId: userId
+        userId: userId,
       });
 
       // Register the first (and only) participant
@@ -132,7 +132,7 @@ describe('Registrations API Integration Tests', () => {
         name: 'Existing Participant',
         email: 'existing@example.com',
         phone: '+9999999999',
-        status: 'active'
+        status: 'active',
       });
 
       // Try to register a second participant (should fail)
@@ -140,7 +140,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: fullEvent.id,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const response = await request(app)
@@ -158,13 +158,10 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
-      await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(201);
+      await request(app).post('/api/registrations').send(registrationData).expect(201);
 
       // Try to register again with same email
       const response = await request(app)
@@ -180,7 +177,7 @@ describe('Registrations API Integration Tests', () => {
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
-        email: 'invalid-email'
+        email: 'invalid-email',
       };
 
       const response = await request(app)
@@ -199,7 +196,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const createResponse = await request(app)
@@ -220,7 +217,7 @@ describe('Registrations API Integration Tests', () => {
 
       // Verify the registration status is updated
       const event = await eventRepository.findById(eventId);
-      const registration = event.participants.find(r => r.id === registrationId);
+      const registration = event.participants.find((r) => r.id === registrationId);
       expect(registration.status).toBe('cancelled');
     });
 
@@ -248,7 +245,7 @@ describe('Registrations API Integration Tests', () => {
         eventId: eventId,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const createResponse = await request(app)
@@ -287,7 +284,7 @@ describe('Registrations API Integration Tests', () => {
           eventId: eventId,
           name: 'John Doe',
           email: 'john@example.com',
-          phone: '+1234567890'
+          phone: '+1234567890',
         })
         .expect(201);
 
@@ -306,7 +303,7 @@ describe('Registrations API Integration Tests', () => {
           eventId: eventId,
           name: 'John Doe',
           email: 'john@example.com',
-          phone: '+1234567890'
+          phone: '+1234567890',
         })
         .expect(201);
 
@@ -336,7 +333,7 @@ describe('Registrations API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 2,
-        userId: userId
+        userId: userId,
       });
 
       // Register first participant
@@ -346,7 +343,7 @@ describe('Registrations API Integration Tests', () => {
           eventId: limitedEvent.id,
           name: 'John Doe',
           email: 'john@example.com',
-          phone: '+1234567890'
+          phone: '+1234567890',
         })
         .expect(201);
 
@@ -357,7 +354,7 @@ describe('Registrations API Integration Tests', () => {
           eventId: limitedEvent.id,
           name: 'Jane Doe',
           email: 'jane@example.com',
-          phone: '+0987654321'
+          phone: '+0987654321',
         })
         .expect(201);
 
@@ -368,7 +365,7 @@ describe('Registrations API Integration Tests', () => {
           eventId: limitedEvent.id,
           name: 'Bob Smith',
           email: 'bob@example.com',
-          phone: '+1111111111'
+          phone: '+1111111111',
         })
         .expect(400);
 

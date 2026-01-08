@@ -1,13 +1,13 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB, getTestRepository } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 
 describe('Users API Integration Tests', () => {
   let app;
   let userRepository;
   let superuserToken;
-  let superuserId;
+  let _superuserId;
   let regularUserToken;
   let regularUserId;
 
@@ -15,7 +15,7 @@ describe('Users API Integration Tests', () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
     app = createApp();
-    userRepository = new MongoUserRepository();
+    userRepository = getTestRepository(MongoUserRepository);
   });
 
   afterAll(async () => {
@@ -30,16 +30,14 @@ describe('Users API Integration Tests', () => {
       username: 'superuser',
       email: 'superuser@example.com',
       password: 'password123',
-      role: 'superuser'
+      role: 'superuser',
     });
-    superuserId = superuser.id;
+    _superuserId = superuser.id;
 
-    const superuserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'superuser@example.com',
-        password: 'password123'
-      });
+    const superuserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'superuser@example.com',
+      password: 'password123',
+    });
     superuserToken = superuserLoginResponse.body.token;
 
     // Create and login as regular user
@@ -47,16 +45,14 @@ describe('Users API Integration Tests', () => {
       username: 'regularuser',
       email: 'regular@example.com',
       password: 'password123',
-      role: 'user'
+      role: 'user',
     });
     regularUserId = regularUser.id;
 
-    const regularUserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'regular@example.com',
-        password: 'password123'
-      });
+    const regularUserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'regular@example.com',
+      password: 'password123',
+    });
     regularUserToken = regularUserLoginResponse.body.token;
   });
 
@@ -68,14 +64,12 @@ describe('Users API Integration Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.some(u => u.email === 'superuser@example.com')).toBe(true);
-      expect(response.body.some(u => u.email === 'regular@example.com')).toBe(true);
+      expect(response.body.some((u) => u.email === 'superuser@example.com')).toBe(true);
+      expect(response.body.some((u) => u.email === 'regular@example.com')).toBe(true);
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .get('/api/users')
-        .expect(401);
+      await request(app).get('/api/users').expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -94,7 +88,7 @@ describe('Users API Integration Tests', () => {
         username: 'newuser',
         email: 'newuser@example.com',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       };
 
       const response = await request(app)
@@ -114,7 +108,7 @@ describe('Users API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'newuser@example.com',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -128,7 +122,7 @@ describe('Users API Integration Tests', () => {
         username: 'newsuperuser',
         email: 'newsuperuser@example.com',
         password: 'password123',
-        role: 'superuser'
+        role: 'superuser',
       };
 
       const response = await request(app)
@@ -139,7 +133,7 @@ describe('Users API Integration Tests', () => {
 
       // Role is always 'user' regardless of what was requested
       expect(response.body.role).toBe('user');
-      
+
       // However, superusers can update the role after creation
       await request(app)
         .put(`/api/users/${response.body.id}`)
@@ -153,13 +147,10 @@ describe('Users API Integration Tests', () => {
         username: 'newuser',
         email: 'newuser@example.com',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       };
 
-      await request(app)
-        .post('/api/users')
-        .send(userData)
-        .expect(401);
+      await request(app).post('/api/users').send(userData).expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -167,7 +158,7 @@ describe('Users API Integration Tests', () => {
         username: 'newuser',
         email: 'newuser@example.com',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       };
 
       const response = await request(app)
@@ -181,7 +172,7 @@ describe('Users API Integration Tests', () => {
 
     it('should return 400 for missing required fields', async () => {
       const userData = {
-        username: 'newuser'
+        username: 'newuser',
         // Missing email and password
       };
 
@@ -199,7 +190,7 @@ describe('Users API Integration Tests', () => {
         username: 'anotheruser',
         email: 'regular@example.com', // Already exists
         password: 'password123',
-        role: 'user'
+        role: 'user',
       };
 
       const response = await request(app)
@@ -219,7 +210,7 @@ describe('Users API Integration Tests', () => {
         username: 'newuser',
         email: 'invalid-email',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       };
 
       const response = await request(app)
@@ -236,7 +227,7 @@ describe('Users API Integration Tests', () => {
         username: 'newuser',
         email: 'newuser@example.com',
         password: '123', // Too short
-        role: 'user'
+        role: 'user',
       };
 
       const response = await request(app)
@@ -253,7 +244,7 @@ describe('Users API Integration Tests', () => {
     it('should update a user as superuser', async () => {
       const updatedData = {
         username: 'updateduser',
-        email: 'updated@example.com'
+        email: 'updated@example.com',
       };
 
       const response = await request(app)
@@ -268,7 +259,7 @@ describe('Users API Integration Tests', () => {
 
     it('should update user password as superuser', async () => {
       const updatedData = {
-        password: 'newpassword123'
+        password: 'newpassword123',
       };
 
       await request(app)
@@ -282,7 +273,7 @@ describe('Users API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'regular@example.com',
-          password: 'newpassword123'
+          password: 'newpassword123',
         })
         .expect(200);
 
@@ -291,7 +282,7 @@ describe('Users API Integration Tests', () => {
 
     it('should update user role as superuser', async () => {
       const updatedData = {
-        role: 'superuser'
+        role: 'superuser',
       };
 
       const response = await request(app)
@@ -355,15 +346,13 @@ describe('Users API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'regular@example.com',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(401);
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .delete(`/api/users/${regularUserId}`)
-        .expect(401);
+      await request(app).delete(`/api/users/${regularUserId}`).expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -410,7 +399,7 @@ describe('Users API Integration Tests', () => {
           username: 'testuser',
           email: 'test@example.com',
           password: 'password123',
-          role: 'user'
+          role: 'user',
         })
         .expect(201);
 
@@ -443,7 +432,7 @@ describe('Users API Integration Tests', () => {
           username: 'testuser',
           email: 'test@example.com',
           password: 'password123',
-          role: 'user'
+          role: 'user',
         })
         .expect(403);
 

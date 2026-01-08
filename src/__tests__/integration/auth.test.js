@@ -1,6 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB, getTestRepository } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 
 describe('Auth API Integration Tests', () => {
@@ -11,7 +11,7 @@ describe('Auth API Integration Tests', () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
     app = createApp();
-    userRepository = new MongoUserRepository();
+    userRepository = getTestRepository(MongoUserRepository);
   });
 
   afterAll(async () => {
@@ -29,14 +29,14 @@ describe('Auth API Integration Tests', () => {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       });
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(200);
 
@@ -52,14 +52,14 @@ describe('Auth API Integration Tests', () => {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123',
-        role: 'user'
+        role: 'user',
       });
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: 'wrongpassword'
+          password: 'wrongpassword',
         })
         .expect(401);
 
@@ -72,7 +72,7 @@ describe('Auth API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@example.com',
-          password: 'password123'
+          password: 'password123',
         })
         .expect(401);
 
@@ -84,7 +84,7 @@ describe('Auth API Integration Tests', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          password: 'password123'
+          password: 'password123',
         })
         .expect(401);
 
@@ -95,7 +95,7 @@ describe('Auth API Integration Tests', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@example.com'
+          email: 'test@example.com',
         })
         .expect(401);
 

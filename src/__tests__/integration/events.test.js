@@ -1,6 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB, getTestRepository } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 const MongoEventRepository = require('../../infrastructure/database/MongoEventRepository');
 
@@ -10,15 +10,15 @@ describe('Events API Integration Tests', () => {
   let eventRepository;
   let authToken;
   let userId;
-  let superuserToken;
+  let _superuserToken;
   let superuserId;
 
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
     app = createApp();
-    userRepository = new MongoUserRepository();
-    eventRepository = new MongoEventRepository();
+    userRepository = getTestRepository(MongoUserRepository);
+    eventRepository = getTestRepository(MongoEventRepository);
   });
 
   afterAll(async () => {
@@ -33,16 +33,14 @@ describe('Events API Integration Tests', () => {
       username: 'testuser',
       email: 'test@example.com',
       password: 'password123',
-      role: 'user'
+      role: 'user',
     });
     userId = user.id;
 
-    const loginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'test@example.com',
-        password: 'password123'
-      });
+    const loginResponse = await request(app).post('/api/auth/login').send({
+      email: 'test@example.com',
+      password: 'password123',
+    });
     authToken = loginResponse.body.token;
 
     // Create a superuser and login
@@ -50,24 +48,20 @@ describe('Events API Integration Tests', () => {
       username: 'superuser',
       email: 'superuser@example.com',
       password: 'password123',
-      role: 'superuser'
+      role: 'superuser',
     });
     superuserId = superuser.id;
 
-    const superuserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'superuser@example.com',
-        password: 'password123'
-      });
-    superuserToken = superuserLoginResponse.body.token;
+    const superuserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'superuser@example.com',
+      password: 'password123',
+    });
+    _superuserToken = superuserLoginResponse.body.token;
   });
 
   describe('GET /api/events', () => {
     it('should return empty array when no events exist', async () => {
-      const response = await request(app)
-        .get('/api/events')
-        .expect(200);
+      const response = await request(app).get('/api/events').expect(200);
 
       expect(response.body).toEqual([]);
     });
@@ -79,7 +73,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description 1',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
       await eventRepository.create({
@@ -87,12 +81,10 @@ describe('Events API Integration Tests', () => {
         description: 'Description 2',
         dateTime: new Date('2026-12-31'),
         totalSlots: 100,
-        userId: userId
+        userId: userId,
       });
 
-      const response = await request(app)
-        .get('/api/events')
-        .expect(200);
+      const response = await request(app).get('/api/events').expect(200);
 
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('title');
@@ -108,7 +100,7 @@ describe('Events API Integration Tests', () => {
         title: 'New Event',
         description: 'New Event Description',
         dateTime: '2026-12-31T00:00:00.000Z',
-        totalSlots: 50
+        totalSlots: 50,
       };
 
       const response = await request(app)
@@ -130,13 +122,10 @@ describe('Events API Integration Tests', () => {
         title: 'New Event',
         description: 'New Event Description',
         dateTime: '2026-12-31T00:00:00.000Z',
-        totalSlots: 50
+        totalSlots: 50,
       };
 
-      await request(app)
-        .post('/api/events')
-        .send(eventData)
-        .expect(401);
+      await request(app).post('/api/events').send(eventData).expect(401);
     });
 
     it('should return 400 for invalid event data', async () => {
@@ -144,7 +133,7 @@ describe('Events API Integration Tests', () => {
         title: '', // Invalid: empty title
         description: 'Description',
         dateTime: '2026-12-31T00:00:00.000Z',
-        totalSlots: 50
+        totalSlots: 50,
       };
 
       const response = await request(app)
@@ -164,12 +153,10 @@ describe('Events API Integration Tests', () => {
         description: 'Test Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}`).expect(200);
 
       expect(response.body.event.id).toBe(event.id);
       expect(response.body.event.title).toBe('Test Event');
@@ -177,17 +164,13 @@ describe('Events API Integration Tests', () => {
     });
 
     it('should return 404 for non-existent event', async () => {
-      const response = await request(app)
-        .get('/api/events/507f1f77bcf86cd799439011')
-        .expect(404);
+      const response = await request(app).get('/api/events/507f1f77bcf86cd799439011').expect(404);
 
       expect(response.body).toHaveProperty('error');
     });
 
     it('should return 404 for invalid event id', async () => {
-      const response = await request(app)
-        .get('/api/events/invalid-id')
-        .expect(404);
+      const response = await request(app).get('/api/events/invalid-id').expect(404);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -200,13 +183,13 @@ describe('Events API Integration Tests', () => {
         description: 'Original Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
       const updatedData = {
         title: 'Updated Event',
         description: 'Updated Description',
-        dateTime: '2027-01-15T00:00:00.000Z'
+        dateTime: '2027-01-15T00:00:00.000Z',
       };
 
       const response = await request(app)
@@ -225,13 +208,10 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
-      await request(app)
-        .put(`/api/events/${event.id}`)
-        .send({ title: 'Updated' })
-        .expect(401);
+      await request(app).put(`/api/events/${event.id}`).send({ title: 'Updated' }).expect(401);
     });
 
     it('should return 400 when user is not the organizer', async () => {
@@ -241,7 +221,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
       });
 
       // Try to update with regular user token
@@ -272,7 +252,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
       const response = await request(app)
@@ -283,9 +263,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveProperty('message');
 
       // Verify event is deleted
-      await request(app)
-        .get(`/api/events/${event.id}`)
-        .expect(404);
+      await request(app).get(`/api/events/${event.id}`).expect(404);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -294,12 +272,10 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
-      await request(app)
-        .delete(`/api/events/${event.id}`)
-        .expect(401);
+      await request(app).delete(`/api/events/${event.id}`).expect(401);
     });
 
     it('should return 400 when user is not the organizer', async () => {
@@ -308,7 +284,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
       });
 
       const response = await request(app)
@@ -328,7 +304,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
       await eventRepository.create({
@@ -336,7 +312,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
       });
 
       const response = await request(app)
@@ -350,9 +326,7 @@ describe('Events API Integration Tests', () => {
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .get('/api/events/my-events')
-        .expect(401);
+      await request(app).get('/api/events/my-events').expect(401);
     });
   });
 
@@ -363,7 +337,7 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
       // Manually add participants using the repository method
@@ -371,19 +345,17 @@ describe('Events API Integration Tests', () => {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+1234567890',
-        status: 'active'
+        status: 'active',
       });
 
       await eventRepository.addParticipant(event.id, {
         name: 'Jane Doe',
         email: 'jane@example.com',
         phone: '+0987654321',
-        status: 'active'
+        status: 'active',
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}/participants`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('name');
@@ -398,12 +370,10 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}/participants`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
       expect(response.body).toEqual([]);
     });
