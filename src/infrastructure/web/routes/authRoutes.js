@@ -50,8 +50,8 @@ function createAuthRoutes(authController) {
    *       401:
    *         description: Invalid credentials
    */
-  router.post('/login', validate(loginSchema, 'body'), (req, res) =>
-    authController.login(req, res)
+  router.post('/login', validate(loginSchema, 'body'), (req, res, next) =>
+    authController.login(req, res, next)
   );
 
   return router;

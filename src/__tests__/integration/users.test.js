@@ -14,8 +14,8 @@ describe('Users API Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-    app = createApp();
     userRepository = getTestRepository(MongoUserRepository);
+    app = createApp({ userRepository });
   });
 
   afterAll(async () => {

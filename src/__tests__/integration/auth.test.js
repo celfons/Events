@@ -10,8 +10,8 @@ describe('Auth API Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-    app = createApp();
     userRepository = getTestRepository(MongoUserRepository);
+    app = createApp({ userRepository });
   });
 
   afterAll(async () => {
@@ -64,7 +64,8 @@ describe('Auth API Integration Tests', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Invalid credentials');
+      expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+      expect(response.body.error).toHaveProperty('message', 'Invalid credentials');
     });
 
     it('should return 401 for non-existent user', async () => {
@@ -77,29 +78,32 @@ describe('Auth API Integration Tests', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Invalid credentials');
+      expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+      expect(response.body.error).toHaveProperty('message', 'Invalid credentials');
     });
 
-    it('should return 401 for missing email', async () => {
+    it('should return 400 for missing email', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           password: 'password123',
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
     });
 
-    it('should return 401 for missing password', async () => {
+    it('should return 400 for missing password', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
     });
   });
 });

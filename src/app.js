@@ -45,7 +45,7 @@ const createRegistrationRoutes = require('./infrastructure/web/routes/registrati
 const createAuthRoutes = require('./infrastructure/web/routes/authRoutes');
 const createUserRoutes = require('./infrastructure/web/routes/userRoutes');
 
-function createApp() {
+function createApp(dependencies = {}) {
   const app = express();
 
   // Security headers with Helmet
@@ -93,9 +93,9 @@ function createApp() {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.static(path.join(__dirname, '../public')));
 
-  // Dependency Injection
-  const eventRepository = new MongoEventRepository();
-  const userRepository = new MongoUserRepository();
+  // Dependency Injection - use provided dependencies or create defaults
+  const eventRepository = dependencies.eventRepository || new MongoEventRepository();
+  const userRepository = dependencies.userRepository || new MongoUserRepository();
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);

@@ -87,6 +87,12 @@ function setupMocks() {
   if (!mongoose.connection.collections) {
     mongoose.connection.collections = {};
   }
+
+  // Prevent mongoose from actually trying to connect
+  const databaseConnection = require('../../infrastructure/database/connection');
+  databaseConnection.isConnected = () => true;
+  databaseConnection.connect = async () => ({ connection: { readyState: 1 } });
+  databaseConnection.disconnect = async () => {};
 }
 
 /**

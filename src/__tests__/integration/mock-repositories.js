@@ -50,6 +50,32 @@ class MockUserRepository {
     return null;
   }
 
+  async findModelByEmail(email) {
+    // Find user in our mock store
+    for (const user of this.users.values()) {
+      if (user.email === email) {
+        // Store password in closure to avoid `this` binding issues
+        const storedPassword = user.password;
+
+        // Return a mock model object that mimics Mongoose model
+        return {
+          _id: user.id,
+          username: user.username,
+          email: user.email,
+          password: user.password,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          // Mock comparePassword method
+          comparePassword: async function (candidatePassword) {
+            return await bcrypt.compare(candidatePassword, storedPassword);
+          },
+        };
+      }
+    }
+    return null;
+  }
+
   async findByUsername(username) {
     for (const user of this.users.values()) {
       if (user.username === username) {

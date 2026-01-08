@@ -14,9 +14,9 @@ describe('Registrations API Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-    app = createApp();
     userRepository = getTestRepository(MongoUserRepository);
     eventRepository = getTestRepository(MongoEventRepository);
+    app = createApp({ userRepository, eventRepository });
   });
 
   afterAll(async () => {
