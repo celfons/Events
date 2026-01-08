@@ -115,7 +115,8 @@ describe('Users API Integration Tests', () => {
         })
         .expect(200);
 
-      expect(loginResponse.body).toHaveProperty('token');
+      expect(loginResponse.body).toHaveProperty('data');
+      expect(loginResponse.body.data).toHaveProperty('token');
     });
 
     it('should create user with role user even when superuser role is requested', async () => {
@@ -209,9 +210,8 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error.message).toContain('already');
     });
 
-    it('should not validate email format (validation not implemented)', async () => {
-      // Note: Email validation is not currently implemented in RegisterUseCase
-      // This test documents the current behavior
+    it('should validate email format with Zod', async () => {
+      // Email validation is now implemented with Zod schemas
       const userData = {
         username: 'newuser',
         email: 'invalid-email',
@@ -223,9 +223,10 @@ describe('Users API Integration Tests', () => {
         .post('/api/users')
         .set('Authorization', `Bearer ${superuserToken}`)
         .send(userData)
-        .expect(201);
+        .expect(400);
 
-      expect(response.body.data.email).toBe('invalid-email');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('should return 400 for short password', async () => {
@@ -284,7 +285,8 @@ describe('Users API Integration Tests', () => {
         })
         .expect(200);
 
-      expect(loginResponse.body).toHaveProperty('token');
+      expect(loginResponse.body).toHaveProperty('data');
+      expect(loginResponse.body.data).toHaveProperty('token');
     });
 
     it('should update user role as superuser', async () => {
