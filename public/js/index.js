@@ -192,6 +192,11 @@ async function loadEvents() {
         noEventsElement.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events`);
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar eventos');
+        }
+        
         const responseData = await response.json();
 
         loadingElement.classList.add('d-none');

@@ -169,12 +169,13 @@ async function loadEventDetails() {
         }
 
         const responseData = await response.json();
-        // Extract event data from the response data object
-        const event = responseData.data;
         
-        if (!event) {
+        // Extract event data from the response data object
+        if (!responseData || !responseData.data) {
             throw new Error('Evento não encontrado');
         }
+        
+        const event = responseData.data;
         
         displayEventDetails(event);
         loadingElement.classList.add('d-none');
