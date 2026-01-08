@@ -21,6 +21,8 @@ describe('Exception Handler Middleware', () => {
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
+      setHeader: jest.fn(),
+      getHeader: jest.fn().mockReturnValue(null),
       headersSent: false
     };
     next = jest.fn();
@@ -33,10 +35,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid input data',
+          requestId: 'test-request-id',
           details: { field: 'email' },
           timestamp: expect.any(String)
         }
@@ -50,10 +54,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'NOT_FOUND',
           message: 'Event not found',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -65,10 +71,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'UNAUTHORIZED',
           message: 'Invalid credentials',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -80,10 +88,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'FORBIDDEN',
           message: 'Access denied',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -95,10 +105,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'CONFLICT',
           message: 'Resource already exists',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -112,10 +124,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Internal server error',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -127,10 +141,12 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Internal server error',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
@@ -156,6 +172,7 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalled();
     });
 
@@ -176,13 +193,35 @@ describe('Exception Handler Middleware', () => {
       exceptionHandler(error, req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(418);
+      expect(res.setHeader).toHaveBeenCalledWith('x-request-id', 'test-request-id');
       expect(res.json).toHaveBeenCalledWith({
         error: {
           code: 'CUSTOM_ERROR',
           message: 'Custom error',
+          requestId: 'test-request-id',
           timestamp: expect.any(String)
         }
       });
+    });
+
+    it('should not set header if x-request-id already set', () => {
+      const error = new ValidationError('Test error');
+      res.getHeader.mockReturnValue('existing-request-id');
+
+      exceptionHandler(error, req, res, next);
+
+      expect(res.setHeader).not.toHaveBeenCalled();
+    });
+
+    it('should handle missing requestId gracefully', () => {
+      const error = new ValidationError('Test error');
+      req.requestId = undefined;
+
+      exceptionHandler(error, req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      const jsonCall = res.json.mock.calls[0][0];
+      expect(jsonCall.error).not.toHaveProperty('requestId');
     });
   });
 });

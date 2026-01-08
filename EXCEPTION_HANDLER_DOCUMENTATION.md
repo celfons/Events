@@ -38,11 +38,14 @@ The centralized middleware that:
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "Invalid input data",
+    "requestId": "550e8400-e29b-41d4-a716-446655440000",
     "details": { "field": "email" },
     "timestamp": "2026-01-08T19:00:00.000Z"
   }
 }
 ```
+
+The `x-request-id` header is also included in the HTTP response headers for correlation with server logs.
 
 ### 3. Async Handler Wrapper (`src/infrastructure/web/middleware/asyncHandler.js`)
 
@@ -89,9 +92,10 @@ AuthController.prototype.login = asyncHandler(AuthController.prototype.login);
 1. **Code Reduction**: Eliminated ~233 lines of repetitive error handling code
 2. **Consistency**: All errors return the same JSON structure
 3. **Centralized Logging**: All errors are logged in one place with proper context
-4. **Type Safety**: Using specific exception classes makes error handling more explicit
-5. **Maintainability**: Error handling logic is in one place, easier to update
-6. **Testability**: Centralized exception handler can be thoroughly unit tested
+4. **Request Correlation**: Every error response includes `requestId` in both the response body and `x-request-id` header for easy correlation with server logs
+5. **Type Safety**: Using specific exception classes makes error handling more explicit
+6. **Maintainability**: Error handling logic is in one place, easier to update
+7. **Testability**: Centralized exception handler can be thoroughly unit tested
 
 ## Integration
 
@@ -107,8 +111,14 @@ app.use(exceptionHandler);
 ## Testing
 
 Comprehensive unit tests are located in:
-- `src/infrastructure/web/middleware/__tests__/exceptionHandler.test.js` (26 tests)
+- `src/infrastructure/web/middleware/__tests__/exceptionHandler.test.js` (13 tests)
 - `src/infrastructure/web/middleware/__tests__/asyncHandler.test.js` (3 tests)
+
+All tests verify that:
+- Error responses include the correct status codes
+- The `x-request-id` header is set in responses
+- The `requestId` field is included in error response bodies
+- All error types are handled correctly
 
 All 192 unit tests pass successfully, including the new exception handler tests.
 

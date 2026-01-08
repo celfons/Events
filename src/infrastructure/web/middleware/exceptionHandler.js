@@ -69,8 +69,13 @@ function exceptionHandler(err, req, res, next) {
     );
   }
 
-  // Create error response
-  const errorResponse = new ErrorResponse(statusCode, errorCode, message, details);
+  // Create error response with request ID for correlation
+  const errorResponse = new ErrorResponse(statusCode, errorCode, message, details, req.requestId);
+
+  // Ensure x-request-id header is set in the response for correlation
+  if (req.requestId && !res.getHeader('x-request-id')) {
+    res.setHeader('x-request-id', req.requestId);
+  }
 
   // Send response
   return res.status(statusCode).json(errorResponse.toJSON());
