@@ -2,6 +2,7 @@ const CancelRegistrationUseCase = require('../CancelRegistrationUseCase');
 
 describe('CancelRegistrationUseCase', () => {
   let mockEventRepository;
+  let mockWhatsAppService;
   let cancelRegistrationUseCase;
 
   beforeEach(() => {
@@ -9,8 +10,13 @@ describe('CancelRegistrationUseCase', () => {
       findById: jest.fn(),
       cancelParticipant: jest.fn()
     };
+    mockWhatsAppService = {
+      sendMessage: jest.fn().mockResolvedValue(true)
+    };
     cancelRegistrationUseCase = new CancelRegistrationUseCase(
-      mockEventRepository
+      mockEventRepository,
+      mockWhatsAppService,
+      'pt-BR'
     );
   });
 
@@ -79,10 +85,13 @@ describe('CancelRegistrationUseCase', () => {
       const mockEvent = {
         id: '222',
         title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-12-31T10:00:00'),
+        local: 'Test Location',
         availableSlots: 5,
         totalSlots: 10,
         participants: [
-          { id: '111', name: 'John', email: 'john@test.com', status: 'active' }
+          { id: '111', name: 'John', email: 'john@test.com', phone: '+5511999999999', status: 'active' }
         ]
       };
 
@@ -94,13 +103,29 @@ describe('CancelRegistrationUseCase', () => {
       expect(result.success).toBe(true);
       expect(result.message).toBe('Registration cancelled successfully');
       expect(mockEventRepository.cancelParticipant).toHaveBeenCalledWith('222', '111');
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '+5511999999999',
+        expect.stringContaining('Inscrição Cancelada')
+      );
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '+5511999999999',
+        expect.stringContaining('John')
+      );
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledWith(
+        '+5511999999999',
+        expect.stringContaining('Test Event')
+      );
     });
 
     it('should properly cancel registration', async () => {
       const mockEvent = {
         id: '123',
+        title: 'Workshop',
+        description: 'Test Workshop',
+        dateTime: new Date('2026-12-31T14:00:00'),
+        local: 'Room 101',
         participants: [
-          { id: '789', name: 'Maria', email: 'maria@test.com', status: 'active' }
+          { id: '789', name: 'Maria', email: 'maria@test.com', phone: '+5511888888888', status: 'active' }
         ]
       };
 
@@ -111,6 +136,70 @@ describe('CancelRegistrationUseCase', () => {
 
       expect(result.success).toBe(true);
       expect(mockEventRepository.cancelParticipant).toHaveBeenCalledWith('123', '789');
+      expect(mockWhatsAppService.sendMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('should cancel registration even if WhatsApp notification fails', async () => {
+      const mockEvent = {
+        id: '222',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-12-31T10:00:00'),
+        local: 'Test Location',
+        participants: [
+          { id: '111', name: 'John', email: 'john@test.com', phone: '+5511999999999', status: 'active' }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+      mockWhatsAppService.sendMessage.mockRejectedValue(new Error('WhatsApp API error'));
+
+      const result = await cancelRegistrationUseCase.execute('222', '111');
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Registration cancelled successfully');
+      expect(mockEventRepository.cancelParticipant).toHaveBeenCalledWith('222', '111');
+    });
+
+    it('should work without WhatsApp service', async () => {
+      const useCaseWithoutWhatsApp = new CancelRegistrationUseCase(mockEventRepository);
+      const mockEvent = {
+        id: '222',
+        title: 'Test Event',
+        participants: [
+          { id: '111', name: 'John', email: 'john@test.com', phone: '+5511999999999', status: 'active' }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+
+      const result = await useCaseWithoutWhatsApp.execute('222', '111');
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Registration cancelled successfully');
+    });
+
+    it('should not send WhatsApp if participant has no phone', async () => {
+      const mockEvent = {
+        id: '222',
+        title: 'Test Event',
+        description: 'Test Description',
+        dateTime: new Date('2026-12-31T10:00:00'),
+        local: 'Test Location',
+        participants: [
+          { id: '111', name: 'John', email: 'john@test.com', phone: null, status: 'active' }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+
+      const result = await cancelRegistrationUseCase.execute('222', '111');
+
+      expect(result.success).toBe(true);
+      expect(mockWhatsAppService.sendMessage).not.toHaveBeenCalled();
     });
   });
 
@@ -127,6 +216,7 @@ describe('CancelRegistrationUseCase', () => {
     it('should handle errors during cancellation process', async () => {
       const mockEvent = {
         id: '123',
+        title: 'Test Event',
         participants: [
           { id: '456', name: 'John', email: 'john@test.com', status: 'active' }
         ]

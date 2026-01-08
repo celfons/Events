@@ -92,7 +92,7 @@ function createApp(whatsAppService = null, locale = 'pt-BR') {
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService, locale);
-  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
+  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, whatsAppService, locale);
   const verifyRegistrationUseCase = new VerifyRegistrationUseCase(eventRepository, whatsAppService, locale);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
