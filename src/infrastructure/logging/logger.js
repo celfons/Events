@@ -14,7 +14,7 @@ const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
   // Use pretty print in development for readability
   transport:
-    process.env.NODE_ENV !== 'production'
+    process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
       ? {
           target: 'pino-pretty',
           options: {
