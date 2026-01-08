@@ -59,7 +59,7 @@ async function login(email, password) {
         
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Erro ao fazer login');
+            throw new Error(error.error?.message || error.error || 'Erro ao fazer login');
         }
         
         const data = await response.json();

@@ -22,11 +22,11 @@ class UpdateUserUseCase {
 
       // Build update object with only allowed fields
       const updateData = {};
-      if (userData.username) updateData.username = userData.username;
-      if (userData.email) updateData.email = userData.email;
-      if (userData.role) updateData.role = userData.role;
+      if (userData.username !== undefined) updateData.username = userData.username;
+      if (userData.email !== undefined) updateData.email = userData.email;
+      if (userData.role !== undefined) updateData.role = userData.role;
       if (userData.isActive !== undefined) updateData.isActive = userData.isActive;
-      if (userData.password) {
+      if (userData.password !== undefined && userData.password) {
         // Validate password length
         if (userData.password.length < 6) {
           return {

@@ -161,7 +161,7 @@ async function loadEventDetails() {
             let errorMessage = 'Erro ao carregar detalhes do evento';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -281,7 +281,7 @@ registerForm.addEventListener('submit', async (e) => {
             let errorMessage = 'Erro ao realizar inscrição';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
@@ -340,7 +340,7 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
             let errorMessage = 'Erro ao cancelar inscrição';
             try {
                 const error = await response.json();
-                errorMessage = error.error || errorMessage;
+                errorMessage = error.error?.message || error.error || errorMessage;
             } catch (e) {
                 // If response is not JSON, use default message
             }
