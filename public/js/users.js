@@ -117,8 +117,11 @@ async function loadUsers() {
             throw new Error(errorMessage);
         }
         
-        const users = await response.json();
+        const responseData = await response.json();
         loadingElement.classList.add('d-none');
+
+        // Extract users array from the response data object
+        const users = responseData.data || [];
 
         if (!Array.isArray(users) || users.length === 0) {
             noUsersElement.classList.remove('d-none');

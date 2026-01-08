@@ -168,9 +168,16 @@ async function loadEventDetails() {
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
-        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
-        displayEventDetails(data.event || data);
+        const responseData = await response.json();
+        
+        // Extract event data from the response data object
+        if (!responseData || !responseData.data) {
+            throw new Error('Evento não encontrado');
+        }
+        
+        const event = responseData.data;
+        
+        displayEventDetails(event);
         loadingElement.classList.add('d-none');
         eventDetailsContainer.classList.remove('d-none');
     } catch (error) {

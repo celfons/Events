@@ -192,9 +192,17 @@ async function loadEvents() {
         noEventsElement.classList.add('d-none');
 
         const response = await fetch(`${API_URL}/api/events`);
-        const events = await response.json();
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar eventos');
+        }
+        
+        const responseData = await response.json();
 
         loadingElement.classList.add('d-none');
+
+        // Extract events array from the response data object
+        const events = responseData.data || [];
 
         if (!Array.isArray(events)) {
             noEventsElement.classList.remove('d-none');
