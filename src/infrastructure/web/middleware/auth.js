@@ -25,7 +25,7 @@ const authenticateToken = (req, res, next) => {
     req.user = decoded; // { userId, email, role }
     next();
   } catch (error) {
-    const errorResponse = ErrorResponse.unauthorized('Invalid or expired token.');
+    const errorResponse = ErrorResponse.invalidToken();
     return res.status(errorResponse.status).json(errorResponse.toJSON());
   }
 };

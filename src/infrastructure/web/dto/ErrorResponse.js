@@ -88,6 +88,10 @@ class ErrorResponse {
     return new ErrorResponse(401, ErrorCodes.INVALID_CREDENTIALS, message);
   }
 
+  static invalidToken(message = 'Invalid or expired token') {
+    return new ErrorResponse(401, ErrorCodes.TOKEN_INVALID, message);
+  }
+
   static forbidden(message = 'Access denied') {
     return new ErrorResponse(403, ErrorCodes.FORBIDDEN, message);
   }
