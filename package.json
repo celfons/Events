@@ -12,6 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:frontend": "jest public/js/__tests__/",
+    "test:frontend:watch": "jest --watch public/js/__tests__/",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write \"src/**/*.js\" \"*.js\"",
