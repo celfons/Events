@@ -290,11 +290,11 @@ registerForm.addEventListener('submit', async (e) => {
 
         const data = await response.json();
 
-        // Success
-        currentRegistrationId = data.id;
+        // Success - API returns { data: RegistrationResponse }
+        currentRegistrationId = data.data.id;
         
         // Save registration state to localStorage
-        saveRegistrationState(data.id, name, email, phone);
+        saveRegistrationState(data.data.id, name, email, phone);
         
         registrationForm.classList.add('d-none');
         registrationSuccess.classList.remove('d-none');

@@ -413,8 +413,8 @@ async function openEventDetailsModal(eventId) {
         }
 
         const data = await response.json();
-        // API returns {event: {...}, registrationsCount: ...}, but fallback to unwrapped response for backward compatibility
-        const event = data.event || data;
+        // API returns { data: EventDetailsResponse }
+        const event = data.data;
         
         // Validate event data
         if (!event || typeof event !== 'object') {
