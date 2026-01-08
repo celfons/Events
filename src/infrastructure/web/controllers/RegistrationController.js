@@ -1,4 +1,6 @@
-const { ErrorResponse, SuccessResponse, RegistrationResponse } = require('../dto');
+const { ValidationError } = require('../../../domain/exceptions');
+const { SuccessResponse, RegistrationResponse } = require('../dto');
+const asyncHandler = require('../middleware/asyncHandler');
 
 class RegistrationController {
   constructor(registerForEventUseCase, cancelRegistrationUseCase) {
@@ -7,47 +9,38 @@ class RegistrationController {
   }
 
   async register(req, res) {
-    try {
-      const result = await this.registerForEventUseCase.execute(req.body);
+    const result = await this.registerForEventUseCase.execute(req.body);
 
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const registration = RegistrationResponse.fromEntity(result.data);
-      const successResponse = SuccessResponse.created(registration, 'Registration created successfully');
-      return res.status(201).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
-      return res.status(errorResponse.status).json(errorResponse.toJSON());
+    if (!result.success) {
+      throw new ValidationError(result.error);
     }
+
+    const registration = RegistrationResponse.fromEntity(result.data);
+    const successResponse = SuccessResponse.created(registration, 'Registration created successfully');
+    return res.status(201).json(successResponse.toJSON());
   }
 
   async cancel(req, res) {
-    try {
-      const { id } = req.params;
-      const { eventId } = req.body;
+    const { id } = req.params;
+    const { eventId } = req.body;
 
-      if (!eventId) {
-        const errorResponse = ErrorResponse.invalidInput('eventId is required in request body');
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const result = await this.cancelRegistrationUseCase.execute(eventId, id);
-
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const successResponse = SuccessResponse.ok(null, result.message);
-      return res.status(200).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
-      return res.status(errorResponse.status).json(errorResponse.toJSON());
+    if (!eventId) {
+      throw new ValidationError('eventId is required in request body');
     }
+
+    const result = await this.cancelRegistrationUseCase.execute(eventId, id);
+
+    if (!result.success) {
+      throw new ValidationError(result.error);
+    }
+
+    const successResponse = SuccessResponse.ok(null, result.message);
+    return res.status(200).json(successResponse.toJSON());
   }
 }
+
+// Wrap methods with asyncHandler
+RegistrationController.prototype.register = asyncHandler(RegistrationController.prototype.register);
+RegistrationController.prototype.cancel = asyncHandler(RegistrationController.prototype.cancel);
 
 module.exports = RegistrationController;
