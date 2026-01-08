@@ -1,32 +1,35 @@
 const mongoose = require('mongoose');
 
-const participantSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
+const participantSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    registeredAt: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      enum: ['active', 'cancelled'],
+      default: 'active'
+    }
   },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  registeredAt: {
-    type: Date,
-    default: Date.now
-  },
-  status: {
-    type: String,
-    enum: ['active', 'cancelled'],
-    default: 'active'
-  }
-}, { _id: true });
+  { _id: true }
+);
 
 const eventSchema = new mongoose.Schema({
   title: {
@@ -52,7 +55,7 @@ const eventSchema = new mongoose.Schema({
     required: true,
     min: 0,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return value <= this.totalSlots;
       },
       message: 'Available slots cannot exceed total slots'

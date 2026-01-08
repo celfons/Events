@@ -37,12 +37,10 @@ describe('Events API Integration Tests', () => {
     });
     userId = user.id;
 
-    const loginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'test@example.com',
-        password: 'password123'
-      });
+    const loginResponse = await request(app).post('/api/auth/login').send({
+      email: 'test@example.com',
+      password: 'password123'
+    });
     authToken = loginResponse.body.token;
 
     // Create a superuser and login
@@ -54,20 +52,16 @@ describe('Events API Integration Tests', () => {
     });
     superuserId = superuser.id;
 
-    const superuserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'superuser@example.com',
-        password: 'password123'
-      });
+    const superuserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'superuser@example.com',
+      password: 'password123'
+    });
     superuserToken = superuserLoginResponse.body.token;
   });
 
   describe('GET /api/events', () => {
     it('should return empty array when no events exist', async () => {
-      const response = await request(app)
-        .get('/api/events')
-        .expect(200);
+      const response = await request(app).get('/api/events').expect(200);
 
       expect(response.body).toEqual([]);
     });
@@ -90,9 +84,7 @@ describe('Events API Integration Tests', () => {
         userId: userId
       });
 
-      const response = await request(app)
-        .get('/api/events')
-        .expect(200);
+      const response = await request(app).get('/api/events').expect(200);
 
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('title');
@@ -133,10 +125,7 @@ describe('Events API Integration Tests', () => {
         totalSlots: 50
       };
 
-      await request(app)
-        .post('/api/events')
-        .send(eventData)
-        .expect(401);
+      await request(app).post('/api/events').send(eventData).expect(401);
     });
 
     it('should return 400 for invalid event data', async () => {
@@ -167,9 +156,7 @@ describe('Events API Integration Tests', () => {
         userId: userId
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}`).expect(200);
 
       expect(response.body.event.id).toBe(event.id);
       expect(response.body.event.title).toBe('Test Event');
@@ -177,17 +164,13 @@ describe('Events API Integration Tests', () => {
     });
 
     it('should return 404 for non-existent event', async () => {
-      const response = await request(app)
-        .get('/api/events/507f1f77bcf86cd799439011')
-        .expect(404);
+      const response = await request(app).get('/api/events/507f1f77bcf86cd799439011').expect(404);
 
       expect(response.body).toHaveProperty('error');
     });
 
     it('should return 404 for invalid event id', async () => {
-      const response = await request(app)
-        .get('/api/events/invalid-id')
-        .expect(404);
+      const response = await request(app).get('/api/events/invalid-id').expect(404);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -228,10 +211,7 @@ describe('Events API Integration Tests', () => {
         userId: userId
       });
 
-      await request(app)
-        .put(`/api/events/${event.id}`)
-        .send({ title: 'Updated' })
-        .expect(401);
+      await request(app).put(`/api/events/${event.id}`).send({ title: 'Updated' }).expect(401);
     });
 
     it('should return 400 when user is not the organizer', async () => {
@@ -283,9 +263,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body).toHaveProperty('message');
 
       // Verify event is deleted
-      await request(app)
-        .get(`/api/events/${event.id}`)
-        .expect(404);
+      await request(app).get(`/api/events/${event.id}`).expect(404);
     });
 
     it('should return 401 when no auth token is provided', async () => {
@@ -297,9 +275,7 @@ describe('Events API Integration Tests', () => {
         userId: userId
       });
 
-      await request(app)
-        .delete(`/api/events/${event.id}`)
-        .expect(401);
+      await request(app).delete(`/api/events/${event.id}`).expect(401);
     });
 
     it('should return 400 when user is not the organizer', async () => {
@@ -350,9 +326,7 @@ describe('Events API Integration Tests', () => {
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .get('/api/events/my-events')
-        .expect(401);
+      await request(app).get('/api/events/my-events').expect(401);
     });
   });
 
@@ -381,9 +355,7 @@ describe('Events API Integration Tests', () => {
         status: 'active'
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}/participants`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('name');
@@ -401,17 +373,13 @@ describe('Events API Integration Tests', () => {
         userId: userId
       });
 
-      const response = await request(app)
-        .get(`/api/events/${event.id}/participants`)
-        .expect(200);
+      const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);
 
       expect(response.body).toEqual([]);
     });
 
     it('should return 404 for non-existent event', async () => {
-      const response = await request(app)
-        .get('/api/events/507f1f77bcf86cd799439011/participants')
-        .expect(404);
+      const response = await request(app).get('/api/events/507f1f77bcf86cd799439011/participants').expect(404);
 
       expect(response.body).toHaveProperty('error');
     });

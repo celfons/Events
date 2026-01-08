@@ -8,9 +8,7 @@ describe('GetEventDetailsUseCase', () => {
     mockEventRepository = {
       findById: jest.fn()
     };
-    getEventDetailsUseCase = new GetEventDetailsUseCase(
-      mockEventRepository
-    );
+    getEventDetailsUseCase = new GetEventDetailsUseCase(mockEventRepository);
   });
 
   describe('Successful Retrieval', () => {

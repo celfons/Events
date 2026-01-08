@@ -57,13 +57,15 @@ describe('RegisterUseCase', () => {
     });
 
     it('should return error when email already exists', async () => {
-      mockUserRepository.findByEmail.mockResolvedValue(new User({
-        id: '123',
-        username: 'existinguser',
-        email: 'user@example.com',
-        password: 'hashed',
-        role: 'user'
-      }));
+      mockUserRepository.findByEmail.mockResolvedValue(
+        new User({
+          id: '123',
+          username: 'existinguser',
+          email: 'user@example.com',
+          password: 'hashed',
+          role: 'user'
+        })
+      );
 
       const result = await registerUseCase.execute({
         username: 'testuser',
@@ -78,13 +80,15 @@ describe('RegisterUseCase', () => {
 
     it('should return error when username already exists', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      mockUserRepository.findByUsername.mockResolvedValue(new User({
-        id: '123',
-        username: 'testuser',
-        email: 'other@example.com',
-        password: 'hashed',
-        role: 'user'
-      }));
+      mockUserRepository.findByUsername.mockResolvedValue(
+        new User({
+          id: '123',
+          username: 'testuser',
+          email: 'other@example.com',
+          password: 'hashed',
+          role: 'user'
+        })
+      );
 
       const result = await registerUseCase.execute({
         username: 'testuser',
@@ -100,7 +104,7 @@ describe('RegisterUseCase', () => {
     it('should create user successfully with role "user"', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockUserRepository.findByUsername.mockResolvedValue(null);
-      
+
       const createdUser = new User({
         id: '123',
         username: 'testuser',

@@ -6,7 +6,7 @@ class GetEventDetailsUseCase {
   async execute(eventId) {
     try {
       const event = await this.eventRepository.findById(eventId);
-      
+
       if (!event) {
         return {
           success: false,
@@ -15,7 +15,7 @@ class GetEventDetailsUseCase {
       }
 
       const activeParticipants = event.participants.filter(p => p.status === 'active');
-      
+
       return {
         success: true,
         data: {

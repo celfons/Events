@@ -11,7 +11,7 @@ async function createSuperuser() {
 
     // Check if superuser already exists
     const existingSuperuser = await UserModel.findOne({ role: 'superuser' });
-    
+
     if (existingSuperuser) {
       console.log('A superuser already exists:');
       console.log(`  Username: ${existingSuperuser.username}`);
@@ -22,7 +22,7 @@ async function createSuperuser() {
 
     // Get password from environment variable or prompt for it
     const password = process.env.SUPERUSER_PASSWORD;
-    
+
     if (!password) {
       console.error('Error: SUPERUSER_PASSWORD environment variable is not set.');
       console.error('Please set it before running this script:');

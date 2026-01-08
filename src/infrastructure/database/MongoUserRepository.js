@@ -7,7 +7,7 @@ class MongoUserRepository extends UserRepository {
   async findById(id) {
     const userDoc = await UserModel.findById(id);
     if (!userDoc) return null;
-    
+
     return new User({
       id: userDoc._id.toString(),
       username: userDoc.username,
@@ -22,7 +22,7 @@ class MongoUserRepository extends UserRepository {
   async findByEmail(email) {
     const userDoc = await UserModel.findOne({ email });
     if (!userDoc) return null;
-    
+
     return new User({
       id: userDoc._id.toString(),
       username: userDoc.username,
@@ -37,7 +37,7 @@ class MongoUserRepository extends UserRepository {
   async findByUsername(username) {
     const userDoc = await UserModel.findOne({ username });
     if (!userDoc) return null;
-    
+
     return new User({
       id: userDoc._id.toString(),
       username: userDoc.username,
@@ -57,9 +57,9 @@ class MongoUserRepository extends UserRepository {
       role: user.role,
       isActive: user.isActive
     });
-    
+
     const savedUser = await userDoc.save();
-    
+
     return new User({
       id: savedUser._id.toString(),
       username: savedUser.username,
@@ -77,15 +77,11 @@ class MongoUserRepository extends UserRepository {
       const salt = await bcrypt.genSalt(10);
       userData.password = await bcrypt.hash(userData.password, salt);
     }
-    
-    const userDoc = await UserModel.findByIdAndUpdate(
-      id,
-      userData,
-      { new: true, runValidators: true }
-    );
-    
+
+    const userDoc = await UserModel.findByIdAndUpdate(id, userData, { new: true, runValidators: true });
+
     if (!userDoc) return null;
-    
+
     return new User({
       id: userDoc._id.toString(),
       username: userDoc.username,
@@ -104,22 +100,25 @@ class MongoUserRepository extends UserRepository {
 
   async findAll() {
     const userDocs = await UserModel.find();
-    
-    return userDocs.map(userDoc => new User({
-      id: userDoc._id.toString(),
-      username: userDoc.username,
-      email: userDoc.email,
-      password: userDoc.password,
-      role: userDoc.role,
-      isActive: userDoc.isActive,
-      createdAt: userDoc.createdAt
-    }));
+
+    return userDocs.map(
+      userDoc =>
+        new User({
+          id: userDoc._id.toString(),
+          username: userDoc.username,
+          email: userDoc.email,
+          password: userDoc.password,
+          role: userDoc.role,
+          isActive: userDoc.isActive,
+          createdAt: userDoc.createdAt
+        })
+    );
   }
 
   async comparePassword(userId, candidatePassword) {
     const userDoc = await UserModel.findById(userId);
     if (!userDoc) return false;
-    
+
     return await userDoc.comparePassword(candidatePassword);
   }
 

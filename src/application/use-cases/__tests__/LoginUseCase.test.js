@@ -8,7 +8,7 @@ describe('LoginUseCase', () => {
   beforeEach(() => {
     // Set JWT_SECRET for tests
     process.env.JWT_SECRET = 'test-secret-key';
-    
+
     mockUserRepository = {
       findModelByEmail: jest.fn()
     };

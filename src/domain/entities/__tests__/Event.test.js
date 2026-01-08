@@ -218,7 +218,7 @@ describe('Event Entity', () => {
       });
 
       event.incrementSlots();
-      
+
       // Should remain at 50, not increment to 51
       expect(event.availableSlots).toBe(50);
     });

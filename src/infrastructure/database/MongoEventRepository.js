@@ -17,7 +17,7 @@ class MongoEventRepository extends EventRepository {
       local: event.local,
       isActive: event.isActive !== undefined ? event.isActive : true
     });
-    
+
     const savedEvent = await eventModel.save();
     return this._toDomain(savedEvent);
   }
@@ -39,11 +39,7 @@ class MongoEventRepository extends EventRepository {
   }
 
   async update(id, eventData) {
-    const updatedEvent = await EventModel.findByIdAndUpdate(
-      id,
-      eventData,
-      { new: true, runValidators: true }
-    );
+    const updatedEvent = await EventModel.findByIdAndUpdate(id, eventData, { new: true, runValidators: true });
     if (!updatedEvent) return null;
     return this._toDomain(updatedEvent);
   }
@@ -77,27 +73,27 @@ class MongoEventRepository extends EventRepository {
     // Add participant and decrement available slots atomically
     // Ensure no active participant with the same email already exists
     const updatedEvent = await EventModel.findOneAndUpdate(
-      { 
+      {
         _id: eventId,
         availableSlots: { $gt: 0 },
-        participants: { 
-          $not: { 
-            $elemMatch: { 
-              email: participantData.email.toLowerCase(), 
-              status: 'active' 
-            } 
-          } 
+        participants: {
+          $not: {
+            $elemMatch: {
+              email: participantData.email.toLowerCase(),
+              status: 'active'
+            }
+          }
         }
       },
-      { 
+      {
         $push: { participants: participantData },
         $inc: { availableSlots: -1 }
       },
       { new: true, runValidators: true }
     );
-    
+
     if (!updatedEvent) return null;
-    
+
     // Find the newly added participant
     const participant = updatedEvent.participants[updatedEvent.participants.length - 1];
     return new Registration({
@@ -113,18 +109,18 @@ class MongoEventRepository extends EventRepository {
 
   async findParticipantByEmail(eventId, email) {
     const event = await EventModel.findOne(
-      { 
+      {
         _id: eventId,
         'participants.email': email.toLowerCase(),
         'participants.status': 'active'
       },
       { 'participants.$': 1 }
     );
-    
+
     if (!event || !event.participants || event.participants.length === 0) {
       return null;
     }
-    
+
     const participant = event.participants[0];
     return new Registration({
       id: participant._id.toString(),
@@ -139,18 +135,18 @@ class MongoEventRepository extends EventRepository {
 
   async findParticipantByPhone(eventId, phone) {
     const event = await EventModel.findOne(
-      { 
+      {
         _id: eventId,
         'participants.phone': phone,
         'participants.status': 'active'
       },
       { 'participants.$': 1 }
     );
-    
+
     if (!event || !event.participants || event.participants.length === 0) {
       return null;
     }
-    
+
     const participant = event.participants[0];
     return new Registration({
       id: participant._id.toString(),
@@ -166,37 +162,40 @@ class MongoEventRepository extends EventRepository {
   async cancelParticipant(eventId, participantId) {
     // Cancel participant and increment available slots atomically
     const updatedEvent = await EventModel.findOneAndUpdate(
-      { 
+      {
         _id: eventId,
         'participants._id': participantId,
         'participants.status': 'active',
         $expr: { $lt: ['$availableSlots', '$totalSlots'] }
       },
-      { 
+      {
         $set: { 'participants.$.status': 'cancelled' },
         $inc: { availableSlots: 1 }
       },
       { new: true, runValidators: true }
     );
-    
+
     return !!updatedEvent;
   }
 
   async getParticipants(eventId) {
     const event = await EventModel.findById(eventId);
     if (!event) return null;
-    
+
     return event.participants
       .filter(p => p.status === 'active')
-      .map(participant => new Registration({
-        id: participant._id.toString(),
-        eventId: eventId,
-        name: participant.name,
-        email: participant.email,
-        phone: participant.phone,
-        registeredAt: participant.registeredAt,
-        status: participant.status
-      }));
+      .map(
+        participant =>
+          new Registration({
+            id: participant._id.toString(),
+            eventId: eventId,
+            name: participant.name,
+            email: participant.email,
+            phone: participant.phone,
+            registeredAt: participant.registeredAt,
+            status: participant.status
+          })
+      );
   }
 
   async removeParticipant(eventId, participantId) {
@@ -216,14 +215,16 @@ class MongoEventRepository extends EventRepository {
       dateTime: eventModel.dateTime,
       totalSlots: eventModel.totalSlots,
       availableSlots: eventModel.availableSlots,
-      participants: eventModel.participants ? eventModel.participants.map(p => ({
-        id: p._id.toString(),
-        name: p.name,
-        email: p.email,
-        phone: p.phone,
-        registeredAt: p.registeredAt,
-        status: p.status
-      })) : [],
+      participants: eventModel.participants
+        ? eventModel.participants.map(p => ({
+            id: p._id.toString(),
+            name: p.name,
+            email: p.email,
+            phone: p.phone,
+            registeredAt: p.registeredAt,
+            status: p.status
+          }))
+        : [],
       createdAt: eventModel.createdAt,
       userId: eventModel.userId ? eventModel.userId.toString() : null,
       local: eventModel.local,

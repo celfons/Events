@@ -7,7 +7,8 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/events
 const sampleEvents = [
   {
     title: 'Workshop: Introdução ao Node.js',
-    description: 'Aprenda os fundamentos do Node.js e construa sua primeira API REST. Inclui hands-on com Express e MongoDB.',
+    description:
+      'Aprenda os fundamentos do Node.js e construa sua primeira API REST. Inclui hands-on com Express e MongoDB.',
     dateTime: new Date('2024-02-15T14:00:00'),
     totalSlots: 30,
     availableSlots: 30
@@ -35,7 +36,8 @@ const sampleEvents = [
   },
   {
     title: 'Workshop: Bootstrap 5 e Design Responsivo',
-    description: 'Aprenda a criar interfaces modernas e responsivas com Bootstrap 5, incluindo componentes customizados.',
+    description:
+      'Aprenda a criar interfaces modernas e responsivas com Bootstrap 5, incluindo componentes customizados.',
     dateTime: new Date('2024-03-05T15:00:00'),
     totalSlots: 35,
     availableSlots: 35
@@ -70,7 +72,6 @@ async function seedDatabase() {
 
     console.log('\n✨ Database seeded successfully!');
     console.log('🚀 You can now start the application with: npm start');
-
   } catch (error) {
     console.error('❌ Error seeding database:', error);
   } finally {

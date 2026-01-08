@@ -136,7 +136,7 @@ describe('CreateEventUseCase', () => {
       expect(result.data.totalSlots).toBe(50);
       expect(result.data.availableSlots).toBe(50);
       expect(mockEventRepository.create).toHaveBeenCalledTimes(1);
-      
+
       // Verify that the event is created with isActive: true
       const createdEventArg = mockEventRepository.create.mock.calls[0][0];
       expect(createdEventArg.isActive).toBe(true);

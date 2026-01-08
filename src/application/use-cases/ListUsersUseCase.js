@@ -6,7 +6,7 @@ class ListUsersUseCase {
   async execute() {
     try {
       const users = await this.userRepository.findAll();
-      
+
       return {
         success: true,
         data: users.map(user => user.toJSON())

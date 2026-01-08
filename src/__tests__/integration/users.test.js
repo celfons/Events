@@ -34,12 +34,10 @@ describe('Users API Integration Tests', () => {
     });
     superuserId = superuser.id;
 
-    const superuserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'superuser@example.com',
-        password: 'password123'
-      });
+    const superuserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'superuser@example.com',
+      password: 'password123'
+    });
     superuserToken = superuserLoginResponse.body.token;
 
     // Create and login as regular user
@@ -51,12 +49,10 @@ describe('Users API Integration Tests', () => {
     });
     regularUserId = regularUser.id;
 
-    const regularUserLoginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'regular@example.com',
-        password: 'password123'
-      });
+    const regularUserLoginResponse = await request(app).post('/api/auth/login').send({
+      email: 'regular@example.com',
+      password: 'password123'
+    });
     regularUserToken = regularUserLoginResponse.body.token;
   });
 
@@ -73,9 +69,7 @@ describe('Users API Integration Tests', () => {
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .get('/api/users')
-        .expect(401);
+      await request(app).get('/api/users').expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -139,7 +133,7 @@ describe('Users API Integration Tests', () => {
 
       // Role is always 'user' regardless of what was requested
       expect(response.body.role).toBe('user');
-      
+
       // However, superusers can update the role after creation
       await request(app)
         .put(`/api/users/${response.body.id}`)
@@ -156,10 +150,7 @@ describe('Users API Integration Tests', () => {
         role: 'user'
       };
 
-      await request(app)
-        .post('/api/users')
-        .send(userData)
-        .expect(401);
+      await request(app).post('/api/users').send(userData).expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -304,10 +295,7 @@ describe('Users API Integration Tests', () => {
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .put(`/api/users/${regularUserId}`)
-        .send({ username: 'updated' })
-        .expect(401);
+      await request(app).put(`/api/users/${regularUserId}`).send({ username: 'updated' }).expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -361,9 +349,7 @@ describe('Users API Integration Tests', () => {
     });
 
     it('should return 401 when no auth token is provided', async () => {
-      await request(app)
-        .delete(`/api/users/${regularUserId}`)
-        .expect(401);
+      await request(app).delete(`/api/users/${regularUserId}`).expect(401);
     });
 
     it('should return 403 for regular user', async () => {
@@ -397,10 +383,7 @@ describe('Users API Integration Tests', () => {
   describe('Authorization', () => {
     it('should allow superuser to manage all users', async () => {
       // List users
-      await request(app)
-        .get('/api/users')
-        .set('Authorization', `Bearer ${superuserToken}`)
-        .expect(200);
+      await request(app).get('/api/users').set('Authorization', `Bearer ${superuserToken}`).expect(200);
 
       // Create user
       await request(app)
@@ -430,10 +413,7 @@ describe('Users API Integration Tests', () => {
 
     it('should deny regular user from managing users', async () => {
       // List users
-      await request(app)
-        .get('/api/users')
-        .set('Authorization', `Bearer ${regularUserToken}`)
-        .expect(403);
+      await request(app).get('/api/users').set('Authorization', `Bearer ${regularUserToken}`).expect(403);
 
       // Create user
       await request(app)

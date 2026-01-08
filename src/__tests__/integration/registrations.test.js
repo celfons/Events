@@ -55,10 +55,7 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(201);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
       expect(response.body).toHaveProperty('id');
       expect(response.body.name).toBe('John Doe');
@@ -77,10 +74,7 @@ describe('Registrations API Integration Tests', () => {
         // Missing participantName and participantEmail
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -93,10 +87,7 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -109,10 +100,7 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -143,10 +131,7 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('available slots');
@@ -161,16 +146,10 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(201);
+      await request(app).post('/api/registrations').send(registrationData).expect(201);
 
       // Try to register again with same email
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('already registered');
@@ -183,10 +162,7 @@ describe('Registrations API Integration Tests', () => {
         email: 'invalid-email'
       };
 
-      const response = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(400);
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
     });
@@ -202,10 +178,7 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const createResponse = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(201);
+      const createResponse = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
       const registrationId = createResponse.body.id;
 
@@ -251,17 +224,11 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      const createResponse = await request(app)
-        .post('/api/registrations')
-        .send(registrationData)
-        .expect(201);
+      const createResponse = await request(app).post('/api/registrations').send(registrationData).expect(201);
 
       const registrationId = createResponse.body.id;
 
-      await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
-        .send({ eventId: eventId })
-        .expect(200);
+      await request(app).post(`/api/registrations/${registrationId}/cancel`).send({ eventId: eventId }).expect(200);
 
       // Try to cancel again
       const response = await request(app)
@@ -318,10 +285,7 @@ describe('Registrations API Integration Tests', () => {
       expect(event.participants[0].status).toBe('active');
 
       // Cancel the registration
-      await request(app)
-        .post(`/api/registrations/${registrationId}/cancel`)
-        .send({ eventId: eventId })
-        .expect(200);
+      await request(app).post(`/api/registrations/${registrationId}/cancel`).send({ eventId: eventId }).expect(200);
 
       // Verify registration is cancelled (not removed)
       event = await eventRepository.findById(eventId);

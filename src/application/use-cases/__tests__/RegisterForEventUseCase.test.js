@@ -11,9 +11,7 @@ describe('RegisterForEventUseCase', () => {
       findParticipantByEmail: jest.fn(),
       findParticipantByPhone: jest.fn()
     };
-    registerForEventUseCase = new RegisterForEventUseCase(
-      mockEventRepository
-    );
+    registerForEventUseCase = new RegisterForEventUseCase(mockEventRepository);
   });
 
   describe('Validation', () => {

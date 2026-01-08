@@ -16,7 +16,7 @@ class LoginUseCase {
 
       // Find user model to use comparePassword method
       const userModel = await this.userRepository.findModelByEmail(email);
-      
+
       if (!userModel) {
         return {
           success: false,
@@ -34,7 +34,7 @@ class LoginUseCase {
 
       // Compare password
       const isValidPassword = await userModel.comparePassword(password);
-      
+
       if (!isValidPassword) {
         return {
           success: false,
@@ -50,8 +50,8 @@ class LoginUseCase {
 
       // Generate JWT token
       const token = jwt.sign(
-        { 
-          userId: userModel._id.toString(), 
+        {
+          userId: userModel._id.toString(),
           email: userModel.email,
           role: userModel.role
         },

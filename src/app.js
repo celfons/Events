@@ -6,6 +6,11 @@ const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./infrastructure/web/swagger');
 
+// Logging
+const logger = require('./infrastructure/logging/logger');
+const requestIdMiddleware = require('./infrastructure/logging/requestIdMiddleware');
+const requestLogger = require('./infrastructure/logging/requestLogger');
+
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
 const MongoUserRepository = require('./infrastructure/database/MongoUserRepository');
@@ -42,25 +47,27 @@ function createApp() {
   const app = express();
 
   // Security headers with Helmet
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        // Note: 'unsafe-inline' is required for Bootstrap's inline styles
-        // Consider using nonces or hashes in a future enhancement
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-        scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
-        fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-        frameSrc: ["'none'"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: []
-      }
-    },
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          // Note: 'unsafe-inline' is required for Bootstrap's inline styles
+          // Consider using nonces or hashes in a future enhancement
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          fontSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          upgradeInsecureRequests: []
+        }
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' }
+    })
+  );
 
   // Rate limiting
   const limiter = rateLimit({
@@ -74,6 +81,8 @@ function createApp() {
   // Consider restricting origins in a future security enhancement
   app.use(cors());
   app.use(limiter);
+  app.use(requestIdMiddleware);
+  app.use(requestLogger);
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.static(path.join(__dirname, '../public')));
@@ -99,7 +108,15 @@ function createApp() {
   const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 
   // Controllers
-  const eventController = new EventController(listEventsUseCase, getEventDetailsUseCase, createEventUseCase, updateEventUseCase, deleteEventUseCase, getEventParticipantsUseCase, listUserEventsUseCase);
+  const eventController = new EventController(
+    listEventsUseCase,
+    getEventDetailsUseCase,
+    createEventUseCase,
+    updateEventUseCase,
+    deleteEventUseCase,
+    getEventParticipantsUseCase,
+    listUserEventsUseCase
+  );
   const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
   const authController = new AuthController(loginUseCase, registerUseCase);
   const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase, registerUseCase);
@@ -111,10 +128,14 @@ function createApp() {
   app.use('/api/registrations', createRegistrationRoutes(registrationController));
 
   // Swagger API Documentation
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Events Platform API Documentation'
-  }));
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Events Platform API Documentation'
+    })
+  );
 
   // Serve HTML pages
   app.get('/', (req, res) => {
@@ -145,7 +166,7 @@ function createApp() {
 
   // Error handler
   app.use((err, req, res, next) => {
-    console.error('Error:', err);
+    logger.error({ err, requestId: req.requestId }, 'Internal server error');
     res.status(500).json({ error: 'Internal server error' });
   });
 

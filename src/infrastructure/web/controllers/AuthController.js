@@ -8,7 +8,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
       const result = await this.loginUseCase.execute(email, password);
-      
+
       if (!result.success) {
         return res.status(401).json({ error: result.error });
       }
@@ -22,7 +22,7 @@ class AuthController {
   async register(req, res) {
     try {
       const result = await this.registerUseCase.execute(req.body);
-      
+
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
