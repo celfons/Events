@@ -24,17 +24,6 @@ const logger = pino({
     }),
     err: pino.stdSerializers.err,
   },
-  // Use pretty print in development
-  ...(process.env.NODE_ENV !== 'production' && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-      },
-    },
-  }),
 });
 
 // Create HTTP logger middleware

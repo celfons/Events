@@ -6,61 +6,73 @@ class UserController {
     this.registerUseCase = registerUseCase;
   }
 
-  async listUsers(req, res) {
+  async listUsers(req, res, next) {
     try {
       const result = await this.listUsersUseCase.execute();
-      
+
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const error = new Error(result.error);
+        error.statusCode = 400;
+        error.code = 'BAD_REQUEST';
+        throw error;
       }
 
       return res.status(200).json(result.data);
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      next(error);
     }
   }
 
-  async createUser(req, res) {
+  async createUser(req, res, next) {
     try {
       const result = await this.registerUseCase.execute(req.body);
-      
+
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const error = new Error(result.error);
+        error.statusCode = 400;
+        error.code = 'BAD_REQUEST';
+        throw error;
       }
 
       return res.status(201).json(result.data);
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      next(error);
     }
   }
 
-  async updateUser(req, res) {
+  async updateUser(req, res, next) {
     try {
       const { id } = req.params;
       const result = await this.updateUserUseCase.execute(id, req.body);
-      
+
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const error = new Error(result.error);
+        error.statusCode = 400;
+        error.code = 'BAD_REQUEST';
+        throw error;
       }
 
       return res.status(200).json(result.data);
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      next(error);
     }
   }
 
-  async deleteUser(req, res) {
+  async deleteUser(req, res, next) {
     try {
       const { id } = req.params;
       const result = await this.deleteUserUseCase.execute(id);
-      
+
       if (!result.success) {
-        return res.status(400).json({ error: result.error });
+        const error = new Error(result.error);
+        error.statusCode = 400;
+        error.code = 'BAD_REQUEST';
+        throw error;
       }
 
       return res.status(200).json(result.data);
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
+      next(error);
     }
   }
 }

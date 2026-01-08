@@ -3,16 +3,25 @@
  * Standardizes error responses across the application
  */
 function errorHandler(err, req, res, _next) {
-  // Log error with request context
-  req.log.error(
-    {
-      err,
-      requestId: req.id,
+  // Log error with request context if logger is available
+  if (req.log) {
+    req.log.error(
+      {
+        err,
+        requestId: req.id,
+        path: req.path,
+        method: req.method,
+      },
+      'Request error'
+    );
+  } else {
+    // Fallback to console.error if logger not available (e.g., in tests)
+    console.error('Request error:', {
+      error: err.message,
       path: req.path,
       method: req.method,
-    },
-    'Request error'
-  );
+    });
+  }
 
   // Default error response
   const statusCode = err.statusCode || err.status || 500;
