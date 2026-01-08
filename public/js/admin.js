@@ -140,8 +140,11 @@ async function loadEvents() {
             throw new Error(errorMessage);
         }
         
-        const events = await response.json();
+        const responseData = await response.json();
         loadingElement.classList.add('d-none');
+
+        // Extract events array from the response data object
+        const events = responseData.data || [];
 
         if (!Array.isArray(events) || events.length === 0) {
             noEventsElement.classList.remove('d-none');
@@ -619,8 +622,11 @@ async function loadParticipants(eventId) {
             throw new Error(errorMessage);
         }
 
-        const participants = await response.json();
+        const responseData = await response.json();
         participantsLoading.classList.add('d-none');
+
+        // Extract participants array from the response data object
+        const participants = responseData.data || [];
 
         if (!Array.isArray(participants) || participants.length === 0) {
             noParticipants.classList.remove('d-none');
