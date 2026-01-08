@@ -143,17 +143,17 @@ npm test
 npm run test:coverage
 ```
 
-O projeto tem mais de 113 testes automatizados cobrindo todas as funcionalidades principais.
+O projeto possui uma suite completa de testes automatizados cobrindo todas as funcionalidades principais.
 
 ## Deploy
 
-A aplicação está configurada para deploy automático no Azure. Sempre que você fizer push para a branch `main`, o GitHub Actions vai:
+A aplicação está configurada para deploy automático no Azure Web App. Sempre que você fizer push para a branch `main`, o GitHub Actions vai:
 
 1. Rodar todos os testes
 2. Fazer o build da aplicação
-3. Fazer deploy automático
+3. Fazer deploy automático no Azure
 
-Você também pode fazer deploy manual seguindo a documentação do Azure Web App.
+Para fazer deploy manual, você pode usar o Azure CLI ou o portal do Azure seguindo a documentação oficial do Azure Web App para Node.js.
 
 ## Segurança
 
