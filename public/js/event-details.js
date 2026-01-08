@@ -171,6 +171,11 @@ async function loadEventDetails() {
         const responseData = await response.json();
         // Extract event data from the response data object
         const event = responseData.data;
+        
+        if (!event) {
+            throw new Error('Evento não encontrado');
+        }
+        
         displayEventDetails(event);
         loadingElement.classList.add('d-none');
         eventDetailsContainer.classList.remove('d-none');
