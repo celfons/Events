@@ -1,96 +1,41 @@
-# Events Platform
+# Events Platform 🎉
 
-Plataforma de gerenciamento de eventos desenvolvida com **Node.js**, **MongoDB** e **Clean Architecture**, seguindo princípios **SOLID** e **Clean Code**.
+Uma plataforma simples e prática para gerenciar eventos e inscrições, desenvolvida com Node.js e MongoDB.
 
-## 🚀 Funcionalidades
+## O que é?
 
-### 1. Autenticação e Autorização
-- **Sistema de Login/Registro**: Autenticação JWT para usuários
-- **Controle de Acesso**: Permissões granulares baseadas em roles (user/superuser)
-- **Proteção de Eventos**: Usuários só podem editar/excluir seus próprios eventos
-- **Gestão de Usuários**: CRUD completo restrito a superusers
-- 📖 **[Documentação Completa de Autenticação](./AUTHENTICATION.md)**
+Esta é uma aplicação web completa que permite criar, gerenciar e visualizar eventos, além de permitir que pessoas se inscrevam neles. É perfeita para organizar workshops, meetups, palestras ou qualquer tipo de evento que precise de controle de vagas.
 
-### 2. Listagem de Eventos (Home Page)
-- Visualização dos próximos eventos (apenas eventos futuros)
-- Paginação com até 5 eventos por página
-- Informações de data, horário e número de vagas
-- Interface responsiva com Bootstrap 5
-- **Acesso público** - todos os eventos de todos os usuários são exibidos
+## Principais Recursos
 
-### 3. Detalhes do Evento
-- Visualização completa dos detalhes do evento
-- Formulário de inscrição integrado
-- Indicação visual de vagas disponíveis
+**Para todos:**
+- 📅 Ver a lista de próximos eventos
+- 📝 Se inscrever em eventos com vagas disponíveis
+- ❌ Cancelar inscrições quando necessário
 
-### 4. Sistema de Inscrições
-- **Inscrição**: Formulário para cadastro em eventos
-- **Validação**: Verificação de vagas disponíveis e inscrições duplicadas
-- **Cancelamento**: Botão para desistir da inscrição
-- **Persistência**: Dados salvos no MongoDB
+**Para usuários autenticados:**
+- ➕ Criar seus próprios eventos
+- ✏️ Editar eventos que você criou
+- 🗑️ Excluir eventos que você criou
+- 👥 Ver quem se inscreveu nos seus eventos
 
-### 5. Painel Administrativo (Admin Page)
-- **Gerenciamento de Eventos**: CRUD completo de eventos (requer autenticação)
-- **Listagem Paginada**: Visualização de todos os eventos (10 por página)
-- **Edição de Eventos**: Modal para atualizar informações (apenas eventos próprios)
-- **Exclusão de Eventos**: Remoção de eventos com confirmação (apenas eventos próprios)
-- **Visualização de Participantes**: Lista paginada (10 por página) dos inscritos em cada evento
+**Para superusuários:**
+- 👤 Gerenciar todos os usuários da plataforma
 
-## 🏗️ Arquitetura
+## Tecnologias Utilizadas
 
-O projeto segue **Clean Architecture** com separação clara de responsabilidades:
+- **Node.js** e **Express** - Backend
+- **MongoDB** - Banco de dados
+- **Bootstrap 5** - Interface responsiva
+- **JWT** - Autenticação segura
 
-```
-src/
-├── domain/
-│   ├── entities/           # Entidades de domínio (Event, Registration, User)
-│   └── repositories/       # Interfaces de repositório
-├── application/
-│   └── use-cases/          # Casos de uso (lógica de negócio)
-├── infrastructure/
-│   ├── database/           # Implementações MongoDB
-│   └── web/
-│       ├── controllers/    # Controladores HTTP
-│       ├── middleware/     # Middleware de autenticação/autorização
-│       └── routes/         # Definição de rotas
-├── app.js                  # Configuração da aplicação
-└── server.js               # Ponto de entrada
-```
+## Como começar?
 
-### Princípios SOLID Aplicados
+### Você vai precisar de:
+- Node.js 14 ou superior
+- MongoDB (local ou MongoDB Atlas)
 
-- **S**ingle Responsibility: Cada classe tem uma única responsabilidade
-- **O**pen/Closed: Extensível através de interfaces
-- **L**iskov Substitution: Implementações podem substituir interfaces
-- **I**nterface Segregation: Interfaces específicas por necessidade
-- **D**ependency Inversion: Dependências invertidas via injeção
-
-## 🛠️ Tecnologias
-
-### Backend
-- **Node.js**: Runtime JavaScript
-- **Express**: Framework web
-- **MongoDB**: Banco de dados NoSQL
-- **Mongoose**: ODM para MongoDB
-- **JWT**: Autenticação via JSON Web Tokens
-- **bcryptjs**: Hashing de senhas
-- **Passport**: Middleware de autenticação
-- **dotenv**: Gerenciamento de variáveis de ambiente
-- **CORS**: Controle de acesso
-
-### Frontend
-- **HTML5**: Estrutura
-- **Bootstrap 5**: Framework CSS responsivo
-- **JavaScript (Vanilla)**: Lógica do cliente
-- **Bootstrap Icons**: Ícones
-
-## 📦 Instalação
-
-### Pré-requisitos
-- Node.js 14+ instalado
-- MongoDB instalado e rodando (ou MongoDB Atlas)
-
-### Passos
+### Passo a passo:
 
 1. **Clone o repositório**
 ```bash
@@ -103,366 +48,137 @@ cd Events
 npm install
 ```
 
-3. **Configure as variáveis de ambiente**
+3. **Configure o ambiente**
+
+Copie o arquivo de exemplo:
 ```bash
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` com suas configurações:
+Edite o `.env` com suas configurações:
 ```env
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
 NODE_ENV=development
-JWT_SECRET=your-strong-random-secret-key  # Use: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=sua-chave-secreta-aqui
 ```
 
-4. **Crie o superusuário inicial**
+💡 **Dica**: Gere uma chave JWT segura com:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-Configure as credenciais do superusuário:
+4. **Crie o primeiro usuário administrador**
+
+Configure as credenciais:
 ```bash
 export SUPERUSER_USERNAME="admin"
 export SUPERUSER_EMAIL="admin@example.com"
-export SUPERUSER_PASSWORD="YourSecurePassword123!"
+export SUPERUSER_PASSWORD="SuaSenhaForte123!"
 ```
 
-Execute o script:
+Crie o superusuário:
 ```bash
 npm run create-superuser
 ```
 
-⚠️ **Importante**: Use uma senha forte e segura!
-
-5. **(Opcional) Crie um usuário padrão para desenvolvimento**
-
-Para facilitar o desenvolvimento e testes, você pode criar um usuário padrão:
-```bash
-npm run create-default-user
-```
-
-Isso criará um usuário com as seguintes credenciais:
-- **Username**: user
-- **Email**: user@events.com
-- **Password**: user123
-- **Role**: user
-
-⚠️ **Atenção**: Este usuário é apenas para desenvolvimento. Não use em produção!
-
-6. **Inicie o servidor**
+5. **Inicie a aplicação**
 ```bash
 npm start
 ```
 
-7. **Acesse a aplicação**
-- Página Principal: http://localhost:3000
-- Painel Admin: http://localhost:3000/admin
-- Health Check: http://localhost:3000/health
-- **Documentação da API (Swagger)**: http://localhost:3000/api-docs
+6. **Acesse no navegador**
+- Página inicial: http://localhost:3000
+- Painel admin: http://localhost:3000/admin
+- Documentação da API: http://localhost:3000/api-docs
 
-## 📚 Documentação da API
+## Como usar?
 
-A documentação interativa da API está disponível através do Swagger UI. Acesse http://localhost:3000/api-docs para:
+### Para visitantes:
+1. Acesse a página inicial para ver os próximos eventos
+2. Clique em um evento para ver os detalhes
+3. Preencha o formulário para se inscrever
 
-- Visualizar todos os endpoints disponíveis
-- Entender os parâmetros de entrada e saída
-- Testar as APIs diretamente pelo navegador
-- Ver exemplos de requisições e respostas
+### Para criar eventos:
+1. Faça login no painel administrativo
+2. Clique em "Novo Evento"
+3. Preencha as informações (título, descrição, data, vagas)
+4. Pronto! Seu evento está no ar
 
-### Tecnologias de Documentação
-- **Swagger UI**: Interface interativa para documentação
-- **OpenAPI 3.0**: Especificação padrão para APIs REST
+### Para gerenciar eventos:
+1. No painel admin, você verá todos os seus eventos
+2. Clique em "Editar" para alterar informações
+3. Clique em "Participantes" para ver quem se inscreveu
+4. Use "Excluir" para remover eventos se necessário
 
-## 🔌 API Endpoints
+## API REST
 
-### Autenticação
+A aplicação possui uma API completa documentada com Swagger. Acesse `/api-docs` para ver todos os endpoints disponíveis e testá-los interativamente.
 
-#### Registrar novo usuário
-```
-POST /api/auth/register
-Content-Type: application/json
+💡 **Importante**: Endpoints que criam, editam ou excluem eventos requerem autenticação JWT. Faça login primeiro para obter o token.
 
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
+### Principais endpoints:
 
-#### Login
-```
-POST /api/auth/login
-Content-Type: application/json
+**Autenticação:**
+- `POST /api/auth/register` - Criar conta
+- `POST /api/auth/login` - Fazer login
 
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
+**Eventos:**
+- `GET /api/events` - Listar eventos (público)
+- `POST /api/events` - Criar evento (autenticado)
+- `PUT /api/events/:id` - Atualizar evento (autenticado)
+- `DELETE /api/events/:id` - Excluir evento (autenticado)
 
-Para mais detalhes sobre autenticação, consulte [AUTHENTICATION.md](./AUTHENTICATION.md)
+**Inscrições:**
+- `POST /api/registrations` - Inscrever-se em evento
+- `POST /api/registrations/:id/cancel` - Cancelar inscrição
 
-### Eventos
+## Testes
 
-#### Listar todos os eventos (público)
-```
-GET /api/events
-```
+Execute os testes para garantir que tudo está funcionando:
 
-#### Obter detalhes de um evento
-```
-GET /api/events/:id
-```
-
-#### Criar novo evento (requer autenticação)
-```
-POST /api/events
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "title": "Workshop de Node.js",
-  "description": "Aprenda Node.js do zero",
-  "dateTime": "2024-12-31T14:00:00",
-  "totalSlots": 50
-}
-```
-
-#### Atualizar evento (requer autenticação, apenas o dono)
-```
-PUT /api/events/:id
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "title": "Workshop de Node.js Avançado",
-  "description": "Aprenda Node.js do básico ao avançado",
-  "dateTime": "2024-12-31T14:00:00",
-  "totalSlots": 100
-}
-```
-
-#### Excluir evento (requer autenticação, apenas o dono)
-```
-DELETE /api/events/:id
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-#### Obter participantes de um evento
-```
-GET /api/events/:id/participants
-```
-
-### Gestão de Usuários (apenas superusuário)
-
-#### Listar todos os usuários
-```
-GET /api/users
-Authorization: Bearer SUPERUSER_JWT_TOKEN
-```
-
-#### Atualizar usuário
-```
-PUT /api/users/:id
-Authorization: Bearer SUPERUSER_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "username": "newusername",
-  "email": "newemail@example.com",
-  "role": "superuser"
-}
-```
-
-#### Excluir usuário
-```
-DELETE /api/users/:id
-Authorization: Bearer SUPERUSER_JWT_TOKEN
-```
-
-### Inscrições
-
-#### Criar inscrição
-```
-POST /api/registrations
-Content-Type: application/json
-
-{
-  "eventId": "event_id_here",
-  "name": "João Silva",
-  "email": "joao@example.com",
-  "phone": "(11) 98765-4321"
-}
-```
-
-#### Cancelar inscrição
-```
-POST /api/registrations/:id/cancel
-```
-
-## 🎨 Interface do Usuário
-
-### Página Principal (/)
-- Lista de eventos futuros em cards responsivos
-- Paginação com até 5 eventos por página
-- Link para painel administrativo
-- Navegação intuitiva
-
-### Painel Administrativo (/admin)
-- Tabela paginada com todos os eventos
-- **Requer autenticação**: Login necessário para gerenciar eventos
-- Botão para criar novos eventos (vinculados ao usuário logado)
-- Modal para visualizar e editar detalhes de eventos (apenas eventos próprios)
-- Modal para visualizar participantes inscritos
-- Funcionalidade de exclusão de eventos (apenas eventos próprios)
-
-### Página de Detalhes (/event/:id)
-- Informações completas do evento
-- Formulário de inscrição lateral
-- Feedback visual de status
-
-### Design Responsivo
-- Mobile-first approach
-- Breakpoints para tablet e desktop
-- Componentes Bootstrap otimizados
-
-## 🧪 Testes
-
-Este projeto possui cobertura completa de testes unitários para validar as regras de negócio.
-
-### Executar Testes
 ```bash
-# Executar todos os testes
+# Rodar todos os testes
 npm test
 
-# Executar testes com cobertura
+# Ver cobertura de código
 npm run test:coverage
-
-# Executar testes em modo watch
-npm run test:watch
 ```
 
-### Cobertura de Testes
-- **Entidades de Domínio**: 100% de cobertura (Event, Registration, User)
-- **Casos de Uso**: 100% de cobertura (incluindo autenticação)
-- **Total de Testes**: 113+ testes passando
-- **Autenticação**: Login, registro, validações completas
+O projeto possui uma suite completa de testes automatizados cobrindo todas as funcionalidades principais.
 
-Para mais detalhes sobre os testes, consulte [UNIT_TESTS.md](./UNIT_TESTS.md).
+## Deploy
 
-## 🚢 Deploy no Azure
+A aplicação está configurada para deploy automático no Azure Web App. Sempre que você fizer push para a branch `main`, o GitHub Actions vai:
 
-Consulte o arquivo [DEPLOYMENT.md](./DEPLOYMENT.md) para instruções detalhadas de deploy no Azure Web App.
+1. Rodar todos os testes
+2. Fazer o build da aplicação
+3. Fazer deploy automático no Azure
 
-### Resumo Rápido
-```bash
-# Login no Azure
-az login
+Para fazer deploy manual, você pode usar o Azure CLI ou o portal do Azure seguindo a documentação oficial do Azure Web App para Node.js.
 
-# Criar recursos
-az group create --name events-rg --location brazilsouth
-az appservice plan create --name events-plan --resource-group events-rg --sku B1 --is-linux
-az webapp create --resource-group events-rg --plan events-plan --name events-platform --runtime "NODE|18-lts"
+## Segurança
 
-# Configurar variáveis
-az webapp config appsettings set --resource-group events-rg --name events-platform --settings MONGODB_URI="<your-connection-string>"
+A aplicação implementa várias medidas de segurança:
+- Senhas criptografadas com bcrypt
+- Autenticação JWT
+- Proteção contra injeção de código
+- Sanitização de dados
+- Rate limiting para prevenir ataques
+- Headers de segurança HTTP
 
-# Deploy
-git push azure main
-```
+## Quer contribuir?
 
-## 🔄 CI/CD
-
-### GitHub Actions
-
-O projeto utiliza GitHub Actions para automação de build, testes e deploy:
-
-#### Pull Request Checks
-- **Workflow**: `.github/workflows/pr-check.yml`
-- **Trigger**: Pull requests para a branch `main`
-- **Validações**:
-  - Instalação de dependências
-  - Execução de build (se disponível)
-  - Execução de todos os testes unitários (113+ testes)
-- **Requisito**: Todos os checks devem passar antes do merge para `main`
-
-#### Deploy Automático
-- **Workflow**: `.github/workflows/main_celfons.yml`
-- **Trigger**: Push para a branch `main`
-- **Etapas**:
-  - Build da aplicação
-  - Execução de testes
-  - Deploy automático no Azure Web App
-
-## 📝 Estrutura de Dados
-
-### Event Schema
-```javascript
-{
-  title: String,
-  description: String,
-  dateTime: Date,
-  totalSlots: Number,
-  availableSlots: Number,
-  userId: ObjectId,  // Referência ao usuário criador
-  createdAt: Date
-}
-```
-
-### User Schema
-```javascript
-{
-  username: String,
-  email: String,
-  password: String,  // Hashed com bcrypt
-  role: String,      // 'user' ou 'superuser'
-  createdAt: Date
-}
-```
-
-### Registration Schema
-```javascript
-{
-  eventId: ObjectId,
-  name: String,
-  email: String,
-  phone: String,
-  registeredAt: Date,
-  status: String // 'active' | 'cancelled'
-}
-```
-
-## 🔒 Segurança
-
-- **Autenticação JWT**: Tokens seguros para autenticação stateless
-- **Hashing de Senhas**: bcrypt com salt para armazenamento seguro
-- **Autorização Granular**: Controle de acesso baseado em roles e ownership
-- **Validação de entrada de dados**: Validação em todas as camadas
-- **Sanitização de HTML**: Prevenção de XSS
-- **CORS configurado**: Controle de origens permitidas
-- **Variáveis de ambiente**: Secrets armazenados com segurança
-- **Mongoose**: Prevenção de NoSQL injection
-- **Rate Limiting**: Proteção contra ataques de força bruta
-- **Helmet**: Headers de segurança HTTP
-
-Para mais detalhes sobre segurança de autenticação, consulte [AUTHENTICATION.md](./AUTHENTICATION.md)
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b minha-feature`)
+3. Faça commit das suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Faça push para a branch (`git push origin minha-feature`)
 5. Abra um Pull Request
 
-## 📄 Licença
+## Licença
 
 ISC License
 
-## 👤 Autor
+---
 
-Desenvolvido seguindo as melhores práticas de desenvolvimento fullstack JavaScript.
-
-## 🙏 Agradecimentos
-
-- Bootstrap pela biblioteca CSS
-- MongoDB pela documentação
-- Comunidade Node.js
+Feito com ❤️ para facilitar a organização de eventos
