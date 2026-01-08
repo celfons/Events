@@ -32,7 +32,7 @@ function validate(schemas) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Format validation errors for better readability
-        const formattedErrors = error.errors.map(err => ({
+        const formattedErrors = error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
