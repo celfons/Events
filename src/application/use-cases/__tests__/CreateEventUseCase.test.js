@@ -6,7 +6,8 @@ describe('CreateEventUseCase', () => {
 
   beforeEach(() => {
     mockEventRepository = {
-      create: jest.fn()
+      create: jest.fn(),
+      findByEventCode: jest.fn().mockResolvedValue(null) // Mock findByEventCode to always return null (code is unique)
     };
     createEventUseCase = new CreateEventUseCase(mockEventRepository);
   });

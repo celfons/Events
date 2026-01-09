@@ -124,7 +124,5 @@ const eventSchema = new mongoose.Schema({
 
 // Index for unique email per event
 eventSchema.index({ 'participants.email': 1 });
-// Index for eventCode for faster lookups
-eventSchema.index({ eventCode: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);
