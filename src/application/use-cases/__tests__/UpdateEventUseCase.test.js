@@ -181,6 +181,47 @@ describe('UpdateEventUseCase', () => {
       expect(result.success).toBe(true);
       expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
     });
+
+    it('should update isActive field', async () => {
+      const eventId = '890';
+      const existingEvent = {
+        id: eventId,
+        title: 'Test Event',
+        description: 'Description',
+        dateTime: new Date('2024-12-31'),
+        totalSlots: 50,
+        availableSlots: 40,
+        participants: [],
+        isActive: true
+      };
+
+      const updateData = {
+        isActive: false
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        isActive: false,
+        toJSON: jest.fn().mockReturnValue({
+          id: eventId,
+          title: 'Test Event',
+          description: 'Description',
+          dateTime: new Date('2024-12-31'),
+          totalSlots: 50,
+          availableSlots: 40,
+          isActive: false
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCase.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(result.data.isActive).toBe(false);
+      expect(mockEventRepository.update).toHaveBeenCalledWith(eventId, updateData);
+    });
   });
 
   describe('Validation', () => {

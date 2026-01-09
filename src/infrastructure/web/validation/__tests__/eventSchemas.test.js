@@ -152,6 +152,33 @@ describe('Event Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
+    it('should validate with isActive field', () => {
+      const validData = {
+        isActive: false
+      };
+
+      const result = updateEventSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+    });
+
+    it('should validate with isActive true', () => {
+      const validData = {
+        isActive: true
+      };
+
+      const result = updateEventSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail validation with non-boolean isActive', () => {
+      const invalidData = {
+        isActive: 'yes'
+      };
+
+      const result = updateEventSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
+    });
+
     it('should fail validation with empty object', () => {
       const invalidData = {};
 

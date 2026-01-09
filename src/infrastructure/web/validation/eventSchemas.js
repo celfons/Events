@@ -21,7 +21,8 @@ const updateEventSchema = z
     description: z.string().min(1).optional(),
     dateTime: dateTimeSchema.optional(),
     totalSlots: z.number().int().positive().optional(),
-    local: z.string().min(1).max(500).optional()
+    local: z.string().min(1).max(500).optional(),
+    isActive: z.boolean().optional()
   })
   .refine(data => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update'
