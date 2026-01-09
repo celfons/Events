@@ -26,7 +26,9 @@ describe('Exception Handler', () => {
     // Mock response object
     res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn()
+      json: jest.fn(),
+      getHeader: jest.fn(),
+      setHeader: jest.fn()
     };
 
     // Mock next function

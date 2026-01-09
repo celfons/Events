@@ -34,6 +34,11 @@ function exceptionHandler(err, req, res, next) {
   // Add requestId to response body for correlation
   responseBody.requestId = requestId;
 
+  // Ensure x-request-id header is set (should already be set by requestIdMiddleware)
+  if (requestId && !res.getHeader('x-request-id')) {
+    res.setHeader('x-request-id', requestId);
+  }
+
   // Send response with both header and body containing requestId
   res.status(errorResponse.status).json(responseBody);
 }
