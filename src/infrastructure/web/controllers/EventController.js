@@ -20,7 +20,8 @@ class EventController {
   }
 
   async listEvents(req, res) {
-    const result = await this.listEventsUseCase.execute();
+    const eventCode = req.query.eventCode;
+    const result = await this.listEventsUseCase.execute(eventCode);
 
     if (!result.success) {
       const errorResponse = ErrorResponse.invalidInput(result.error);

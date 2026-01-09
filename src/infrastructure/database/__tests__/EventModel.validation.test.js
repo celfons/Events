@@ -8,7 +8,8 @@ describe('EventModel - availableSlots Validation', () => {
         description: 'Test Description',
         dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 45
+        availableSlots: 45,
+        eventCode: 'ABC12'
       });
 
       const validationError = event.validateSync();
@@ -21,7 +22,8 @@ describe('EventModel - availableSlots Validation', () => {
         description: 'Test Description',
         dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 50
+        availableSlots: 50,
+        eventCode: 'XYZ99'
       });
 
       const validationError = event.validateSync();
@@ -34,7 +36,8 @@ describe('EventModel - availableSlots Validation', () => {
         description: 'Test Description',
         dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 55
+        availableSlots: 55,
+        eventCode: 'TST01'
       });
 
       const validationError = event.validateSync();
@@ -151,7 +154,8 @@ describe('EventModel - availableSlots Validation', () => {
         description: 'Test Description',
         dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 45
+        availableSlots: 45,
+        eventCode: 'DOC01'
       });
 
       // Manually test the validator on the document
@@ -170,7 +174,8 @@ describe('EventModel - availableSlots Validation', () => {
         description: 'Test Description',
         dateTime: new Date(),
         totalSlots: 50,
-        availableSlots: 50
+        availableSlots: 50,
+        eventCode: 'REJ01'
       });
 
       const availableSlotsPath = EventModel.schema.path('availableSlots');

@@ -18,6 +18,7 @@ class EventResponse {
     this.userId = event.userId;
     this.isActive = event.isActive;
     this.createdAt = event.createdAt;
+    this.eventCode = event.eventCode;
   }
 
   static fromEntity(event) {

@@ -226,20 +226,25 @@ async function loadEvents() {
     }
 }
 
-// Filter events based on search query
+// Filter events based on search query (name or code)
 function filterAndDisplayEvents() {
-    const searchQuery = searchInput.value.toLowerCase().trim();
+    const searchQuery = searchInput.value.trim();
     
     if (searchQuery === '') {
         filteredEvents = futureEvents;
     } else {
+        const searchLower = searchQuery.toLowerCase();
+        const searchUpper = searchQuery.toUpperCase();
+        
         filteredEvents = futureEvents.filter(event => 
-            event.title.toLowerCase().includes(searchQuery)
+            event.title.toLowerCase().includes(searchLower) ||
+            (event.eventCode && event.eventCode.includes(searchUpper))
         );
     }
     
     if (filteredEvents.length === 0) {
         eventsContainer.innerHTML = '';
+        noEventsElement.textContent = 'Nenhum evento disponível no momento.';
         noEventsElement.classList.remove('d-none');
         paginationElement.innerHTML = '';
         return;
@@ -337,6 +342,10 @@ function createEventCard(event) {
     const localBadge = event.local 
         ? `<span class="badge bg-secondary"><i class="bi bi-geo-alt"></i> ${escapeHtml(event.local)}</span>`
         : '';
+    
+    const eventCodeBadge = event.eventCode
+        ? `<span class="badge bg-info text-dark"><i class="bi bi-tag-fill"></i> ${escapeHtml(event.eventCode)}</span>`
+        : '';
 
     col.innerHTML = `
         <div class="card event-card h-100">
@@ -351,6 +360,7 @@ function createEventCard(event) {
                         <i class="bi bi-people"></i> ${slotsText}
                     </span>
                     ${localBadge}
+                    ${eventCodeBadge}
                 </div>
                 <a href="/event/${event.id}" class="btn btn-primary w-100">
                     Ver Detalhes

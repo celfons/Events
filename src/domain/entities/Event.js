@@ -10,7 +10,8 @@ class Event {
     createdAt,
     userId,
     local,
-    isActive
+    isActive,
+    eventCode
   }) {
     this.id = id;
     this.title = title;
@@ -23,6 +24,7 @@ class Event {
     this.userId = userId;
     this.local = local;
     this.isActive = isActive !== undefined ? isActive : true;
+    this.eventCode = eventCode;
   }
 
   hasAvailableSlots() {
@@ -57,7 +59,8 @@ class Event {
       createdAt: this.createdAt,
       userId: this.userId,
       local: this.local,
-      isActive: this.isActive
+      isActive: this.isActive,
+      eventCode: this.eventCode
     };
   }
 }

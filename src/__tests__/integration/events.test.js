@@ -74,7 +74,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description 1',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT01'
       });
 
       await eventRepository.create({
@@ -82,7 +83,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description 2',
         dateTime: new Date('2026-12-31'),
         totalSlots: 100,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT02'
       });
 
       const response = await request(app).get('/api/events').expect(200);
@@ -156,7 +158,8 @@ describe('Events API Integration Tests', () => {
         description: 'Test Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT03'
       });
 
       const response = await request(app).get(`/api/events/${event.id}`).expect(200);
@@ -189,7 +192,8 @@ describe('Events API Integration Tests', () => {
         description: 'Original Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT04'
       });
 
       const updatedData = {
@@ -214,7 +218,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT05'
       });
 
       await request(app).put(`/api/events/${event.id}`).send({ title: 'Updated' }).expect(401);
@@ -227,7 +232,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
+        eventCode: 'EVT06'
       });
 
       // Try to update with regular user token
@@ -260,7 +266,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT07'
       });
 
       const response = await request(app)
@@ -280,7 +287,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT08'
       });
 
       await request(app).delete(`/api/events/${event.id}`).expect(401);
@@ -292,7 +300,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
+        eventCode: 'EVT09'
       });
 
       const response = await request(app)
@@ -313,7 +322,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT10'
       });
 
       await eventRepository.create({
@@ -321,7 +331,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: superuserId
+        userId: superuserId,
+        eventCode: 'EVT11'
       });
 
       const response = await request(app)
@@ -347,7 +358,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT12'
       });
 
       // Manually add participants using the repository method
@@ -381,7 +393,8 @@ describe('Events API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 50,
-        userId: userId
+        userId: userId,
+        eventCode: 'EVT13'
       });
 
       const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);

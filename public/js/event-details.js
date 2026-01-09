@@ -223,8 +223,17 @@ function displayEventDetails(event) {
         ? `${event.availableSlots}/${event.totalSlots} vagas disponíveis` 
         : 'Esgotado';
     
-    document.getElementById('eventSlots').className = `badge bg-${slotsColor}`;
+    document.getElementById('eventSlots').className = `badge bg-${slotsColor} me-2`;
     document.getElementById('eventSlots').innerHTML = `<i class="bi bi-people"></i> ${slotsText}`;
+    
+    // Display event code
+    const eventCodeElement = document.getElementById('eventCode');
+    if (event.eventCode) {
+        eventCodeElement.innerHTML = `<i class="bi bi-tag-fill"></i> ${event.eventCode}`;
+        eventCodeElement.style.display = 'inline-block';
+    } else {
+        eventCodeElement.style.display = 'none';
+    }
     
     // Display location if available
     const eventDateElement = document.getElementById('eventDate');
@@ -248,6 +257,12 @@ function displayEventDetails(event) {
             badgesContainer.appendChild(locationBadge);
         }
     }
+    
+    // Setup share button
+    const shareButton = document.getElementById('shareButton');
+    if (shareButton) {
+        shareButton.onclick = () => shareEvent(event);
+    }
 
     // Update registration button state based on available slots
     const registerButton = document.getElementById('registerButton');
@@ -257,6 +272,32 @@ function displayEventDetails(event) {
     } else {
         registerButton.disabled = false;
         registerButton.innerHTML = '<i class="bi bi-check-circle"></i> Inscrever-se';
+    }
+}
+
+// Share event function
+function shareEvent(event) {
+    const eventUrl = window.location.href;
+    const shareText = `Confira este evento: ${event.title}`;
+    
+    // Check if Web Share API is available
+    if (navigator.share) {
+        navigator.share({
+            title: event.title,
+            text: shareText,
+            url: eventUrl
+        }).catch(error => {
+            console.log('Error sharing:', error);
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(eventUrl).then(() => {
+            alert('Link do evento copiado para a área de transferência!');
+        }).catch(err => {
+            console.error('Error copying to clipboard:', err);
+            // Final fallback: show a prompt with the URL
+            prompt('Copie o link do evento:', eventUrl);
+        });
     }
 }
 
