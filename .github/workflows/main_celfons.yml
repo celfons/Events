@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
 
       - name: Set up Node.js version
-        uses: actions/setup-node@0a44ba7841725637a19e81c2b26f5308e6b4c684 # v4.1.0
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: '22.x'
           cache: 'npm'
@@ -54,7 +54,7 @@ jobs:
 
       - name: Check SonarCloud Quality Gate
         id: sonarcloud-quality-gate
-        uses: sonarsource/sonarqube-quality-gate-action@d304d050d930b02dcc16e5e9f8de59c7e8e3d5b8 # v1.1.0
+        uses: sonarsource/sonarqube-quality-gate-action@d304d050d930b02a896b0f85935344f023928496 # v1.1.0
         timeout-minutes: 5
         continue-on-error: true
         env:
