@@ -77,7 +77,7 @@ describe('CancelRegistrationUseCase', () => {
         title: 'Test Event',
         availableSlots: 5,
         totalSlots: 10,
-        participants: [{ id: '111', name: 'John', email: 'john@test.com', status: 'active' }]
+        participants: [{ id: '111', name: 'John', email: 'john@test.com', status: 'confirmed' }]
       };
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
@@ -93,7 +93,7 @@ describe('CancelRegistrationUseCase', () => {
     it('should properly cancel registration', async () => {
       const mockEvent = {
         id: '123',
-        participants: [{ id: '789', name: 'Maria', email: 'maria@test.com', status: 'active' }]
+        participants: [{ id: '789', name: 'Maria', email: 'maria@test.com', status: 'confirmed' }]
       };
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
@@ -119,7 +119,7 @@ describe('CancelRegistrationUseCase', () => {
     it('should handle errors during cancellation process', async () => {
       const mockEvent = {
         id: '123',
-        participants: [{ id: '456', name: 'John', email: 'john@test.com', status: 'active' }]
+        participants: [{ id: '456', name: 'John', email: 'john@test.com', status: 'confirmed' }]
       };
 
       mockEventRepository.findById.mockResolvedValue(mockEvent);
@@ -155,7 +155,7 @@ describe('CancelRegistrationUseCase', () => {
             id: '456',
             name: 'John Doe',
             phone: '(11) 98765-4321',
-            status: 'active'
+            status: 'confirmed'
           }
         ]
       };
@@ -191,7 +191,7 @@ describe('CancelRegistrationUseCase', () => {
             id: '456',
             name: 'John Doe',
             phone: '(11) 98765-4321',
-            status: 'active'
+            status: 'confirmed'
           }
         ]
       };
@@ -217,7 +217,7 @@ describe('CancelRegistrationUseCase', () => {
             id: '456',
             name: 'John Doe',
             phone: '(11) 98765-4321',
-            status: 'active'
+            status: 'confirmed'
           }
         ]
       };

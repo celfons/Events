@@ -26,7 +26,9 @@ class CancelRegistrationUseCase {
       }
 
       // Find participant in the event
-      const participant = event.participants.find(p => p.id === participantId && p.status === 'active');
+      const participant = event.participants.find(
+        p => p.id === participantId && (p.status === 'pending' || p.status === 'confirmed')
+      );
       if (!participant) {
         return {
           success: false,

@@ -205,7 +205,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '(11) 98765-4321',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -254,7 +254,7 @@ describe('RegisterForEventUseCase', () => {
           name: 'Maria Silva',
           email: 'maria@example.com',
           phone: '(21) 99999-8888',
-          status: 'active'
+          status: 'pending'
         })
       };
 
@@ -321,11 +321,11 @@ describe('RegisterForEventUseCase', () => {
 
     beforeEach(() => {
       mockMessagingService = {
-        sendRegistrationConfirmation: jest.fn().mockResolvedValue({ success: true, messageId: 'msg_123' })
+        sendVerificationCode: jest.fn().mockResolvedValue({ success: true, messageId: 'msg_123' })
       };
     });
 
-    it('should call messaging service with correct parameters when registration is successful', async () => {
+    it('should call messaging service with verification code when registration is successful', async () => {
       const registerWithMessaging = new RegisterForEventUseCase(mockEventRepository, mockMessagingService);
 
       const registrationData = {
@@ -364,17 +364,18 @@ describe('RegisterForEventUseCase', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(result.success).toBe(true);
-      expect(mockMessagingService.sendRegistrationConfirmation).toHaveBeenCalledWith({
-        to: '(11) 98765-4321',
-        name: 'John Doe',
-        eventTitle: 'Test Event',
-        eventDate: mockEvent.dateTime,
-        eventLocal: 'Test Location'
-      });
+      expect(mockMessagingService.sendVerificationCode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: '(11) 98765-4321',
+          name: 'John Doe',
+          eventTitle: 'Test Event',
+          verificationCode: expect.stringMatching(/^\d{6}$/)
+        })
+      );
     });
 
     it('should complete registration successfully even if messaging fails', async () => {
-      mockMessagingService.sendRegistrationConfirmation.mockRejectedValue(new Error('WhatsApp API error'));
+      mockMessagingService.sendVerificationCode.mockRejectedValue(new Error('WhatsApp API error'));
       const registerWithMessaging = new RegisterForEventUseCase(mockEventRepository, mockMessagingService);
 
       const registrationData = {

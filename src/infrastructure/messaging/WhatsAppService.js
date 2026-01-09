@@ -172,6 +172,62 @@ Não esqueça de comparecer! Nos vemos lá! 🎉`;
 
     return await this._sendMessage(to, message);
   }
+
+  /**
+   * Send a verification code message
+   */
+  async sendVerificationCode({ to, name, eventTitle, verificationCode }) {
+    const message = `Olá ${name}! 👋
+
+Para confirmar sua inscrição no evento *${eventTitle}*, utilize o código de verificação:
+
+*Código:* ${verificationCode}
+
+Este código é válido por 15 minutos.
+
+Por favor, insira este código no site para completar sua inscrição.`;
+
+    return await this._sendMessage(to, message);
+  }
+
+  /**
+   * Send a registration error notification
+   */
+  async sendRegistrationError({ to, name, eventTitle, error }) {
+    const message = `Olá ${name},
+
+Infelizmente, não foi possível completar sua inscrição no evento *${eventTitle}*.
+
+*Motivo:* ${error}
+
+Se você tiver dúvidas, entre em contato conosco.`;
+
+    return await this._sendMessage(to, message);
+  }
+
+  /**
+   * Send an event update notification
+   */
+  async sendEventUpdate({ to, name, eventTitle, newDate, newLocal }) {
+    let changes = '';
+    if (newDate) {
+      changes += `\n*Nova Data:* ${this._formatDate(newDate)}`;
+    }
+    if (newLocal) {
+      changes += `\n*Novo Local:* ${newLocal}`;
+    }
+
+    const message = `Olá ${name}! 📢
+
+Informamos que o evento *${eventTitle}* teve alterações:
+${changes}
+
+Sua inscrição continua válida.
+
+Se houver algum problema, entre em contato conosco.`;
+
+    return await this._sendMessage(to, message);
+  }
 }
 
 module.exports = WhatsAppService;

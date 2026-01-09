@@ -59,12 +59,18 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Add participant to event (atomically decrements slots)
+      // Generate 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      // Add participant to event with pending status (doesn't decrement slots yet)
       const registration = await this.eventRepository.addParticipant(registrationData.eventId, {
         name: registrationData.name,
         email: registrationData.email,
         phone: registrationData.phone,
-        status: 'active'
+        status: 'pending',
+        verificationCode,
+        verificationCodeExpiresAt
       });
 
       if (!registration) {
@@ -74,18 +80,17 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Send WhatsApp confirmation message (async, don't block registration)
+      // Send WhatsApp verification code (async, don't block registration)
       if (this.messagingService) {
         this.messagingService
-          .sendRegistrationConfirmation({
+          .sendVerificationCode({
             to: registrationData.phone,
             name: registrationData.name,
             eventTitle: event.title,
-            eventDate: event.dateTime,
-            eventLocal: event.local
+            verificationCode
           })
           .catch(error => {
-            logger.error('Failed to send WhatsApp confirmation', {
+            logger.error('Failed to send WhatsApp verification code', {
               error: error.message,
               registrationId: registration.id
             });
