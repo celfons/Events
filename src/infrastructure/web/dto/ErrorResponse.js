@@ -40,17 +40,13 @@ class ErrorResponse {
    * @param {string} code - Error code from ErrorCodes
    * @param {string} message - Human-readable error message
    * @param {Array|Object} [details] - Optional additional error details
-   * @param {string} [requestId] - Optional request ID for correlation
    */
-  constructor(status, code, message, details = null, requestId = null) {
+  constructor(status, code, message, details = null) {
     this.status = status;
     this.code = code;
     this.message = message;
     if (details) {
       this.details = details;
-    }
-    if (requestId) {
-      this.requestId = requestId;
     }
     this.timestamp = new Date().toISOString();
   }
@@ -66,10 +62,6 @@ class ErrorResponse {
         timestamp: this.timestamp
       }
     };
-
-    if (this.requestId) {
-      response.error.requestId = this.requestId;
-    }
 
     if (this.details) {
       response.error.details = this.details;
