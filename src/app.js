@@ -43,6 +43,9 @@ const createRegistrationRoutes = require('./infrastructure/web/routes/registrati
 const createAuthRoutes = require('./infrastructure/web/routes/authRoutes');
 const createUserRoutes = require('./infrastructure/web/routes/userRoutes');
 
+// Middleware
+const exceptionHandler = require('./infrastructure/web/middleware/exceptionHandler');
+
 function createApp() {
   const app = express();
 
@@ -161,14 +164,15 @@ function createApp() {
 
   // 404 handler
   app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+    const requestId = req.requestId;
+    res.status(404).json({
+      error: 'Route not found',
+      requestId
+    });
   });
 
-  // Error handler
-  app.use((err, req, res, next) => {
-    logger.error({ err, requestId: req.requestId }, 'Internal server error');
-    res.status(500).json({ error: 'Internal server error' });
-  });
+  // Centralized exception handler
+  app.use(exceptionHandler);
 
   return app;
 }

@@ -1,5 +1,6 @@
 const express = require('express');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../middleware/asyncHandler');
 const { createRegistrationSchema, cancelRegistrationSchema, registrationIdParamSchema } = require('../validation');
 
 /**
@@ -45,8 +46,10 @@ function createRegistrationRoutes(registrationController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', validate({ body: createRegistrationSchema }), (req, res) =>
-    registrationController.register(req, res)
+  router.post(
+    '/',
+    validate({ body: createRegistrationSchema }),
+    asyncHandler((req, res) => registrationController.register(req, res))
   );
 
   /**
@@ -86,7 +89,7 @@ function createRegistrationRoutes(registrationController) {
   router.post(
     '/:id/cancel',
     validate({ params: registrationIdParamSchema, body: cancelRegistrationSchema }),
-    (req, res) => registrationController.cancel(req, res)
+    asyncHandler((req, res) => registrationController.cancel(req, res))
   );
 
   return router;

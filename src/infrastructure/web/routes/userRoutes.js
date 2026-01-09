@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticateToken, requireSuperuser } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../middleware/asyncHandler');
 const { createUserSchema, updateUserSchema, userIdParamSchema } = require('../validation');
 
 /**
@@ -46,7 +47,10 @@ function createUserRoutes(userController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/', (req, res) => userController.listUsers(req, res));
+  router.get(
+    '/',
+    asyncHandler((req, res) => userController.listUsers(req, res))
+  );
 
   /**
    * @swagger
@@ -110,7 +114,11 @@ function createUserRoutes(userController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', validate({ body: createUserSchema }), (req, res) => userController.createUser(req, res));
+  router.post(
+    '/',
+    validate({ body: createUserSchema }),
+    asyncHandler((req, res) => userController.createUser(req, res))
+  );
 
   /**
    * @swagger
@@ -177,8 +185,10 @@ function createUserRoutes(userController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.put('/:id', validate({ params: userIdParamSchema, body: updateUserSchema }), (req, res) =>
-    userController.updateUser(req, res)
+  router.put(
+    '/:id',
+    validate({ params: userIdParamSchema, body: updateUserSchema }),
+    asyncHandler((req, res) => userController.updateUser(req, res))
   );
 
   /**
@@ -223,7 +233,11 @@ function createUserRoutes(userController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.delete('/:id', validate({ params: userIdParamSchema }), (req, res) => userController.deleteUser(req, res));
+  router.delete(
+    '/:id',
+    validate({ params: userIdParamSchema }),
+    asyncHandler((req, res) => userController.deleteUser(req, res))
+  );
 
   return router;
 }
