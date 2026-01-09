@@ -128,7 +128,8 @@ describe('admin.js - UI Tests', () => {
             dateTime: new Date().toISOString(),
             totalSlots: 50,
             availableSlots: 10,
-            createdBy: 'user-1'
+            createdBy: 'user-1',
+            eventCode: 'ABC12'
           }
         ]
       };
@@ -150,6 +151,7 @@ describe('admin.js - UI Tests', () => {
         expect(data.data[0]).toHaveProperty('dateTime');
         expect(data.data[0]).toHaveProperty('totalSlots');
         expect(data.data[0]).toHaveProperty('availableSlots');
+        expect(data.data[0]).toHaveProperty('eventCode');
       }
     });
   });
