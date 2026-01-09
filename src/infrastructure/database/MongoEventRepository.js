@@ -72,6 +72,7 @@ class MongoEventRepository extends EventRepository {
   async addParticipant(eventId, participantData) {
     // Add participant - only decrement slots if status is 'confirmed'
     // Ensure no confirmed participant or pending participant with non-expired code exists with same email
+    const now = new Date(); // Store current date to avoid multiple Date() calls
     const updateQuery = {
       $push: { participants: participantData }
     };
@@ -93,7 +94,7 @@ class MongoEventRepository extends EventRepository {
               { status: 'confirmed' },
               {
                 status: 'pending',
-                verificationCodeExpiresAt: { $gt: new Date() }
+                verificationCodeExpiresAt: { $gt: now }
               }
             ]
           }
@@ -116,7 +117,7 @@ class MongoEventRepository extends EventRepository {
                   $or: [
                     { $eq: ['$$p.status', 'confirmed'] },
                     {
-                      $and: [{ $eq: ['$$p.status', 'pending'] }, { $gt: ['$$p.verificationCodeExpiresAt', new Date()] }]
+                      $and: [{ $eq: ['$$p.status', 'pending'] }, { $gt: ['$$p.verificationCodeExpiresAt', now] }]
                     }
                   ]
                 }
@@ -154,16 +155,19 @@ class MongoEventRepository extends EventRepository {
     // Find participants with matching email that are either:
     // 1. Confirmed (always check these)
     // 2. Pending with non-expired verification code (ignore expired pending)
+    const now = new Date(); // Store current date to avoid multiple Date() calls
+    const normalizedEmail = email.toLowerCase(); // Normalize email once
+
     const event = await EventModel.findOne({
       _id: eventId,
       participants: {
         $elemMatch: {
-          email: email.toLowerCase(),
+          email: normalizedEmail,
           $or: [
             { status: 'confirmed' },
             {
               status: 'pending',
-              verificationCodeExpiresAt: { $gt: new Date() }
+              verificationCodeExpiresAt: { $gt: now }
             }
           ]
         }
@@ -177,8 +181,8 @@ class MongoEventRepository extends EventRepository {
     // Find the matching participant
     const participant = event.participants.find(
       p =>
-        p.email.toLowerCase() === email.toLowerCase() &&
-        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > new Date()))
+        p.email.toLowerCase() === normalizedEmail &&
+        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > now))
     );
 
     if (!participant) {
@@ -200,6 +204,8 @@ class MongoEventRepository extends EventRepository {
     // Find participants with matching phone that are either:
     // 1. Confirmed (always check these)
     // 2. Pending with non-expired verification code (ignore expired pending)
+    const now = new Date(); // Store current date to avoid multiple Date() calls
+
     const event = await EventModel.findOne({
       _id: eventId,
       participants: {
@@ -209,7 +215,7 @@ class MongoEventRepository extends EventRepository {
             { status: 'confirmed' },
             {
               status: 'pending',
-              verificationCodeExpiresAt: { $gt: new Date() }
+              verificationCodeExpiresAt: { $gt: now }
             }
           ]
         }
@@ -224,7 +230,7 @@ class MongoEventRepository extends EventRepository {
     const participant = event.participants.find(
       p =>
         p.phone === phone &&
-        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > new Date()))
+        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > now))
     );
 
     if (!participant) {
