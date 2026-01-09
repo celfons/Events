@@ -28,6 +28,11 @@
       "!src/infrastructure/database/connection.js",
       "!src/infrastructure/web/**/*.js"
     ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "testMatch": [
       "**/__tests__/**/*.test.js",
       "**/?(*.)+(spec|test).js"
