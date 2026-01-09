@@ -43,12 +43,13 @@ Add the following secret to your GitHub repository:
    - Exclusions for node_modules, coverage, etc.
    - Coverage report path (coverage/lcov.info)
 
-2. **.github/workflows/sonarcloud.yml** - GitHub Actions workflow
-   - Runs on push to main and on pull requests
+2. **.github/workflows/main_celfons.yml** (modified) - Main deployment workflow with integrated SonarCloud analysis
+   - Runs on push to main, pull requests, and workflow_dispatch
    - Executes tests with coverage
    - Performs SonarCloud analysis
    - Checks quality gate status
    - Creates GitHub issues if quality gate fails (main branch only)
+   - Builds and deploys to Azure Web App (main branch only)
 
 3. **package.json** (modified) - Jest configuration updated
    - Added coverage reporters: text, lcov, and html
@@ -56,7 +57,7 @@ Add the following secret to your GitHub repository:
 
 ### Workflow Features
 
-The SonarCloud workflow includes:
+The main workflow now includes integrated SonarCloud analysis:
 
 - **Automatic Analysis**: Runs on every push to main and every pull request
 - **Test Coverage Integration**: Automatically uploads Jest coverage reports
@@ -142,7 +143,7 @@ sonar.coverage.exclusions=**/__tests__/**,**/*.test.js,your/custom/path/**
 
 ### Change Analysis Frequency
 
-Edit `.github/workflows/sonarcloud.yml` to modify when analysis runs:
+Edit `.github/workflows/main_celfons.yml` to modify when analysis runs:
 
 ```yaml
 on:
