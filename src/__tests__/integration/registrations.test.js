@@ -1,6 +1,13 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB, isMongoAvailable, itIfMongo } = require('./test-helper');
+const {
+  setupTestDB,
+  clearDatabase,
+  teardownTestDB,
+  isMongoAvailable,
+  itIfMongo,
+  createDummyApp
+} = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 const MongoEventRepository = require('../../infrastructure/database/MongoEventRepository');
 
@@ -17,8 +24,7 @@ describe('Registrations API Integration Tests', () => {
 
     if (!isMongoAvailable()) {
       console.warn('⚠️  Skipping Registrations API Integration Tests - MongoDB not available');
-      // Create dummy app to prevent errors in tests
-      app = { address: () => ({ port: 0 }) };
+      app = createDummyApp();
       return;
     }
 

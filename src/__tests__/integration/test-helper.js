@@ -2,6 +2,10 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 const databaseConnection = require('../../infrastructure/database/connection');
 
+// Timeout constants for MongoDB connections in tests
+const MONGO_SERVER_TIMEOUT_MS = 10000; // 10 seconds for MongoMemoryServer creation
+const CONNECTION_TIMEOUT_MS = 5000; // 5 seconds for Mongoose connection attempts
+
 let mongoServer;
 let usingExternalMongo = false;
 let mongoAvailable = true;
@@ -20,14 +24,16 @@ async function setupTestDB() {
             process.env.MONGODB_DOWNLOAD_DIR || './node_modules/.cache/mongodb-memory-server/mongodb-binaries'
         }
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('MongoMemoryServer creation timeout')), 10000))
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('MongoMemoryServer creation timeout')), MONGO_SERVER_TIMEOUT_MS)
+      )
     ]);
     const mongoUri = mongoServer.getUri();
 
     // Connect to the in-memory database with fast-fail timeout
     await databaseConnection.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000
+      serverSelectionTimeoutMS: CONNECTION_TIMEOUT_MS,
+      connectTimeoutMS: CONNECTION_TIMEOUT_MS
     });
     console.log('✅ Using mongodb-memory-server');
     mongoAvailable = true;
@@ -41,8 +47,8 @@ async function setupTestDB() {
       // Only connect if not already connected, with fast-fail timeout
       if (!databaseConnection.isConnected()) {
         await databaseConnection.connect(mongoUri, {
-          serverSelectionTimeoutMS: 5000,
-          connectTimeoutMS: 5000
+          serverSelectionTimeoutMS: CONNECTION_TIMEOUT_MS,
+          connectTimeoutMS: CONNECTION_TIMEOUT_MS
         });
         console.log('✅ Using external MongoDB');
         mongoAvailable = true;
@@ -119,10 +125,30 @@ function itIfMongo(name, testFn, timeout) {
   return it(name, wrappedFn);
 }
 
+/**
+ * Create a minimal dummy app for tests when MongoDB is unavailable
+ * Prevents errors when tests reference app object
+ */
+function createDummyApp() {
+  return {
+    address: () => ({ port: 0 }),
+    // Add other commonly used methods if needed
+    use: () => {},
+    get: () => {},
+    post: () => {},
+    put: () => {},
+    delete: () => {}
+  };
+}
+
 module.exports = {
   setupTestDB,
   clearDatabase,
   teardownTestDB,
   isMongoAvailable: () => mongoAvailable,
-  itIfMongo
+  itIfMongo,
+  createDummyApp,
+  // Export timeout constants for consistency if needed
+  MONGO_SERVER_TIMEOUT_MS,
+  CONNECTION_TIMEOUT_MS
 };
