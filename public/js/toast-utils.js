@@ -32,8 +32,8 @@ function showToast(message, type = 'success', duration = 3000) {
         warning: 'bi-exclamation-triangle-fill'
     };
 
-    // Create toast element
-    const toastId = 'toast-' + Date.now();
+    // Create toast element with unique ID
+    const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
     const toastEl = document.createElement('div');
     toastEl.id = toastId;
     toastEl.className = 'toast';
@@ -43,17 +43,35 @@ function showToast(message, type = 'success', duration = 3000) {
 
     const bgClass = colorMap[type] || colorMap.success;
     const iconClass = iconMap[type] || iconMap.success;
+    const titleText = type === 'error' ? 'Erro' : type === 'warning' ? 'Atenção' : type === 'info' ? 'Informação' : 'Sucesso';
 
-    toastEl.innerHTML = `
-        <div class="toast-header ${bgClass}">
-            <i class="bi ${iconClass} me-2"></i>
-            <strong class="me-auto">${type === 'error' ? 'Erro' : type === 'warning' ? 'Atenção' : type === 'info' ? 'Informação' : 'Sucesso'}</strong>
-            <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'}" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body ${bgClass}">
-            ${message}
-        </div>
-    `;
+    // Create toast structure
+    const toastHeader = document.createElement('div');
+    toastHeader.className = `toast-header ${bgClass}`;
+    
+    const icon = document.createElement('i');
+    icon.className = `bi ${iconClass} me-2`;
+    
+    const title = document.createElement('strong');
+    title.className = 'me-auto';
+    title.textContent = titleText;
+    
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = `btn-close ${type === 'warning' ? '' : 'btn-close-white'}`;
+    closeButton.setAttribute('data-bs-dismiss', 'toast');
+    closeButton.setAttribute('aria-label', 'Close');
+    
+    toastHeader.appendChild(icon);
+    toastHeader.appendChild(title);
+    toastHeader.appendChild(closeButton);
+    
+    const toastBody = document.createElement('div');
+    toastBody.className = `toast-body ${bgClass}`;
+    toastBody.textContent = message; // Use textContent to prevent XSS
+    
+    toastEl.appendChild(toastHeader);
+    toastEl.appendChild(toastBody);
 
     toastContainer.appendChild(toastEl);
 
