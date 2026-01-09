@@ -1,13 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const {
-  setupTestDB,
-  clearDatabase,
-  teardownTestDB,
-  isMongoAvailable,
-  itIfMongo,
-  createDummyApp
-} = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 const MongoEventRepository = require('../../infrastructure/database/MongoEventRepository');
 
@@ -21,13 +14,6 @@ describe('Registrations API Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-
-    if (!isMongoAvailable()) {
-      console.warn('⚠️  Skipping Registrations API Integration Tests - MongoDB not available');
-      app = createDummyApp();
-      return;
-    }
-
     app = createApp();
     userRepository = new MongoUserRepository();
     eventRepository = new MongoEventRepository();
@@ -38,7 +24,6 @@ describe('Registrations API Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    if (!isMongoAvailable()) return;
     await clearDatabase();
 
     // Create a test user
@@ -62,7 +47,7 @@ describe('Registrations API Integration Tests', () => {
   });
 
   describe('POST /api/registrations', () => {
-    itIfMongo('should register a participant for an event', async () => {
+    it('should register a participant for an event', async () => {
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -84,7 +69,7 @@ describe('Registrations API Integration Tests', () => {
       expect(event.participants[0].email).toBe('john@example.com');
     });
 
-    itIfMongo('should return 400 for missing required fields', async () => {
+    it('should return 400 for missing required fields', async () => {
       const registrationData = {
         eventId: eventId
         // Missing participantName and participantEmail
@@ -96,7 +81,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 for invalid event id', async () => {
+    it('should return 400 for invalid event id', async () => {
       const registrationData = {
         eventId: 'invalid-id',
         name: 'John Doe',
@@ -110,7 +95,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 for non-existent event', async () => {
+    it('should return 400 for non-existent event', async () => {
       const registrationData = {
         eventId: '507f1f77bcf86cd799439011',
         name: 'John Doe',
@@ -124,7 +109,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 when event is full', async () => {
+    it('should return 400 when event is full', async () => {
       // Create event with only 1 spot and register one participant
       const fullEvent = await eventRepository.create({
         title: 'Full Event',
@@ -157,7 +142,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error.message).toContain('available slots');
     });
 
-    itIfMongo('should return 400 when participant is already registered', async () => {
+    it('should return 400 when participant is already registered', async () => {
       // Register once
       const registrationData = {
         eventId: eventId,
@@ -176,7 +161,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error.message).toContain('already registered');
     });
 
-    itIfMongo('should return 400 for invalid email format', async () => {
+    it('should return 400 for invalid email format', async () => {
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -191,7 +176,7 @@ describe('Registrations API Integration Tests', () => {
   });
 
   describe('POST /api/registrations/:id/cancel', () => {
-    itIfMongo('should cancel a registration', async () => {
+    it('should cancel a registration', async () => {
       // First, create a registration
       const registrationData = {
         eventId: eventId,
@@ -219,7 +204,7 @@ describe('Registrations API Integration Tests', () => {
       expect(registration.status).toBe('cancelled');
     });
 
-    itIfMongo('should return 400 for invalid registration id', async () => {
+    it('should return 400 for invalid registration id', async () => {
       const response = await request(app)
         .post('/api/registrations/invalid-id/cancel')
         .send({ eventId: eventId })
@@ -229,7 +214,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 for non-existent registration', async () => {
+    it('should return 400 for non-existent registration', async () => {
       const response = await request(app)
         .post('/api/registrations/507f1f77bcf86cd799439011/cancel')
         .send({ eventId: eventId })
@@ -239,7 +224,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 when trying to cancel already cancelled registration', async () => {
+    it('should return 400 when trying to cancel already cancelled registration', async () => {
       // Create and cancel a registration
       const registrationData = {
         eventId: eventId,
@@ -267,7 +252,7 @@ describe('Registrations API Integration Tests', () => {
   });
 
   describe('Integration with Events', () => {
-    itIfMongo('should update event participant count after registration', async () => {
+    it('should update event participant count after registration', async () => {
       // Get initial event state
       const eventBefore = await eventRepository.findById(eventId);
       expect(eventBefore.participants).toHaveLength(0);
@@ -290,7 +275,7 @@ describe('Registrations API Integration Tests', () => {
       expect(eventAfter.participants[0].status).toBe('active');
     });
 
-    itIfMongo('should update event participant count after cancellation', async () => {
+    it('should update event participant count after cancellation', async () => {
       // Register a participant
       const createResponse = await request(app)
         .post('/api/registrations')
@@ -318,7 +303,7 @@ describe('Registrations API Integration Tests', () => {
       expect(event.participants[0].status).toBe('cancelled');
     });
 
-    itIfMongo('should prevent registration when event reaches max capacity', async () => {
+    it('should prevent registration when event reaches max capacity', async () => {
       // Create event with capacity of 2
       const limitedEvent = await eventRepository.create({
         title: 'Limited Event',

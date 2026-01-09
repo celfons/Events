@@ -1,13 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const {
-  setupTestDB,
-  clearDatabase,
-  teardownTestDB,
-  isMongoAvailable,
-  itIfMongo,
-  createDummyApp
-} = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 const MongoEventRepository = require('../../infrastructure/database/MongoEventRepository');
 
@@ -23,13 +16,6 @@ describe('Events API Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDB();
     process.env.JWT_SECRET = 'test-secret-key';
-
-    if (!isMongoAvailable()) {
-      console.warn('⚠️  Skipping Events API Integration Tests - MongoDB not available');
-      app = createDummyApp();
-      return;
-    }
-
     app = createApp();
     userRepository = new MongoUserRepository();
     eventRepository = new MongoEventRepository();
@@ -40,7 +26,6 @@ describe('Events API Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    if (!isMongoAvailable()) return;
     await clearDatabase();
 
     // Create a regular test user and login
@@ -75,14 +60,14 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('GET /api/events', () => {
-    itIfMongo('should return empty array when no events exist', async () => {
+    it('should return empty array when no events exist', async () => {
       const response = await request(app).get('/api/events').expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toEqual([]);
     });
 
-    itIfMongo('should return all events', async () => {
+    it('should return all events', async () => {
       // Create test events
       await eventRepository.create({
         title: 'Event 1',
@@ -112,7 +97,7 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('POST /api/events', () => {
-    itIfMongo('should create a new event with valid data', async () => {
+    it('should create a new event with valid data', async () => {
       const eventData = {
         title: 'New Event',
         description: 'New Event Description',
@@ -134,7 +119,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data.userId).toBe(userId);
     });
 
-    itIfMongo('should return 401 when no auth token is provided', async () => {
+    it('should return 401 when no auth token is provided', async () => {
       const eventData = {
         title: 'New Event',
         description: 'New Event Description',
@@ -145,7 +130,7 @@ describe('Events API Integration Tests', () => {
       await request(app).post('/api/events').send(eventData).expect(401);
     });
 
-    itIfMongo('should return 400 for invalid event data', async () => {
+    it('should return 400 for invalid event data', async () => {
       const eventData = {
         title: '', // Invalid: empty title
         description: 'Description',
@@ -165,7 +150,7 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('GET /api/events/:id', () => {
-    itIfMongo('should get event details by id', async () => {
+    it('should get event details by id', async () => {
       const event = await eventRepository.create({
         title: 'Test Event',
         description: 'Test Description',
@@ -181,14 +166,14 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data.description).toBe('Test Description');
     });
 
-    itIfMongo('should return 404 for non-existent event', async () => {
+    it('should return 404 for non-existent event', async () => {
       const response = await request(app).get('/api/events/507f1f77bcf86cd799439011').expect(404);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 for invalid event id', async () => {
+    it('should return 400 for invalid event id', async () => {
       const response = await request(app).get('/api/events/invalid-id').expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -198,7 +183,7 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('PUT /api/events/:id', () => {
-    itIfMongo('should update event when user is the organizer', async () => {
+    it('should update event when user is the organizer', async () => {
       const event = await eventRepository.create({
         title: 'Original Event',
         description: 'Original Description',
@@ -223,7 +208,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data.description).toBe('Updated Description');
     });
 
-    itIfMongo('should return 401 when no auth token is provided', async () => {
+    it('should return 401 when no auth token is provided', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
@@ -235,7 +220,7 @@ describe('Events API Integration Tests', () => {
       await request(app).put(`/api/events/${event.id}`).send({ title: 'Updated' }).expect(401);
     });
 
-    itIfMongo('should return 400 when user is not the organizer', async () => {
+    it('should return 400 when user is not the organizer', async () => {
       // Create event with superuser as organizer
       const event = await eventRepository.create({
         title: 'Event',
@@ -256,7 +241,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    itIfMongo('should return 400 for non-existent event', async () => {
+    it('should return 400 for non-existent event', async () => {
       const response = await request(app)
         .put('/api/events/507f1f77bcf86cd799439011')
         .set('Authorization', `Bearer ${authToken}`)
@@ -269,7 +254,7 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('DELETE /api/events/:id', () => {
-    itIfMongo('should delete event when user is the organizer', async () => {
+    it('should delete event when user is the organizer', async () => {
       const event = await eventRepository.create({
         title: 'Event to Delete',
         description: 'Description',
@@ -289,7 +274,7 @@ describe('Events API Integration Tests', () => {
       await request(app).get(`/api/events/${event.id}`).expect(404);
     });
 
-    itIfMongo('should return 401 when no auth token is provided', async () => {
+    it('should return 401 when no auth token is provided', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
@@ -301,7 +286,7 @@ describe('Events API Integration Tests', () => {
       await request(app).delete(`/api/events/${event.id}`).expect(401);
     });
 
-    itIfMongo('should return 400 when user is not the organizer', async () => {
+    it('should return 400 when user is not the organizer', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
@@ -321,7 +306,7 @@ describe('Events API Integration Tests', () => {
   });
 
   describe('GET /api/events/my-events', () => {
-    itIfMongo('should return events created by authenticated user', async () => {
+    it('should return events created by authenticated user', async () => {
       // Create events for different users
       await eventRepository.create({
         title: 'User Event',
@@ -350,13 +335,13 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data[0].userId).toBe(userId);
     });
 
-    itIfMongo('should return 401 when no auth token is provided', async () => {
+    it('should return 401 when no auth token is provided', async () => {
       await request(app).get('/api/events/my-events').expect(401);
     });
   });
 
   describe('GET /api/events/:id/participants', () => {
-    itIfMongo('should return list of participants for an event', async () => {
+    it('should return list of participants for an event', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
@@ -390,7 +375,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data[0]).toHaveProperty('status');
     });
 
-    itIfMongo('should return empty array for event with no participants', async () => {
+    it('should return empty array for event with no participants', async () => {
       const event = await eventRepository.create({
         title: 'Event',
         description: 'Description',
@@ -405,7 +390,7 @@ describe('Events API Integration Tests', () => {
       expect(response.body.data).toEqual([]);
     });
 
-    itIfMongo('should return 404 for non-existent event', async () => {
+    it('should return 404 for non-existent event', async () => {
       const response = await request(app).get('/api/events/507f1f77bcf86cd799439011/participants').expect(404);
 
       expect(response.body).toHaveProperty('error');
