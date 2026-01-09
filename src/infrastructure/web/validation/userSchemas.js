@@ -19,7 +19,8 @@ const updateUserSchema = z
     username: z.string().min(1).max(100).optional(),
     email: emailSchema.optional(),
     password: passwordSchema.optional(),
-    role: z.enum(['user', 'superuser']).optional()
+    role: z.enum(['user', 'superuser']).optional(),
+    isActive: z.boolean().optional()
   })
   .refine(data => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update'
