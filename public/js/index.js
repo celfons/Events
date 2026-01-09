@@ -238,7 +238,7 @@ function filterAndDisplayEvents() {
         
         filteredEvents = futureEvents.filter(event => 
             event.title.toLowerCase().includes(searchLower) ||
-            (event.eventCode && event.eventCode.toUpperCase().includes(searchUpper))
+            (event.eventCode && event.eventCode.includes(searchUpper))
         );
     }
     
