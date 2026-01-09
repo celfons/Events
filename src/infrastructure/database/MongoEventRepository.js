@@ -137,20 +137,40 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findParticipantByEmail(eventId, email) {
-    const event = await EventModel.findOne(
-      {
-        _id: eventId,
-        'participants.email': email.toLowerCase(),
-        'participants.status': { $in: ['pending', 'confirmed'] }
-      },
-      { 'participants.$': 1 }
-    );
+    // Find participants with matching email that are either:
+    // 1. Confirmed (always check these)
+    // 2. Pending with non-expired verification code (ignore expired pending)
+    const event = await EventModel.findOne({
+      _id: eventId,
+      participants: {
+        $elemMatch: {
+          email: email.toLowerCase(),
+          $or: [
+            { status: 'confirmed' },
+            {
+              status: 'pending',
+              verificationCodeExpiresAt: { $gt: new Date() }
+            }
+          ]
+        }
+      }
+    });
 
     if (!event || !event.participants || event.participants.length === 0) {
       return null;
     }
 
-    const participant = event.participants[0];
+    // Find the matching participant
+    const participant = event.participants.find(
+      p =>
+        p.email.toLowerCase() === email.toLowerCase() &&
+        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > new Date()))
+    );
+
+    if (!participant) {
+      return null;
+    }
+
     return new Registration({
       id: participant._id.toString(),
       eventId: eventId,
@@ -163,20 +183,40 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findParticipantByPhone(eventId, phone) {
-    const event = await EventModel.findOne(
-      {
-        _id: eventId,
-        'participants.phone': phone,
-        'participants.status': { $in: ['pending', 'confirmed'] }
-      },
-      { 'participants.$': 1 }
-    );
+    // Find participants with matching phone that are either:
+    // 1. Confirmed (always check these)
+    // 2. Pending with non-expired verification code (ignore expired pending)
+    const event = await EventModel.findOne({
+      _id: eventId,
+      participants: {
+        $elemMatch: {
+          phone: phone,
+          $or: [
+            { status: 'confirmed' },
+            {
+              status: 'pending',
+              verificationCodeExpiresAt: { $gt: new Date() }
+            }
+          ]
+        }
+      }
+    });
 
     if (!event || !event.participants || event.participants.length === 0) {
       return null;
     }
 
-    const participant = event.participants[0];
+    // Find the matching participant
+    const participant = event.participants.find(
+      p =>
+        p.phone === phone &&
+        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > new Date()))
+    );
+
+    if (!participant) {
+      return null;
+    }
+
     return new Registration({
       id: participant._id.toString(),
       eventId: eventId,

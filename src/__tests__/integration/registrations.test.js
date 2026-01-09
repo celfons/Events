@@ -161,6 +161,61 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error.message).toContain('already registered');
     });
 
+    it('should allow registration when previous registration has expired verification code', async () => {
+      // Register once with expired verification code
+      const expiredRegistration = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        status: 'pending',
+        verificationCode: '123456',
+        verificationCodeExpiresAt: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago (expired)
+      };
+
+      await eventRepository.addParticipant(eventId, expiredRegistration);
+
+      // Try to register again with same email (should succeed since previous is expired)
+      const registrationData = {
+        eventId: eventId,
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
+      };
+
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(201);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data.email).toBe('john@example.com');
+      expect(response.body.data.status).toBe('pending');
+    });
+
+    it('should not allow registration when previous registration is confirmed', async () => {
+      // Register once with confirmed status
+      const confirmedRegistration = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        status: 'confirmed'
+      };
+
+      await eventRepository.addParticipant(eventId, confirmedRegistration);
+
+      // Try to register again with same email (should fail)
+      const registrationData = {
+        eventId: eventId,
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890'
+      };
+
+      const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code');
+      expect(response.body.error.message).toContain('already registered');
+    });
+
     it('should return 400 for invalid email format', async () => {
       const registrationData = {
         eventId: eventId,
