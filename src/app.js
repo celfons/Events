@@ -14,6 +14,7 @@ const requestLogger = require('./infrastructure/logging/requestLogger');
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
 const MongoUserRepository = require('./infrastructure/database/MongoUserRepository');
+const WhatsAppService = require('./infrastructure/messaging/WhatsAppService');
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
@@ -93,6 +94,7 @@ function createApp() {
   // Dependency Injection
   const eventRepository = new MongoEventRepository();
   const userRepository = new MongoUserRepository();
+  const whatsAppService = new WhatsAppService();
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
@@ -102,8 +104,8 @@ function createApp() {
   const updateEventUseCase = new UpdateEventUseCase(eventRepository);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
-  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository);
-  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
+  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService);
+  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, whatsAppService);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
   const listUsersUseCase = new ListUsersUseCase(userRepository);

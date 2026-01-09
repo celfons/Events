@@ -1,8 +1,10 @@
 const Registration = require('../../domain/entities/Registration');
+const logger = require('../../infrastructure/logging/logger');
 
 class RegisterForEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, messagingService = null) {
     this.eventRepository = eventRepository;
+    this.messagingService = messagingService;
   }
 
   async execute(registrationData) {
@@ -71,6 +73,24 @@ class RegisterForEventUseCase {
           success: false,
           error: 'Failed to register. Event may be full or was deleted.'
         };
+      }
+
+      // Send WhatsApp confirmation message (async, don't block registration)
+      if (this.messagingService) {
+        this.messagingService
+          .sendRegistrationConfirmation({
+            to: registrationData.phone,
+            name: registrationData.name,
+            eventTitle: event.title,
+            eventDate: event.dateTime,
+            eventLocal: event.local
+          })
+          .catch(error => {
+            logger.error('Failed to send WhatsApp confirmation', {
+              error: error.message,
+              registrationId: registration.id
+            });
+          });
       }
 
       return {
