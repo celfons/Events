@@ -41,7 +41,8 @@ describe('Registrations API Integration Tests', () => {
       description: 'Test Description',
       dateTime: new Date('2026-12-31'),
       totalSlots: 50,
-      userId: userId
+      userId: userId,
+      eventCode: 'REG01'
     });
     eventId = event.id;
   });
@@ -116,7 +117,8 @@ describe('Registrations API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 1,
-        userId: userId
+        userId: userId,
+        eventCode: 'REG02'
       });
 
       // Register the first (and only) participant
@@ -365,7 +367,8 @@ describe('Registrations API Integration Tests', () => {
         description: 'Description',
         dateTime: new Date('2026-12-31'),
         totalSlots: 2,
-        userId: userId
+        userId: userId,
+        eventCode: 'REG03'
       });
 
       // Register first participant
