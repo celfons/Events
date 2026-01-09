@@ -178,7 +178,9 @@ class MongoEventRepository extends EventRepository {
       return null;
     }
 
-    // Find the matching participant
+    // Find the matching participant in the returned participants array
+    // Note: MongoDB $elemMatch in the query ensures an event with matching participant exists,
+    // but returns ALL participants in the array, so we need to find the specific one
     const participant = event.participants.find(
       p =>
         p.email.toLowerCase() === normalizedEmail &&
@@ -226,7 +228,9 @@ class MongoEventRepository extends EventRepository {
       return null;
     }
 
-    // Find the matching participant
+    // Find the matching participant in the returned participants array
+    // Note: MongoDB $elemMatch in the query ensures an event with matching participant exists,
+    // but returns ALL participants in the array, so we need to find the specific one
     const participant = event.participants.find(
       p =>
         p.phone === phone && (p.status === 'confirmed' || (p.status === 'pending' && p.verificationCodeExpiresAt > now))
