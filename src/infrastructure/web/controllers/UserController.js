@@ -1,6 +1,4 @@
-const { ValidationError } = require('../../../domain/exceptions');
-const { SuccessResponse, UserResponse } = require('../dto');
-const asyncHandler = require('../middleware/asyncHandler');
+const { ErrorResponse, SuccessResponse, UserResponse } = require('../dto');
 
 class UserController {
   constructor(listUsersUseCase, updateUserUseCase, deleteUserUseCase, registerUseCase) {
@@ -11,60 +9,77 @@ class UserController {
   }
 
   async listUsers(req, res) {
-    const result = await this.listUsersUseCase.execute();
+    try {
+      const result = await this.listUsersUseCase.execute();
 
-    if (!result.success) {
-      throw new ValidationError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const users = UserResponse.fromEntities(result.data);
+      const successResponse = SuccessResponse.list(users);
+      return res.status(200).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const users = UserResponse.fromEntities(result.data);
-    const successResponse = SuccessResponse.list(users);
-    return res.status(200).json(successResponse.toJSON());
   }
 
   async createUser(req, res) {
-    const result = await this.registerUseCase.execute(req.body);
+    try {
+      const result = await this.registerUseCase.execute(req.body);
 
-    if (!result.success) {
-      throw new ValidationError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const user = UserResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.created(user);
+      return res.status(201).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const user = UserResponse.fromEntity(result.data);
-    const successResponse = SuccessResponse.created(user);
-    return res.status(201).json(successResponse.toJSON());
   }
 
   async updateUser(req, res) {
-    const { id } = req.params;
-    const result = await this.updateUserUseCase.execute(id, req.body);
+    try {
+      const { id } = req.params;
+      const result = await this.updateUserUseCase.execute(id, req.body);
 
-    if (!result.success) {
-      throw new ValidationError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const user = UserResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.updated(user);
+      return res.status(200).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const user = UserResponse.fromEntity(result.data);
-    const successResponse = SuccessResponse.updated(user);
-    return res.status(200).json(successResponse.toJSON());
   }
 
   async deleteUser(req, res) {
-    const { id } = req.params;
-    const result = await this.deleteUserUseCase.execute(id);
+    try {
+      const { id } = req.params;
+      const result = await this.deleteUserUseCase.execute(id);
 
-    if (!result.success) {
-      throw new ValidationError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const successResponse = SuccessResponse.deleted('User deleted successfully');
+      return res.status(200).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const successResponse = SuccessResponse.deleted('User deleted successfully');
-    return res.status(200).json(successResponse.toJSON());
   }
 }
-
-// Wrap methods with asyncHandler after class definition
-// This approach maintains compatibility with ESLint and avoids arrow function binding issues
-UserController.prototype.listUsers = asyncHandler(UserController.prototype.listUsers);
-UserController.prototype.createUser = asyncHandler(UserController.prototype.createUser);
-UserController.prototype.updateUser = asyncHandler(UserController.prototype.updateUser);
-UserController.prototype.deleteUser = asyncHandler(UserController.prototype.deleteUser);
 
 module.exports = UserController;

@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./infrastructure/web/swagger');
 
 // Logging
+const logger = require('./infrastructure/logging/logger');
 const requestIdMiddleware = require('./infrastructure/logging/requestIdMiddleware');
 const requestLogger = require('./infrastructure/logging/requestLogger');
 
@@ -41,9 +42,6 @@ const createEventRoutes = require('./infrastructure/web/routes/eventRoutes');
 const createRegistrationRoutes = require('./infrastructure/web/routes/registrationRoutes');
 const createAuthRoutes = require('./infrastructure/web/routes/authRoutes');
 const createUserRoutes = require('./infrastructure/web/routes/userRoutes');
-
-// Middleware
-const exceptionHandler = require('./infrastructure/web/middleware/exceptionHandler');
 
 function createApp() {
   const app = express();
@@ -166,8 +164,11 @@ function createApp() {
     res.status(404).json({ error: 'Route not found' });
   });
 
-  // Centralized error handler (must be last middleware)
-  app.use(exceptionHandler);
+  // Error handler
+  app.use((err, req, res, next) => {
+    logger.error({ err, requestId: req.requestId }, 'Internal server error');
+    res.status(500).json({ error: 'Internal server error' });
+  });
 
   return app;
 }

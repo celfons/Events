@@ -1,6 +1,4 @@
-const { ValidationError, UnauthorizedError } = require('../../../domain/exceptions');
-const { SuccessResponse, LoginResponse, UserResponse } = require('../dto');
-const asyncHandler = require('../middleware/asyncHandler');
+const { ErrorResponse, SuccessResponse, LoginResponse, UserResponse } = require('../dto');
 
 class AuthController {
   constructor(loginUseCase, registerUseCase) {
@@ -9,35 +7,41 @@ class AuthController {
   }
 
   async login(req, res) {
-    const { email, password } = req.body;
-    const result = await this.loginUseCase.execute(email, password);
+    try {
+      const { email, password } = req.body;
+      const result = await this.loginUseCase.execute(email, password);
 
-    if (!result.success) {
-      throw new UnauthorizedError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidCredentials(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const loginResponse = LoginResponse.fromData(result.data);
+      const successResponse = SuccessResponse.ok(loginResponse);
+      return res.status(200).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const loginResponse = LoginResponse.fromData(result.data);
-    const successResponse = SuccessResponse.ok(loginResponse);
-    return res.status(200).json(successResponse.toJSON());
   }
 
   async register(req, res) {
-    const result = await this.registerUseCase.execute(req.body);
+    try {
+      const result = await this.registerUseCase.execute(req.body);
 
-    if (!result.success) {
-      throw new ValidationError(result.error);
+      if (!result.success) {
+        const errorResponse = ErrorResponse.invalidInput(result.error);
+        return res.status(errorResponse.status).json(errorResponse.toJSON());
+      }
+
+      const user = UserResponse.fromEntity(result.data);
+      const successResponse = SuccessResponse.created(user);
+      return res.status(201).json(successResponse.toJSON());
+    } catch (error) {
+      const errorResponse = ErrorResponse.internalError();
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
-
-    const user = UserResponse.fromEntity(result.data);
-    const successResponse = SuccessResponse.created(user);
-    return res.status(201).json(successResponse.toJSON());
   }
 }
-
-// Wrap methods with asyncHandler after class definition
-// This approach is used instead of class field syntax to maintain compatibility with ESLint
-// and to avoid arrow function binding issues. Each method is wrapped to catch async errors.
-AuthController.prototype.login = asyncHandler(AuthController.prototype.login);
-AuthController.prototype.register = asyncHandler(AuthController.prototype.register);
 
 module.exports = AuthController;
