@@ -71,7 +71,7 @@ class MongoEventRepository extends EventRepository {
 
   async addParticipant(eventId, participantData) {
     // Add participant - only decrement slots if status is 'confirmed'
-    // Ensure no active or pending participant with the same email already exists
+    // Ensure no confirmed participant or pending participant with non-expired code exists with same email
     const updateQuery = {
       $push: { participants: participantData }
     };
@@ -82,22 +82,29 @@ class MongoEventRepository extends EventRepository {
     }
 
     // Build the query conditions
+    // Only block if there's a confirmed registration OR a pending registration with non-expired code
     const queryConditions = {
       _id: eventId,
       participants: {
         $not: {
           $elemMatch: {
             email: participantData.email.toLowerCase(),
-            status: { $in: ['pending', 'confirmed'] }
+            $or: [
+              { status: 'confirmed' },
+              {
+                status: 'pending',
+                verificationCodeExpiresAt: { $gt: new Date() }
+              }
+            ]
           }
         }
       }
     };
 
-    // For pending registrations, check that total pending+confirmed is less than totalSlots
+    // For pending registrations, check that total non-expired pending+confirmed is less than totalSlots
     // For confirmed registrations, check that availableSlots > 0
     if (participantData.status === 'pending') {
-      // Use aggregation to check if there's space (pending + confirmed < totalSlots)
+      // Use aggregation to check if there's space (non-expired pending + confirmed < totalSlots)
       queryConditions.$expr = {
         $lt: [
           {
@@ -105,7 +112,14 @@ class MongoEventRepository extends EventRepository {
               $filter: {
                 input: '$participants',
                 as: 'p',
-                cond: { $in: ['$$p.status', ['pending', 'confirmed']] }
+                cond: {
+                  $or: [
+                    { $eq: ['$$p.status', 'confirmed'] },
+                    {
+                      $and: [{ $eq: ['$$p.status', 'pending'] }, { $gt: ['$$p.verificationCodeExpiresAt', new Date()] }]
+                    }
+                  ]
+                }
               }
             }
           },
