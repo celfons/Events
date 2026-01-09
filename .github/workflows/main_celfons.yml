@@ -93,7 +93,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: 'sonarcloud,quality-gate',
+              labels: ['sonarcloud', 'quality-gate'],
               per_page: 100
             });
             
