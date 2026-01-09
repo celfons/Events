@@ -53,11 +53,18 @@
             
             <!-- Search Bar -->
             <div class="mb-4">
-                <div class="input-group">
+                <div class="input-group mb-2">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="searchInput" placeholder="Buscar eventos por nome...">
                     <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
                         <i class="bi bi-x"></i> Limpar
+                    </button>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                    <input type="text" class="form-control" id="codeSearchInput" placeholder="Buscar por código do evento (ex: ABC12)" maxlength="5">
+                    <button class="btn btn-primary" type="button" id="searchByCodeBtn">
+                        <i class="bi bi-search"></i> Buscar por Código
                     </button>
                 </div>
             </div>

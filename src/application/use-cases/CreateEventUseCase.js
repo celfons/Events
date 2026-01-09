@@ -1,5 +1,18 @@
 const Event = require('../../domain/entities/Event');
 
+/**
+ * Generates a random 5-character alphanumeric code
+ * @returns {string} 5-character uppercase alphanumeric code
+ */
+function generateEventCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 5; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 class CreateEventUseCase {
   constructor(eventRepository) {
     this.eventRepository = eventRepository;
@@ -22,6 +35,29 @@ class CreateEventUseCase {
         };
       }
 
+      // Generate a unique event code
+      let eventCode;
+      let isUnique = false;
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (!isUnique && attempts < maxAttempts) {
+        eventCode = generateEventCode();
+        // Check if code already exists
+        const existingEvent = await this.eventRepository.findByEventCode(eventCode);
+        if (!existingEvent) {
+          isUnique = true;
+        }
+        attempts++;
+      }
+
+      if (!isUnique) {
+        return {
+          success: false,
+          error: 'Failed to generate unique event code. Please try again.'
+        };
+      }
+
       const event = new Event({
         title: eventData.title,
         description: eventData.description,
@@ -30,7 +66,8 @@ class CreateEventUseCase {
         availableSlots: parseInt(eventData.totalSlots),
         userId: userId,
         local: eventData.local,
-        isActive: true
+        isActive: true,
+        eventCode: eventCode
       });
 
       const createdEvent = await this.eventRepository.create(event);

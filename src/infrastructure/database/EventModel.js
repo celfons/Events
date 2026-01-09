@@ -111,10 +111,20 @@ const eventSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  eventCode: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    uppercase: true,
+    length: 5
   }
 });
 
 // Index for unique email per event
 eventSchema.index({ 'participants.email': 1 });
+// Index for eventCode for faster lookups
+eventSchema.index({ eventCode: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);
