@@ -85,8 +85,6 @@ const noEventsElement = document.getElementById('noEvents');
 const paginationElement = document.getElementById('pagination');
 const searchInput = document.getElementById('searchInput');
 const clearSearchBtn = document.getElementById('clearSearchBtn');
-const codeSearchInput = document.getElementById('codeSearchInput');
-const searchByCodeBtn = document.getElementById('searchByCodeBtn');
 
 // Pagination state
 let currentPage = 1;
@@ -94,7 +92,6 @@ const eventsPerPage = 5;
 let allEvents = [];
 let futureEvents = [];
 let filteredEvents = [];
-let isCodeSearch = false;
 
 // Load events on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -178,23 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = '';
         filterAndDisplayEvents();
     });
-    
-    // Code search functionality
-    searchByCodeBtn.addEventListener('click', () => {
-        const code = codeSearchInput.value.trim().toUpperCase();
-        if (code) {
-            searchByEventCode(code);
-        }
-    });
-    
-    codeSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const code = codeSearchInput.value.trim().toUpperCase();
-            if (code) {
-                searchByEventCode(code);
-            }
-        }
-    });
 });
 
 // Reload events when page becomes visible (user returns to tab)
@@ -211,7 +191,6 @@ async function loadEvents() {
         loadingElement.classList.remove('d-none');
         eventsContainer.innerHTML = '';
         noEventsElement.classList.add('d-none');
-        isCodeSearch = false;
 
         const response = await fetch(`${API_URL}/api/events`);
         
@@ -247,69 +226,19 @@ async function loadEvents() {
     }
 }
 
-// Search events by event code
-async function searchByEventCode(code) {
-    try {
-        loadingElement.classList.remove('d-none');
-        eventsContainer.innerHTML = '';
-        noEventsElement.classList.add('d-none');
-        
-        const response = await fetch(`${API_URL}/api/events?eventCode=${encodeURIComponent(code)}`);
-        
-        if (!response.ok) {
-            throw new Error('Erro ao buscar evento');
-        }
-        
-        const responseData = await response.json();
-        loadingElement.classList.add('d-none');
-        
-        const events = responseData.data || [];
-        
-        if (!Array.isArray(events) || events.length === 0) {
-            noEventsElement.textContent = 'Nenhum evento encontrado com este código.';
-            noEventsElement.classList.remove('d-none');
-            paginationElement.innerHTML = '';
-            isCodeSearch = true;
-            return;
-        }
-        
-        // Filter events from today onwards
-        const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        filteredEvents = events.filter(event => new Date(event.dateTime) >= startOfToday);
-        
-        if (filteredEvents.length === 0) {
-            noEventsElement.textContent = 'O evento encontrado já passou.';
-            noEventsElement.classList.remove('d-none');
-            paginationElement.innerHTML = '';
-        } else {
-            noEventsElement.classList.add('d-none');
-            currentPage = 1;
-            displayPage(currentPage);
-        }
-        
-        isCodeSearch = true;
-    } catch (error) {
-        console.error('Error searching by code:', error);
-        loadingElement.classList.add('d-none');
-        eventsContainer.innerHTML = '<div class="alert alert-danger">Erro ao buscar evento. Tente novamente mais tarde.</div>';
-    }
-}
-
-// Filter events based on search query
+// Filter events based on search query (name or code)
 function filterAndDisplayEvents() {
-    // If we're in code search mode, skip filtering
-    if (isCodeSearch) {
-        return;
-    }
-    
-    const searchQuery = searchInput.value.toLowerCase().trim();
+    const searchQuery = searchInput.value.trim();
     
     if (searchQuery === '') {
         filteredEvents = futureEvents;
     } else {
+        const searchLower = searchQuery.toLowerCase();
+        const searchUpper = searchQuery.toUpperCase();
+        
         filteredEvents = futureEvents.filter(event => 
-            event.title.toLowerCase().includes(searchQuery)
+            event.title.toLowerCase().includes(searchLower) ||
+            (event.eventCode && event.eventCode.toUpperCase().includes(searchUpper))
         );
     }
     
