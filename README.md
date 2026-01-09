@@ -39,7 +39,7 @@ Edite o arquivo `.env` e ajuste as variáveis:
 ```env
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
-JWT_SECRET=sua-chave-secreta-aqui
+JWT_SECRET=CHANGE_THIS_SECRET
 ```
 
 > 💡 **Dica:** Gere uma chave JWT segura com `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
