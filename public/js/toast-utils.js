@@ -33,7 +33,7 @@ function showToast(message, type = 'success', duration = 3000) {
     };
 
     // Create toast element with unique ID
-    const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
     const toastEl = document.createElement('div');
     toastEl.id = toastId;
     toastEl.className = 'toast';
