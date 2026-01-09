@@ -28,9 +28,9 @@ global.bootstrap = {
   Modal: jest.fn().mockImplementation(() => ({
     show: jest.fn(),
     hide: jest.fn()
-  })),
-  Modal.getInstance: jest.fn()
+  }))
 };
+global.bootstrap.Modal.getInstance = jest.fn();
 
 // Reset mocks before each test
 beforeEach(() => {
