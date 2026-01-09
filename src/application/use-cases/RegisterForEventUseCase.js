@@ -1,4 +1,3 @@
-const Registration = require('../../domain/entities/Registration');
 const logger = require('../../infrastructure/logging/logger');
 
 class RegisterForEventUseCase {

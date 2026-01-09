@@ -61,6 +61,11 @@ PORT=3000
 MONGODB_URI=mongodb://localhost:27017/events
 NODE_ENV=development
 JWT_SECRET=sua-chave-secreta-aqui
+
+# WhatsApp Business API (opcional)
+WHATSAPP_ENABLED=false
+WHATSAPP_PHONE_NUMBER_ID=your-whatsapp-phone-number-id
+WHATSAPP_ACCESS_TOKEN=your-whatsapp-access-token
 ```
 
 💡 **Dica**: Gere uma chave JWT segura com:
@@ -181,6 +186,55 @@ A aplicação implementa várias medidas de segurança:
 - Sanitização de dados
 - Rate limiting para prevenir ataques
 - Headers de segurança HTTP
+
+## Integração com WhatsApp Business
+
+A aplicação possui integração nativa com a API do WhatsApp Business da Meta para enviar notificações automáticas aos participantes.
+
+### Como configurar
+
+1. **Crie uma conta no Meta Business Manager**
+   - Acesse: https://business.facebook.com
+   - Crie ou selecione sua empresa
+
+2. **Configure o WhatsApp Business API**
+   - No Meta Business Manager, acesse "WhatsApp Manager"
+   - Siga o processo de configuração para obter:
+     - Phone Number ID (ID do número de telefone)
+     - Access Token (Token de acesso)
+
+3. **Configure as variáveis de ambiente**
+
+Edite seu arquivo `.env`:
+```env
+WHATSAPP_ENABLED=true
+WHATSAPP_PHONE_NUMBER_ID=seu-phone-number-id
+WHATSAPP_ACCESS_TOKEN=seu-access-token
+```
+
+4. **Reinicie a aplicação**
+
+### Funcionalidades
+
+Quando ativado, o sistema envia automaticamente:
+- ✅ **Confirmação de inscrição**: Enviada quando alguém se inscreve em um evento
+- ❌ **Confirmação de cancelamento**: Enviada quando alguém cancela a inscrição
+- 🔔 **Lembretes de evento**: Método disponível para enviar lembretes (pode ser integrado com agendadores)
+
+### Características técnicas
+
+- **Clean Architecture**: Interface `MessagingService` no domínio, implementação `WhatsAppService` na infraestrutura
+- **Graceful degradation**: Se desabilitado ou com credenciais inválidas, a aplicação continua funcionando normalmente
+- **Async/Non-blocking**: Envio de mensagens não bloqueia o fluxo principal de registro
+- **Logging estruturado**: Todas as tentativas de envio são registradas
+- **Formatação automática**: Números de telefone são formatados automaticamente para o padrão E.164
+- **Mensagens em português**: Templates otimizados para o público brasileiro
+
+### Documentação oficial
+
+Para mais informações sobre a API do WhatsApp Business:
+- [Documentação Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api)
+- [Guia de início rápido](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started)
 
 ## Quer contribuir?
 
