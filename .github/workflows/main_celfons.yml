@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - celfons
 
 on:
@@ -24,8 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
 
       - name: Set up Node.js version
         uses: actions/setup-node@v4
@@ -36,72 +31,116 @@ jobs:
       - name: npm install, build, and test
         timeout-minutes: 10
         run: |
-           node -v
-           npm -v
-           npm ci --no-audit --no-fund --loglevel=verbose
-           npm run build --if-present
-           npm run test:coverage
-      
-      - name: Create issue on Quality Gate failure
-        if: steps.sonarcloud-quality-gate.outcome == 'failure' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+          node -v
+          npm -v
+          npm ci --no-audit --no-fund --loglevel=verbose
+          npm run build --if-present
+          npm run test:coverage
+
+      # Cria/atualiza issue quando o check do SonarCloud (Automatic Analysis) reprovar o Quality Gate,
+      # sem executar análise no CI.
+      - name: Create/Update issue if SonarCloud Quality Gate failed (Automatic Analysis)
         uses: actions/github-script@v7
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const title = `SonarCloud Quality Gate Failed - ${new Date().toISOString().split('T')[0]}`;
-            const author = context.payload.pusher?.name || context.actor || 'unknown';
-            const body = `## SonarCloud Quality Gate Failure
-            
-            The SonarCloud quality gate has failed for the latest push to main branch.
-            
-            **Details:**
-            - Commit: ${context.sha}
-            - Author: ${author}
-            - Workflow Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-            
-            **Action Required:**
-            Please review the SonarCloud analysis results and address the identified issues:
-            - Code smells
-            - Bugs
-            - Security vulnerabilities
-            - Code coverage
-            - Duplicate code
-            
-            View detailed results: https://sonarcloud.io/project/overview?id=celfons_Events
-            `;
-            
-            // Check if similar issue already exists
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: ['sonarcloud', 'quality-gate'],
-              per_page: 100
-            });
-            
-            const existingIssue = issues.data.find(issue => 
-              issue.title.includes('SonarCloud Quality Gate Failed')
-            );
-            
-            if (existingIssue) {
-              // Add comment to existing issue
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existingIssue.number,
-                body: `Quality gate failed again on commit ${context.sha}\n\nWorkflow: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ref = context.eventName === 'pull_request'
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+
+            const maxAttempts = 20;        // ~10 min
+            const waitMs = 30_000;
+
+            async function getSonarCloudCheck() {
+              const res = await github.rest.checks.listForRef({
+                owner, repo, ref,
+                filter: 'all', per_page: 100
               });
+              const sc = res.data.check_runs.find(cr =>
+                cr.app && cr.app.name && cr.app.name.toLowerCase().includes('sonarcloud')
+              );
+              return sc || null;
+            }
+
+            let attempt = 0;
+            let check = null;
+            while (attempt < maxAttempts) {
+              check = await getSonarCloudCheck();
+
+              if (check) {
+                core.info(`SonarCloud check found: status=${check.status}, conclusion=${check.conclusion}`);
+                if (check.status === 'completed') break;
+              } else {
+                core.info('SonarCloud check not found yet. Waiting...');
+              }
+
+              await new Promise(r => setTimeout(r, waitMs));
+              attempt++;
+            }
+
+            if (!check) {
+              core.warning('SonarCloud check not found after waiting. Skipping issue creation.');
+              return;
+            }
+
+            if (check.status !== 'completed') {
+              core.warning(`SonarCloud check not completed after waiting. Current status: ${check.status}`);
+              return;
+            }
+
+            if (check.conclusion !== 'failure') {
+              core.info(`Quality Gate is not failing (conclusion=${check.conclusion}). No issue will be created.`);
+              return;
+            }
+
+            const isPR = context.eventName === 'pull_request';
+            const title = `SonarCloud Quality Gate Failed - ${new Date().toISOString().split('T')[0]}`;
+            const actor = context.actor || 'unknown';
+            const projectUrl = 'https://sonarcloud.io/project/overview?id=celfons_Events';
+
+            const body = `## SonarCloud Quality Gate Failure
+
+            O Quality Gate do **SonarCloud** está **reprovado** para este ${isPR ? 'Pull Request' : 'commit'}.
+
+            **Detalhes:**
+            - ${isPR ? `PR: #${context.payload.pull_request.number} (${context.payload.pull_request.title})` : `Commit: ${context.sha}`}
+            - Autor: ${actor}
+            - Workflow Run: ${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}
+
+            **Ações sugeridas:**
+            - Verifique os resultados detalhados no SonarCloud:
+              - ${projectUrl}
+            - Corrija:
+              - Code smells
+              - Bugs
+              - Vulnerabilidades
+              - Duplicações
+              - Regras violadas no *New Code*`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: ['sonarcloud', 'quality-gate'], per_page: 100
+            });
+
+            const existing = issues.data.find(i => i.title.includes('SonarCloud Quality Gate Failed'));
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number,
+                body: `Quality gate falhou novamente em ${isPR ? `PR #${context.payload.pull_request.number}` : `commit ${context.sha}`}\n\n` +
+                      `Workflow: ${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+              });
+              core.info(`Comment added to existing issue #${existing.number}`);
             } else {
-              // Create new issue
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
+              const created = await github.rest.issues.create({
+                owner, repo, title, body,
                 labels: ['sonarcloud', 'quality-gate', 'bug']
               });
+              core.info(`Issue created: #${created.data.number}`);
             }
-      
+
       - name: Upload artifact for deployment job
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
@@ -114,15 +153,15 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -130,11 +169,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_37511074FCA94D0791A9EC3C53CDCE27 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4215D10A3479457F8908E8BE198EDACF }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'celfons'
           slot-name: 'Production'
           package: .
-          
