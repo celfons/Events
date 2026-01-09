@@ -14,7 +14,7 @@ class GetEventDetailsUseCase {
         };
       }
 
-      const activeParticipants = event.participants.filter(p => p.status === 'active');
+      const activeParticipants = event.participants.filter(p => p.status === 'confirmed');
 
       return {
         success: true,

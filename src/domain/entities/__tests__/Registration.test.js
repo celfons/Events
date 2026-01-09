@@ -10,7 +10,7 @@ describe('Registration Entity', () => {
         email: 'john@example.com',
         phone: '(11) 98765-4321',
         registeredAt: new Date('2024-01-01'),
-        status: 'active'
+        status: 'confirmed'
       };
 
       const registration = new Registration(registrationData);
@@ -21,10 +21,10 @@ describe('Registration Entity', () => {
       expect(registration.email).toBe('john@example.com');
       expect(registration.phone).toBe('(11) 98765-4321');
       expect(registration.registeredAt).toEqual(new Date('2024-01-01'));
-      expect(registration.status).toBe('active');
+      expect(registration.status).toBe('confirmed');
     });
 
-    it('should set status to "active" when not provided', () => {
+    it('should set status to "pending" when not provided', () => {
       const registration = new Registration({
         eventId: '123',
         name: 'John Doe',
@@ -32,7 +32,7 @@ describe('Registration Entity', () => {
         phone: '(11) 98765-4321'
       });
 
-      expect(registration.status).toBe('active');
+      expect(registration.status).toBe('pending');
     });
 
     it('should set registeredAt to current date when not provided', () => {
@@ -57,7 +57,7 @@ describe('Registration Entity', () => {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '(11) 98765-4321',
-        status: 'active'
+        status: 'confirmed'
       });
 
       registration.cancel();
@@ -79,13 +79,25 @@ describe('Registration Entity', () => {
   });
 
   describe('isActive', () => {
-    it('should return true when status is "active"', () => {
+    it('should return true when status is "confirmed"', () => {
       const registration = new Registration({
         eventId: '123',
         name: 'John Doe',
         email: 'john@example.com',
         phone: '(11) 98765-4321',
-        status: 'active'
+        status: 'confirmed'
+      });
+
+      expect(registration.isActive()).toBe(true);
+    });
+
+    it('should return true when status is "pending"', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'pending'
       });
 
       expect(registration.isActive()).toBe(true);
@@ -104,6 +116,32 @@ describe('Registration Entity', () => {
     });
   });
 
+  describe('isConfirmed', () => {
+    it('should return true when status is "confirmed"', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'confirmed'
+      });
+
+      expect(registration.isConfirmed()).toBe(true);
+    });
+
+    it('should return false when status is "pending"', () => {
+      const registration = new Registration({
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'pending'
+      });
+
+      expect(registration.isConfirmed()).toBe(false);
+    });
+  });
+
   describe('toJSON', () => {
     it('should return registration data as plain object', () => {
       const registrationData = {
@@ -113,7 +151,7 @@ describe('Registration Entity', () => {
         email: 'john@example.com',
         phone: '(11) 98765-4321',
         registeredAt: new Date('2024-01-01'),
-        status: 'active'
+        status: 'confirmed'
       };
 
       const registration = new Registration(registrationData);
@@ -126,7 +164,7 @@ describe('Registration Entity', () => {
         email: 'john@example.com',
         phone: '(11) 98765-4321',
         registeredAt: new Date('2024-01-01'),
-        status: 'active'
+        status: 'confirmed'
       });
     });
   });

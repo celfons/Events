@@ -74,10 +74,10 @@ class UpdateEventUseCase {
       // Prepare update data (avoid mutating input parameter)
       const updateData = { ...eventData };
 
-      // If updating totalSlots, validate against active participants and update availableSlots
+      // If updating totalSlots, validate against confirmed participants and update availableSlots
       if (updateData.totalSlots !== undefined && updateData.totalSlots !== existingEvent.totalSlots) {
-        // Get active participants count from embedded participants
-        const activeParticipantsCount = existingEvent.participants.filter(p => p.status === 'active').length;
+        // Get confirmed participants count from embedded participants
+        const activeParticipantsCount = existingEvent.participants.filter(p => p.status === 'confirmed').length;
 
         // Validate that new totalSlots is not less than active participants
         if (updateData.totalSlots < activeParticipantsCount) {

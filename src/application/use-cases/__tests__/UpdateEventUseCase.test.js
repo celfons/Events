@@ -23,8 +23,8 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 50,
         availableSlots: 30,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' }
         ]
       };
 
@@ -303,11 +303,11 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 50,
         availableSlots: 45,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' },
-          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'active' },
-          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' },
+          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'confirmed' },
+          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'confirmed' }
         ]
       };
 
@@ -341,9 +341,9 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 100,
         availableSlots: 90,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' }
         ]
       };
 
@@ -377,11 +377,11 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 50,
         availableSlots: 45,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' },
-          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'active' },
-          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' },
+          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'confirmed' },
+          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'confirmed' }
         ]
       };
 
@@ -402,11 +402,11 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 50,
         availableSlots: 45,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' },
-          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'active' },
-          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' },
+          { id: '4', name: 'Alice', email: 'alice@test.com', status: 'confirmed' },
+          { id: '5', name: 'Charlie', email: 'charlie@test.com', status: 'confirmed' }
         ]
       };
 
@@ -440,9 +440,9 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 50,
         availableSlots: 48,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
           { id: '2', name: 'Jane', email: 'jane@test.com', status: 'cancelled' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' }
         ]
       };
 

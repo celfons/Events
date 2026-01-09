@@ -44,7 +44,7 @@ describe('GetEventParticipantsUseCase', () => {
             name: 'John Doe',
             email: 'john@example.com',
             phone: '123-456-7890',
-            status: 'active',
+            status: 'confirmed',
             registeredAt: new Date()
           },
           {
@@ -52,7 +52,7 @@ describe('GetEventParticipantsUseCase', () => {
             name: 'Jane Smith',
             email: 'jane@example.com',
             phone: '098-765-4321',
-            status: 'active',
+            status: 'confirmed',
             registeredAt: new Date()
           }
         ]
@@ -95,7 +95,7 @@ describe('GetEventParticipantsUseCase', () => {
             name: 'John Doe',
             email: 'john@example.com',
             phone: '123-456-7890',
-            status: 'active',
+            status: 'confirmed',
             registeredAt: new Date()
           },
           {

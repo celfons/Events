@@ -21,9 +21,9 @@ describe('GetEventDetailsUseCase', () => {
         totalSlots: 50,
         availableSlots: 47,
         participants: [
-          { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+          { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+          { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' }
         ],
         toJSON: jest.fn().mockReturnValue({
           id: '123',
@@ -31,9 +31,9 @@ describe('GetEventDetailsUseCase', () => {
           availableSlots: 47,
           totalSlots: 50,
           participants: [
-            { id: '1', name: 'John', email: 'john@test.com', status: 'active' },
-            { id: '2', name: 'Jane', email: 'jane@test.com', status: 'active' },
-            { id: '3', name: 'Bob', email: 'bob@test.com', status: 'active' }
+            { id: '1', name: 'John', email: 'john@test.com', status: 'confirmed' },
+            { id: '2', name: 'Jane', email: 'jane@test.com', status: 'confirmed' },
+            { id: '3', name: 'Bob', email: 'bob@test.com', status: 'confirmed' }
           ]
         })
       };
