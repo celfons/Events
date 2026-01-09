@@ -153,7 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update UI
                 updateAuthUI();
                 
-                alert('Login realizado com sucesso!');
+                // Show success toast
+                showSuccessToast('Login realizado com sucesso!');
+                
+                // Redirect to admin page after a short delay
+                setTimeout(() => {
+                    window.location.href = '/admin';
+                }, 1000);
             } else {
                 loginError.textContent = result.error;
                 loginError.classList.remove('d-none');
