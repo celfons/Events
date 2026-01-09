@@ -182,7 +182,7 @@ class MongoEventRepository extends EventRepository {
     const participant = event.participants.find(
       p =>
         p.email.toLowerCase() === normalizedEmail &&
-        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > now))
+        (p.status === 'confirmed' || (p.status === 'pending' && p.verificationCodeExpiresAt > now))
     );
 
     if (!participant) {
@@ -229,8 +229,7 @@ class MongoEventRepository extends EventRepository {
     // Find the matching participant
     const participant = event.participants.find(
       p =>
-        p.phone === phone &&
-        (p.status === 'confirmed' || (p.status === 'pending' && new Date(p.verificationCodeExpiresAt) > now))
+        p.phone === phone && (p.status === 'confirmed' || (p.status === 'pending' && p.verificationCodeExpiresAt > now))
     );
 
     if (!participant) {
