@@ -447,4 +447,179 @@ describe('RegisterForEventUseCase', () => {
       // Verify messaging service was not called (use case initialized without it)
     });
   });
+
+  describe('Authenticated User Registration', () => {
+    it('should register participant as confirmed when user is authenticated', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        participants: [],
+        totalSlots: 10
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'confirmed',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '(11) 98765-4321',
+          status: 'confirmed'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCase.execute(registrationData, true);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data.status).toBe('confirmed');
+
+      // Verify that addParticipant was called with confirmed status
+      expect(mockEventRepository.addParticipant).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '(11) 98765-4321',
+          status: 'confirmed',
+          confirmedAt: expect.any(Date)
+        })
+      );
+
+      // Verify that verificationCode was NOT included
+      const callArgs = mockEventRepository.addParticipant.mock.calls[0][1];
+      expect(callArgs.verificationCode).toBeUndefined();
+      expect(callArgs.verificationCodeExpiresAt).toBeUndefined();
+    });
+
+    it('should not send verification code for authenticated user registrations', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        participants: [],
+        totalSlots: 10
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'confirmed',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '(11) 98765-4321',
+          status: 'confirmed'
+        })
+      };
+
+      const mockMessagingService = {
+        sendVerificationCode: jest.fn().mockResolvedValue(true)
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const useCase = new RegisterForEventUseCase(mockEventRepository, mockMessagingService);
+      const result = await useCase.execute(registrationData, true);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendVerificationCode).not.toHaveBeenCalled();
+    });
+
+    it('should register as pending when user is not authenticated', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        participants: [],
+        totalSlots: 10
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        status: 'pending',
+        toJSON: jest.fn().mockReturnValue({
+          id: '456',
+          eventId: '123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '(11) 98765-4321',
+          status: 'pending'
+        })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCase.execute(registrationData, false);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data.status).toBe('pending');
+
+      // Verify that addParticipant was called with pending status and verification code
+      expect(mockEventRepository.addParticipant).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '(11) 98765-4321',
+          status: 'pending',
+          verificationCode: expect.any(String),
+          verificationCodeExpiresAt: expect.any(Date)
+        })
+      );
+
+      // Verify that confirmedAt was NOT included
+      const callArgs = mockEventRepository.addParticipant.mock.calls[0][1];
+      expect(callArgs.confirmedAt).toBeUndefined();
+    });
+  });
 });
