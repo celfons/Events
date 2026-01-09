@@ -9,76 +9,56 @@ class UserController {
   }
 
   async listUsers(req, res) {
-    try {
-      const result = await this.listUsersUseCase.execute();
+    const result = await this.listUsersUseCase.execute();
 
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const users = UserResponse.fromEntities(result.data);
-      const successResponse = SuccessResponse.list(users);
-      return res.status(200).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
       return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
+
+    const users = UserResponse.fromEntities(result.data);
+    const successResponse = SuccessResponse.list(users);
+    return res.status(200).json(successResponse.toJSON());
   }
 
   async createUser(req, res) {
-    try {
-      const result = await this.registerUseCase.execute(req.body);
+    const result = await this.registerUseCase.execute(req.body);
 
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const user = UserResponse.fromEntity(result.data);
-      const successResponse = SuccessResponse.created(user);
-      return res.status(201).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
       return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
+
+    const user = UserResponse.fromEntity(result.data);
+    const successResponse = SuccessResponse.created(user);
+    return res.status(201).json(successResponse.toJSON());
   }
 
   async updateUser(req, res) {
-    try {
-      const { id } = req.params;
-      const result = await this.updateUserUseCase.execute(id, req.body);
+    const { id } = req.params;
+    const result = await this.updateUserUseCase.execute(id, req.body);
 
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const user = UserResponse.fromEntity(result.data);
-      const successResponse = SuccessResponse.updated(user);
-      return res.status(200).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
       return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
+
+    const user = UserResponse.fromEntity(result.data);
+    const successResponse = SuccessResponse.updated(user);
+    return res.status(200).json(successResponse.toJSON());
   }
 
   async deleteUser(req, res) {
-    try {
-      const { id } = req.params;
-      const result = await this.deleteUserUseCase.execute(id);
+    const { id } = req.params;
+    const result = await this.deleteUserUseCase.execute(id);
 
-      if (!result.success) {
-        const errorResponse = ErrorResponse.invalidInput(result.error);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
-      }
-
-      const successResponse = SuccessResponse.deleted('User deleted successfully');
-      return res.status(200).json(successResponse.toJSON());
-    } catch (error) {
-      const errorResponse = ErrorResponse.internalError();
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
       return res.status(errorResponse.status).json(errorResponse.toJSON());
     }
+
+    const successResponse = SuccessResponse.deleted('User deleted successfully');
+    return res.status(200).json(successResponse.toJSON());
   }
 }
 

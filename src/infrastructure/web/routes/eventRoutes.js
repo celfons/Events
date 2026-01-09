@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../middleware/asyncHandler');
 const { createEventSchema, updateEventSchema, eventIdParamSchema } = require('../validation');
 
 /**
@@ -40,7 +41,10 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/', (req, res) => eventController.listEvents(req, res));
+  router.get(
+    '/',
+    asyncHandler((req, res) => eventController.listEvents(req, res))
+  );
 
   /**
    * @swagger
@@ -71,7 +75,11 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/my-events', authenticateToken, (req, res) => eventController.listUserEvents(req, res));
+  router.get(
+    '/my-events',
+    authenticateToken,
+    asyncHandler((req, res) => eventController.listUserEvents(req, res))
+  );
 
   /**
    * @swagger
@@ -114,8 +122,11 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/', authenticateToken, validate({ body: createEventSchema }), (req, res) =>
-    eventController.createEvent(req, res)
+  router.post(
+    '/',
+    authenticateToken,
+    validate({ body: createEventSchema }),
+    asyncHandler((req, res) => eventController.createEvent(req, res))
   );
 
   /**
@@ -152,8 +163,10 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/:id/participants', validate({ params: eventIdParamSchema }), (req, res) =>
-    eventController.getEventParticipants(req, res)
+  router.get(
+    '/:id/participants',
+    validate({ params: eventIdParamSchema }),
+    asyncHandler((req, res) => eventController.getEventParticipants(req, res))
   );
 
   /**
@@ -190,7 +203,11 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/:id', validate({ params: eventIdParamSchema }), (req, res) => eventController.getEventDetails(req, res));
+  router.get(
+    '/:id',
+    validate({ params: eventIdParamSchema }),
+    asyncHandler((req, res) => eventController.getEventDetails(req, res))
+  );
 
   /**
    * @swagger
@@ -246,8 +263,11 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.put('/:id', authenticateToken, validate({ params: eventIdParamSchema, body: updateEventSchema }), (req, res) =>
-    eventController.updateEvent(req, res)
+  router.put(
+    '/:id',
+    authenticateToken,
+    validate({ params: eventIdParamSchema, body: updateEventSchema }),
+    asyncHandler((req, res) => eventController.updateEvent(req, res))
   );
 
   /**
@@ -298,8 +318,11 @@ function createEventRoutes(eventController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.delete('/:id', authenticateToken, validate({ params: eventIdParamSchema }), (req, res) =>
-    eventController.deleteEvent(req, res)
+  router.delete(
+    '/:id',
+    authenticateToken,
+    validate({ params: eventIdParamSchema }),
+    asyncHandler((req, res) => eventController.deleteEvent(req, res))
   );
 
   return router;

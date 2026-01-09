@@ -1,5 +1,6 @@
 const express = require('express');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../middleware/asyncHandler');
 const { loginSchema } = require('../validation');
 
 /**
@@ -59,7 +60,11 @@ function createAuthRoutes(authController) {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/login', validate({ body: loginSchema }), (req, res) => authController.login(req, res));
+  router.post(
+    '/login',
+    validate({ body: loginSchema }),
+    asyncHandler((req, res) => authController.login(req, res))
+  );
 
   return router;
 }
