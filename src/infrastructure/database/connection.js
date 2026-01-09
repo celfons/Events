@@ -6,9 +6,9 @@ class DatabaseConnection {
     this.connection = null;
   }
 
-  async connect(uri) {
+  async connect(uri, options = {}) {
     try {
-      this.connection = await mongoose.connect(uri);
+      this.connection = await mongoose.connect(uri, options);
       logger.info('Connected to MongoDB successfully');
       return this.connection;
     } catch (error) {
