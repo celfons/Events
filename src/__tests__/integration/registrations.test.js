@@ -61,7 +61,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data.name).toBe('John Doe');
       expect(response.body.data.email).toBe('john@example.com');
-      expect(response.body.data.status).toBe('active');
+      expect(response.body.data.status).toBe('pending');
 
       // Verify the event has the registration
       const event = await eventRepository.findById(eventId);
@@ -124,7 +124,7 @@ describe('Registrations API Integration Tests', () => {
         name: 'Existing Participant',
         email: 'existing@example.com',
         phone: '+9999999999',
-        status: 'active'
+        status: 'confirmed'
       });
 
       // Try to register a second participant (should fail)
@@ -272,7 +272,7 @@ describe('Registrations API Integration Tests', () => {
       const eventAfter = await eventRepository.findById(eventId);
       expect(eventAfter.participants).toHaveLength(1);
       expect(eventAfter.participants[0].email).toBe('john@example.com');
-      expect(eventAfter.participants[0].status).toBe('active');
+      expect(eventAfter.participants[0].status).toBe('pending');
     });
 
     it('should update event participant count after cancellation', async () => {
@@ -292,7 +292,7 @@ describe('Registrations API Integration Tests', () => {
       // Verify registration exists
       let event = await eventRepository.findById(eventId);
       expect(event.participants).toHaveLength(1);
-      expect(event.participants[0].status).toBe('active');
+      expect(event.participants[0].status).toBe('pending');
 
       // Cancel the registration
       await request(app).post(`/api/registrations/${registrationId}/cancel`).send({ eventId: eventId }).expect(200);

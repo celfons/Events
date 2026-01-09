@@ -167,18 +167,37 @@ class MongoEventRepository extends EventRepository {
   }
 
   async cancelParticipant(eventId, participantId) {
-    // Cancel participant and increment available slots if they were confirmed
+    // First, find the event and participant to check their status
+    const event = await EventModel.findOne({
+      _id: eventId,
+      'participants._id': participantId
+    });
+
+    if (!event) {
+      return false;
+    }
+
+    const participant = event.participants.find(p => p._id.toString() === participantId);
+    if (!participant || !['pending', 'confirmed'].includes(participant.status)) {
+      return false;
+    }
+
+    // Cancel participant - only increment slots if they were confirmed
+    const updateQuery = {
+      $set: { 'participants.$.status': 'cancelled' }
+    };
+
+    if (participant.status === 'confirmed') {
+      updateQuery.$inc = { availableSlots: 1 };
+    }
+
     const updatedEvent = await EventModel.findOneAndUpdate(
       {
         _id: eventId,
         'participants._id': participantId,
-        'participants.status': { $in: ['pending', 'confirmed'] },
-        $expr: { $lt: ['$availableSlots', '$totalSlots'] }
+        'participants.status': { $in: ['pending', 'confirmed'] }
       },
-      {
-        $set: { 'participants.$.status': 'cancelled' },
-        $inc: { availableSlots: 1 }
-      },
+      updateQuery,
       { new: true, runValidators: true }
     );
 
