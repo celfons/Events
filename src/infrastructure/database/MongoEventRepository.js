@@ -292,7 +292,9 @@ class MongoEventRepository extends EventRepository {
             email: p.email,
             phone: p.phone,
             registeredAt: p.registeredAt,
-            status: p.status
+            status: p.status,
+            verificationCode: p.verificationCode,
+            verificationCodeExpiresAt: p.verificationCodeExpiresAt
           }))
         : [],
       createdAt: eventModel.createdAt,
