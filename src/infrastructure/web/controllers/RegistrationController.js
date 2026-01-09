@@ -8,7 +8,10 @@ class RegistrationController {
   }
 
   async register(req, res) {
-    const result = await this.registerForEventUseCase.execute(req.body);
+    // Check if user is authenticated (admin registering participant via modal)
+    const isAuthenticatedUser = !!req.user;
+
+    const result = await this.registerForEventUseCase.execute(req.body, isAuthenticatedUser);
 
     if (!result.success) {
       const errorResponse = ErrorResponse.invalidInput(result.error);

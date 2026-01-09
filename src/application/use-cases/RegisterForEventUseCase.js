@@ -6,7 +6,7 @@ class RegisterForEventUseCase {
     this.messagingService = messagingService;
   }
 
-  async execute(registrationData) {
+  async execute(registrationData, isAuthenticatedUser = false) {
     try {
       // Validate input
       if (!registrationData.eventId || !registrationData.name || !registrationData.email || !registrationData.phone) {
@@ -63,19 +63,43 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Generate 6-digit verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      // Determine registration status based on authentication
+      // Authenticated users (admins) register participants as confirmed immediately
+      // Public users register as pending and need verification
+      const isConfirmedRegistration = isAuthenticatedUser;
+      const status = isConfirmedRegistration ? 'confirmed' : 'pending';
 
-      // Add participant to event with pending status (doesn't decrement slots yet)
-      const registration = await this.eventRepository.addParticipant(registrationData.eventId, {
+      // Generate verification code only for pending registrations
+      let verificationCode = null;
+      let verificationCodeExpiresAt = null;
+
+      if (!isConfirmedRegistration) {
+        verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      }
+
+      // Add participant to event
+      // Confirmed registrations decrement slots immediately
+      // Pending registrations don't decrement slots until confirmed
+      const participantData = {
         name: registrationData.name,
         email: registrationData.email,
         phone: registrationData.phone,
-        status: 'pending',
-        verificationCode,
-        verificationCodeExpiresAt
-      });
+        status: status
+      };
+
+      // Only include verification code fields for pending registrations
+      if (verificationCode) {
+        participantData.verificationCode = verificationCode;
+        participantData.verificationCodeExpiresAt = verificationCodeExpiresAt;
+      }
+
+      // For confirmed registrations, set confirmedAt timestamp
+      if (isConfirmedRegistration) {
+        participantData.confirmedAt = new Date();
+      }
+
+      const registration = await this.eventRepository.addParticipant(registrationData.eventId, participantData);
 
       if (!registration) {
         return {
@@ -84,8 +108,8 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Send WhatsApp verification code (async, don't block registration)
-      if (this.messagingService) {
+      // Send WhatsApp verification code only for pending registrations (async, don't block registration)
+      if (this.messagingService && !isConfirmedRegistration && verificationCode) {
         this.messagingService
           .sendVerificationCode({
             to: registrationData.phone,

@@ -1,6 +1,7 @@
 const express = require('express');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../middleware/asyncHandler');
+const { optionalAuth } = require('../middleware/auth');
 const { createRegistrationSchema, cancelRegistrationSchema, registrationIdParamSchema } = require('../validation');
 
 /**
@@ -48,6 +49,7 @@ function createRegistrationRoutes(registrationController) {
    */
   router.post(
     '/',
+    optionalAuth,
     validate({ body: createRegistrationSchema }),
     asyncHandler((req, res) => registrationController.register(req, res))
   );
