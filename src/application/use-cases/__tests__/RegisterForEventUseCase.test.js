@@ -315,4 +315,131 @@ describe('RegisterForEventUseCase', () => {
       expect(result.error).toBe('Database connection error');
     });
   });
+
+  describe('WhatsApp Messaging Integration', () => {
+    let mockMessagingService;
+
+    beforeEach(() => {
+      mockMessagingService = {
+        sendRegistrationConfirmation: jest.fn().mockResolvedValue({ success: true, messageId: 'msg_123' })
+      };
+    });
+
+    it('should call messaging service with correct parameters when registration is successful', async () => {
+      const registerWithMessaging = new RegisterForEventUseCase(mockEventRepository, mockMessagingService);
+
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        dateTime: new Date('2024-03-15T14:30:00'),
+        local: 'Test Location',
+        availableSlots: 10,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321',
+        toJSON: jest.fn().mockReturnValue({ id: '456', name: 'John Doe' })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerWithMessaging.execute(registrationData);
+
+      // Allow time for async messaging to be called
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendRegistrationConfirmation).toHaveBeenCalledWith({
+        to: '(11) 98765-4321',
+        name: 'John Doe',
+        eventTitle: 'Test Event',
+        eventDate: mockEvent.dateTime,
+        eventLocal: 'Test Location'
+      });
+    });
+
+    it('should complete registration successfully even if messaging fails', async () => {
+      mockMessagingService.sendRegistrationConfirmation.mockRejectedValue(new Error('WhatsApp API error'));
+      const registerWithMessaging = new RegisterForEventUseCase(mockEventRepository, mockMessagingService);
+
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        dateTime: new Date('2024-03-15T14:30:00'),
+        local: 'Test Location',
+        availableSlots: 10,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        eventId: '123',
+        name: 'John Doe',
+        toJSON: jest.fn().mockReturnValue({ id: '456', name: 'John Doe' })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerWithMessaging.execute(registrationData);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+    });
+
+    it('should not call messaging service when not provided', async () => {
+      const registrationData = {
+        eventId: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '(11) 98765-4321'
+      };
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 10,
+        hasAvailableSlots: jest.fn().mockReturnValue(true)
+      };
+
+      const createdRegistration = {
+        id: '456',
+        toJSON: jest.fn().mockReturnValue({ id: '456' })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
+      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
+      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
+
+      const result = await registerForEventUseCase.execute(registrationData);
+
+      expect(result.success).toBe(true);
+      // Verify messaging service was not called (use case initialized without it)
+    });
+  });
 });

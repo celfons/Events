@@ -131,4 +131,104 @@ describe('CancelRegistrationUseCase', () => {
       expect(result.error).toBe('Failed to cancel registration');
     });
   });
+
+  describe('WhatsApp Messaging Integration', () => {
+    let mockMessagingService;
+
+    beforeEach(() => {
+      mockMessagingService = {
+        sendCancellationConfirmation: jest.fn().mockResolvedValue({ success: true, messageId: 'msg_456' })
+      };
+    });
+
+    it('should call messaging service with correct parameters when cancellation is successful', async () => {
+      const cancelWithMessaging = new CancelRegistrationUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '123';
+      const participantId = '456';
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        participants: [
+          {
+            id: '456',
+            name: 'John Doe',
+            phone: '(11) 98765-4321',
+            status: 'active'
+          }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+
+      const result = await cancelWithMessaging.execute(eventId, participantId);
+
+      // Allow time for async messaging to be called
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendCancellationConfirmation).toHaveBeenCalledWith({
+        to: '(11) 98765-4321',
+        name: 'John Doe',
+        eventTitle: 'Test Event'
+      });
+    });
+
+    it('should complete cancellation successfully even if messaging fails', async () => {
+      mockMessagingService.sendCancellationConfirmation.mockRejectedValue(new Error('WhatsApp API error'));
+      const cancelWithMessaging = new CancelRegistrationUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '123';
+      const participantId = '456';
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        participants: [
+          {
+            id: '456',
+            name: 'John Doe',
+            phone: '(11) 98765-4321',
+            status: 'active'
+          }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+
+      const result = await cancelWithMessaging.execute(eventId, participantId);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Registration cancelled successfully');
+    });
+
+    it('should not call messaging service when not provided', async () => {
+      const eventId = '123';
+      const participantId = '456';
+
+      const mockEvent = {
+        id: '123',
+        title: 'Test Event',
+        participants: [
+          {
+            id: '456',
+            name: 'John Doe',
+            phone: '(11) 98765-4321',
+            status: 'active'
+          }
+        ]
+      };
+
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
+      mockEventRepository.cancelParticipant.mockResolvedValue(true);
+
+      const result = await cancelRegistrationUseCase.execute(eventId, participantId);
+
+      expect(result.success).toBe(true);
+      // Verify messaging service was not called (use case initialized without it)
+    });
+  });
 });

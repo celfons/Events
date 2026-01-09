@@ -94,14 +94,17 @@ class WhatsAppService extends MessagingService {
         }
       );
 
+      const messages = response?.data?.messages;
+      const messageId = Array.isArray(messages) && messages.length > 0 ? messages[0]?.id : undefined;
+
       logger.info('WhatsApp message sent successfully', {
         to: formattedPhone,
-        messageId: response.data.messages[0].id
+        messageId
       });
 
       return {
         success: true,
-        messageId: response.data.messages[0].id,
+        messageId,
         to: formattedPhone
       };
     } catch (error) {
