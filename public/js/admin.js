@@ -385,7 +385,7 @@ submitCreateEventBtn.addEventListener('click', async () => {
         // Reload events
         await loadEvents();
 
-        alert('Evento criado com sucesso!');
+        showSuccessToast('Evento criado com sucesso!');
     } catch (error) {
         showError(createEventError, error.message);
     } finally {
@@ -454,7 +454,7 @@ async function openEventDetailsModal(eventId) {
         const modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
         modal.show();
     } catch (error) {
-        alert('Erro ao carregar detalhes do evento: ' + error.message);
+        showErrorToast('Erro ao carregar detalhes do evento: ' + error.message);
     }
 }
 
@@ -519,7 +519,7 @@ submitUpdateEventBtn.addEventListener('click', async () => {
         // Reload events
         await loadEvents();
 
-        alert('Evento atualizado com sucesso!');
+        showSuccessToast('Evento atualizado com sucesso!');
     } catch (error) {
         showError(updateEventError, error.message);
     } finally {
@@ -563,9 +563,9 @@ deleteEventBtn.addEventListener('click', async () => {
         // Reload events
         await loadEvents();
 
-        alert('Evento excluído com sucesso!');
+        showSuccessToast('Evento excluído com sucesso!');
     } catch (error) {
-        alert('Erro ao excluir evento: ' + error.message);
+        showErrorToast('Erro ao excluir evento: ' + error.message);
     } finally {
         deleteEventBtn.disabled = false;
         deleteEventBtn.innerHTML = '<i class="bi bi-trash"></i> Excluir';
@@ -648,7 +648,7 @@ async function loadParticipants(eventId) {
             displayParticipantsPage(1);
         }
     } catch (error) {
-        alert('Erro ao carregar participantes: ' + error.message);
+        showErrorToast('Erro ao carregar participantes: ' + error.message);
     }
 }
 
@@ -811,10 +811,10 @@ async function removeParticipant(registrationId, participantName) {
         }
 
         // Success - reload participants list
-        alert(`${participantName} foi removido com sucesso!`);
+        showSuccessToast(`${participantName} foi removido com sucesso!`);
         await loadParticipants(currentEventId);
     } catch (error) {
-        alert('Erro ao remover participante: ' + error.message);
+        showErrorToast('Erro ao remover participante: ' + error.message);
     }
 }
 
@@ -884,7 +884,7 @@ document.getElementById('submitRegisterParticipant').addEventListener('click', a
         modal.hide();
 
         // Show success message
-        alert(`${name} foi inscrito com sucesso!`);
+        showSuccessToast(`${name} foi inscrito com sucesso!`);
         
         // Reload participants list (without reopening modal)
         await loadParticipants(currentEventId);

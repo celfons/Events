@@ -267,7 +267,7 @@ submitCreateUserBtn.addEventListener('click', async () => {
         // Reload users
         await loadUsers();
 
-        alert('Usuário criado com sucesso!');
+        showSuccessToast('Usuário criado com sucesso!');
     } catch (error) {
         showError(createUserError, error.message);
     } finally {
@@ -281,7 +281,7 @@ async function openEditUserModal(userId) {
     try {
         const user = allUsers.find(u => u.id === userId);
         if (!user) {
-            alert('Usuário não encontrado');
+            showErrorToast('Usuário não encontrado');
             return;
         }
         
@@ -300,7 +300,7 @@ async function openEditUserModal(userId) {
         const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
         modal.show();
     } catch (error) {
-        alert('Erro ao carregar dados do usuário: ' + error.message);
+        showErrorToast('Erro ao carregar dados do usuário: ' + error.message);
     }
 }
 
@@ -368,7 +368,7 @@ submitEditUserBtn.addEventListener('click', async () => {
         // Reload users
         await loadUsers();
 
-        alert('Usuário atualizado com sucesso!');
+        showSuccessToast('Usuário atualizado com sucesso!');
     } catch (error) {
         showError(editUserError, error.message);
     } finally {
@@ -412,9 +412,9 @@ deleteUserBtn.addEventListener('click', async () => {
         // Reload users
         await loadUsers();
 
-        alert('Usuário excluído com sucesso!');
+        showSuccessToast('Usuário excluído com sucesso!');
     } catch (error) {
-        alert('Erro ao excluir usuário: ' + error.message);
+        showErrorToast('Erro ao excluir usuário: ' + error.message);
     } finally {
         deleteUserBtn.disabled = false;
         deleteUserBtn.innerHTML = '<i class="bi bi-trash"></i> Excluir';

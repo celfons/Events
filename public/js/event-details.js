@@ -292,7 +292,7 @@ function shareEvent(event) {
     } else {
         // Fallback: copy to clipboard
         navigator.clipboard.writeText(eventUrl).then(() => {
-            alert('Link do evento copiado para a área de transferência!');
+            showSuccessToast('Link do evento copiado para a área de transferência!');
         }).catch(err => {
             console.error('Error copying to clipboard:', err);
             // Final fallback: show a prompt with the URL
@@ -439,7 +439,7 @@ confirmForm.addEventListener('submit', async (e) => {
 // Handle registration cancellation
 document.getElementById('cancelRegistrationButton')?.addEventListener('click', async () => {
     if (!currentRegistrationId) {
-        alert('Erro: ID de inscrição não encontrado');
+        showErrorToast('Erro: ID de inscrição não encontrado');
         return;
     }
 
@@ -487,9 +487,9 @@ document.getElementById('cancelRegistrationButton')?.addEventListener('click', a
         // Reload event details to update available slots
         await loadEventDetails();
 
-        alert('Inscrição cancelada com sucesso!');
+        showSuccessToast('Inscrição cancelada com sucesso!');
     } catch (error) {
-        alert('Erro ao cancelar inscrição: ' + error.message);
+        showErrorToast('Erro ao cancelar inscrição: ' + error.message);
         const cancelButton = document.getElementById('cancelRegistrationButton');
         cancelButton.disabled = false;
         cancelButton.innerHTML = '<i class="bi bi-x-circle"></i> Cancelar Inscrição';
