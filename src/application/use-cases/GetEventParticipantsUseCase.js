@@ -22,8 +22,8 @@ class GetEventParticipantsUseCase {
         };
       }
 
-      // Get active participants from the event
-      const participants = event.participants.filter(p => p.status === 'active');
+      // Get confirmed participants from the event
+      const participants = event.participants.filter(p => p.status === 'confirmed');
 
       return {
         success: true,

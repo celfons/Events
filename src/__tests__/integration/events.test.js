@@ -355,14 +355,14 @@ describe('Events API Integration Tests', () => {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+1234567890',
-        status: 'active'
+        status: 'confirmed'
       });
 
       await eventRepository.addParticipant(event.id, {
         name: 'Jane Doe',
         email: 'jane@example.com',
         phone: '+0987654321',
-        status: 'active'
+        status: 'confirmed'
       });
 
       const response = await request(app).get(`/api/events/${event.id}/participants`).expect(200);

@@ -1,8 +1,9 @@
-const Registration = require('../../domain/entities/Registration');
+const logger = require('../../infrastructure/logging/logger');
 
 class RegisterForEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, messagingService = null) {
     this.eventRepository = eventRepository;
+    this.messagingService = messagingService;
   }
 
   async execute(registrationData) {
@@ -50,20 +51,30 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Check if event has available slots
-      if (!event.hasAvailableSlots()) {
+      // Check if event has available slots (considering both pending and confirmed participants)
+      const activeParticipants = (event.participants || []).filter(
+        p => p.status === 'pending' || p.status === 'confirmed'
+      ).length;
+
+      if (activeParticipants >= event.totalSlots) {
         return {
           success: false,
           error: 'No available slots for this event'
         };
       }
 
-      // Add participant to event (atomically decrements slots)
+      // Generate 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      // Add participant to event with pending status (doesn't decrement slots yet)
       const registration = await this.eventRepository.addParticipant(registrationData.eventId, {
         name: registrationData.name,
         email: registrationData.email,
         phone: registrationData.phone,
-        status: 'active'
+        status: 'pending',
+        verificationCode,
+        verificationCodeExpiresAt
       });
 
       if (!registration) {
@@ -71,6 +82,23 @@ class RegisterForEventUseCase {
           success: false,
           error: 'Failed to register. Event may be full or was deleted.'
         };
+      }
+
+      // Send WhatsApp verification code (async, don't block registration)
+      if (this.messagingService) {
+        this.messagingService
+          .sendVerificationCode({
+            to: registrationData.phone,
+            name: registrationData.name,
+            eventTitle: event.title,
+            verificationCode
+          })
+          .catch(error => {
+            logger.error('Failed to send WhatsApp verification code', {
+              error: error.message,
+              registrationId: registration.id
+            });
+          });
       }
 
       return {

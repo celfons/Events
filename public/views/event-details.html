@@ -80,9 +80,28 @@
                                         </button>
                                     </form>
                                 </div>
+                                <div id="verificationForm" class="d-none">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Um código de verificação foi enviado para seu WhatsApp.
+                                    </div>
+                                    <form id="confirmForm">
+                                        <div class="mb-3">
+                                            <label for="verificationCode" class="form-label">Código de Verificação *</label>
+                                            <input type="text" class="form-control" id="verificationCode" placeholder="123456" maxlength="6" required pattern="\d{6}">
+                                            <small class="form-text text-muted">Digite o código de 6 dígitos recebido no WhatsApp</small>
+                                        </div>
+                                        <div class="alert alert-danger d-none" id="verificationError"></div>
+                                        <button type="submit" class="btn btn-success w-100 mb-2" id="confirmButton">
+                                            <i class="bi bi-check-circle-fill"></i> Confirmar Inscrição
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary w-100" id="backToFormButton">
+                                            <i class="bi bi-arrow-left"></i> Voltar
+                                        </button>
+                                    </form>
+                                </div>
                                 <div id="registrationSuccess" class="d-none">
                                     <div class="alert alert-success">
-                                        <i class="bi bi-check-circle"></i> Inscrição realizada com sucesso!
+                                        <i class="bi bi-check-circle"></i> Inscrição confirmada com sucesso!
                                     </div>
                                     <button class="btn btn-danger w-100 mb-2" id="cancelRegistrationButton">
                                         <i class="bi bi-x-circle"></i> Cancelar Inscrição

@@ -1,6 +1,9 @@
+const logger = require('../../infrastructure/logging/logger');
+
 class CancelRegistrationUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, messagingService = null) {
     this.eventRepository = eventRepository;
+    this.messagingService = messagingService;
   }
 
   async execute(eventId, participantId) {
@@ -23,7 +26,9 @@ class CancelRegistrationUseCase {
       }
 
       // Find participant in the event
-      const participant = event.participants.find(p => p.id === participantId && p.status === 'active');
+      const participant = event.participants.find(
+        p => p.id === participantId && (p.status === 'pending' || p.status === 'confirmed')
+      );
       if (!participant) {
         return {
           success: false,
@@ -39,6 +44,22 @@ class CancelRegistrationUseCase {
           success: false,
           error: 'Failed to cancel registration'
         };
+      }
+
+      // Send WhatsApp cancellation message (async, don't block cancellation)
+      if (this.messagingService) {
+        this.messagingService
+          .sendCancellationConfirmation({
+            to: participant.phone,
+            name: participant.name,
+            eventTitle: event.title
+          })
+          .catch(error => {
+            logger.error('Failed to send WhatsApp cancellation message', {
+              error: error.message,
+              participantId
+            });
+          });
       }
 
       return {

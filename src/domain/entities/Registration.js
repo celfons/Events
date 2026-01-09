@@ -6,7 +6,7 @@ class Registration {
     this.email = email;
     this.phone = phone;
     this.registeredAt = registeredAt || new Date();
-    this.status = status || 'active'; // active, cancelled
+    this.status = status || 'pending'; // pending, confirmed, cancelled
   }
 
   cancel() {
@@ -17,7 +17,11 @@ class Registration {
   }
 
   isActive() {
-    return this.status === 'active';
+    return this.status === 'confirmed' || this.status === 'pending';
+  }
+
+  isConfirmed() {
+    return this.status === 'confirmed';
   }
 
   toJSON() {

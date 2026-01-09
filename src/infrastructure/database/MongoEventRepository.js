@@ -70,27 +70,56 @@ class MongoEventRepository extends EventRepository {
   }
 
   async addParticipant(eventId, participantData) {
-    // Add participant and decrement available slots atomically
-    // Ensure no active participant with the same email already exists
-    const updatedEvent = await EventModel.findOneAndUpdate(
-      {
-        _id: eventId,
-        availableSlots: { $gt: 0 },
-        participants: {
-          $not: {
-            $elemMatch: {
-              email: participantData.email.toLowerCase(),
-              status: 'active'
-            }
+    // Add participant - only decrement slots if status is 'confirmed'
+    // Ensure no active or pending participant with the same email already exists
+    const updateQuery = {
+      $push: { participants: participantData }
+    };
+
+    // Only decrement slots if participant is confirmed
+    if (participantData.status === 'confirmed') {
+      updateQuery.$inc = { availableSlots: -1 };
+    }
+
+    // Build the query conditions
+    const queryConditions = {
+      _id: eventId,
+      participants: {
+        $not: {
+          $elemMatch: {
+            email: participantData.email.toLowerCase(),
+            status: { $in: ['pending', 'confirmed'] }
           }
         }
-      },
-      {
-        $push: { participants: participantData },
-        $inc: { availableSlots: -1 }
-      },
-      { new: true, runValidators: true }
-    );
+      }
+    };
+
+    // For pending registrations, check that total pending+confirmed is less than totalSlots
+    // For confirmed registrations, check that availableSlots > 0
+    if (participantData.status === 'pending') {
+      // Use aggregation to check if there's space (pending + confirmed < totalSlots)
+      queryConditions.$expr = {
+        $lt: [
+          {
+            $size: {
+              $filter: {
+                input: '$participants',
+                as: 'p',
+                cond: { $in: ['$$p.status', ['pending', 'confirmed']] }
+              }
+            }
+          },
+          '$totalSlots'
+        ]
+      };
+    } else if (participantData.status === 'confirmed') {
+      queryConditions.availableSlots = { $gt: 0 };
+    }
+
+    const updatedEvent = await EventModel.findOneAndUpdate(queryConditions, updateQuery, {
+      new: true,
+      runValidators: true
+    });
 
     if (!updatedEvent) return null;
 
@@ -112,7 +141,7 @@ class MongoEventRepository extends EventRepository {
       {
         _id: eventId,
         'participants.email': email.toLowerCase(),
-        'participants.status': 'active'
+        'participants.status': { $in: ['pending', 'confirmed'] }
       },
       { 'participants.$': 1 }
     );
@@ -138,7 +167,7 @@ class MongoEventRepository extends EventRepository {
       {
         _id: eventId,
         'participants.phone': phone,
-        'participants.status': 'active'
+        'participants.status': { $in: ['pending', 'confirmed'] }
       },
       { 'participants.$': 1 }
     );
@@ -160,17 +189,58 @@ class MongoEventRepository extends EventRepository {
   }
 
   async cancelParticipant(eventId, participantId) {
-    // Cancel participant and increment available slots atomically
+    // First, find the event and participant to check their status
+    const event = await EventModel.findOne({
+      _id: eventId,
+      'participants._id': participantId
+    });
+
+    if (!event) {
+      return false;
+    }
+
+    const participant = event.participants.find(p => p._id.toString() === participantId);
+    if (!participant || !['pending', 'confirmed'].includes(participant.status)) {
+      return false;
+    }
+
+    // Cancel participant - only increment slots if they were confirmed
+    const updateQuery = {
+      $set: { 'participants.$.status': 'cancelled' }
+    };
+
+    if (participant.status === 'confirmed') {
+      updateQuery.$inc = { availableSlots: 1 };
+    }
+
     const updatedEvent = await EventModel.findOneAndUpdate(
       {
         _id: eventId,
         'participants._id': participantId,
-        'participants.status': 'active',
-        $expr: { $lt: ['$availableSlots', '$totalSlots'] }
+        'participants.status': { $in: ['pending', 'confirmed'] }
+      },
+      updateQuery,
+      { new: true, runValidators: true }
+    );
+
+    return !!updatedEvent;
+  }
+
+  async confirmParticipant(eventId, participantId) {
+    // Confirm participant and decrement available slots atomically
+    const updatedEvent = await EventModel.findOneAndUpdate(
+      {
+        _id: eventId,
+        'participants._id': participantId,
+        'participants.status': 'pending',
+        availableSlots: { $gt: 0 }
       },
       {
-        $set: { 'participants.$.status': 'cancelled' },
-        $inc: { availableSlots: 1 }
+        $set: {
+          'participants.$.status': 'confirmed',
+          'participants.$.confirmedAt': new Date()
+        },
+        $inc: { availableSlots: -1 }
       },
       { new: true, runValidators: true }
     );
@@ -183,7 +253,7 @@ class MongoEventRepository extends EventRepository {
     if (!event) return null;
 
     return event.participants
-      .filter(p => p.status === 'active')
+      .filter(p => p.status === 'confirmed')
       .map(
         participant =>
           new Registration({

@@ -14,6 +14,7 @@ const requestLogger = require('./infrastructure/logging/requestLogger');
 // Infrastructure
 const MongoEventRepository = require('./infrastructure/database/MongoEventRepository');
 const MongoUserRepository = require('./infrastructure/database/MongoUserRepository');
+const WhatsAppService = require('./infrastructure/messaging/WhatsAppService');
 
 // Use Cases
 const ListEventsUseCase = require('./application/use-cases/ListEventsUseCase');
@@ -25,6 +26,7 @@ const DeleteEventUseCase = require('./application/use-cases/DeleteEventUseCase')
 const GetEventParticipantsUseCase = require('./application/use-cases/GetEventParticipantsUseCase');
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
+const ConfirmRegistrationUseCase = require('./application/use-cases/ConfirmRegistrationUseCase');
 const LoginUseCase = require('./application/use-cases/LoginUseCase');
 const RegisterUseCase = require('./application/use-cases/RegisterUseCase');
 const ListUsersUseCase = require('./application/use-cases/ListUsersUseCase');
@@ -93,6 +95,7 @@ function createApp() {
   // Dependency Injection
   const eventRepository = new MongoEventRepository();
   const userRepository = new MongoUserRepository();
+  const whatsAppService = new WhatsAppService();
 
   // Use Cases
   const listEventsUseCase = new ListEventsUseCase(eventRepository);
@@ -102,8 +105,9 @@ function createApp() {
   const updateEventUseCase = new UpdateEventUseCase(eventRepository);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
-  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository);
-  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository);
+  const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService);
+  const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, whatsAppService);
+  const confirmRegistrationUseCase = new ConfirmRegistrationUseCase(eventRepository, whatsAppService);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
   const listUsersUseCase = new ListUsersUseCase(userRepository);
@@ -120,7 +124,11 @@ function createApp() {
     getEventParticipantsUseCase,
     listUserEventsUseCase
   );
-  const registrationController = new RegistrationController(registerForEventUseCase, cancelRegistrationUseCase);
+  const registrationController = new RegistrationController(
+    registerForEventUseCase,
+    cancelRegistrationUseCase,
+    confirmRegistrationUseCase
+  );
   const authController = new AuthController(loginUseCase, registerUseCase);
   const userController = new UserController(listUsersUseCase, updateUserUseCase, deleteUserUseCase, registerUseCase);
 

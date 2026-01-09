@@ -39,6 +39,10 @@ class EventRepository {
     throw new Error('Method not implemented');
   }
 
+  async confirmParticipant(eventId, participantId) {
+    throw new Error('Method not implemented');
+  }
+
   async getParticipants(eventId) {
     throw new Error('Method not implemented');
   }
