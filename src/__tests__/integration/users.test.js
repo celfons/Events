@@ -1,6 +1,6 @@
 const request = require('supertest');
 const createApp = require('../../app');
-const { setupTestDB, clearDatabase, teardownTestDB } = require('./test-helper');
+const { setupTestDB, clearDatabase, teardownTestDB, isMongoAvailable, itIfMongo } = require('./test-helper');
 const MongoUserRepository = require('../../infrastructure/database/MongoUserRepository');
 
 describe('Users API Integration Tests', () => {
@@ -13,6 +13,10 @@ describe('Users API Integration Tests', () => {
 
   beforeAll(async () => {
     await setupTestDB();
+    if (!isMongoAvailable()) {
+      console.warn('⚠️  Skipping Users API Integration Tests - MongoDB not available');
+      return;
+    }
     process.env.JWT_SECRET = 'test-secret-key';
     app = createApp();
     userRepository = new MongoUserRepository();
@@ -23,6 +27,7 @@ describe('Users API Integration Tests', () => {
   });
 
   beforeEach(async () => {
+    if (!isMongoAvailable()) return;
     await clearDatabase();
 
     // Create and login as superuser
@@ -57,7 +62,7 @@ describe('Users API Integration Tests', () => {
   });
 
   describe('GET /api/users', () => {
-    it('should return all users for superuser', async () => {
+    itIfMongo('should return all users for superuser', async () => {
       const response = await request(app)
         .get('/api/users')
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -69,11 +74,11 @@ describe('Users API Integration Tests', () => {
       expect(response.body.data.some(u => u.email === 'regular@example.com')).toBe(true);
     });
 
-    it('should return 401 when no auth token is provided', async () => {
+    itIfMongo('should return 401 when no auth token is provided', async () => {
       await request(app).get('/api/users').expect(401);
     });
 
-    it('should return 403 for regular user', async () => {
+    itIfMongo('should return 403 for regular user', async () => {
       const response = await request(app)
         .get('/api/users')
         .set('Authorization', `Bearer ${regularUserToken}`)
@@ -85,7 +90,7 @@ describe('Users API Integration Tests', () => {
   });
 
   describe('POST /api/users', () => {
-    it('should create a new user as superuser', async () => {
+    itIfMongo('should create a new user as superuser', async () => {
       const userData = {
         username: 'newuser',
         email: 'newuser@example.com',
@@ -119,7 +124,7 @@ describe('Users API Integration Tests', () => {
       expect(loginResponse.body.data).toHaveProperty('token');
     });
 
-    it('should create user with role user even when superuser role is requested', async () => {
+    itIfMongo('should create user with role user even when superuser role is requested', async () => {
       // Note: RegisterUseCase always creates users with role 'user'
       // Superuser role can only be set via direct database update or separate endpoint
       const userData = {
@@ -146,7 +151,7 @@ describe('Users API Integration Tests', () => {
         .expect(200);
     });
 
-    it('should return 401 when no auth token is provided', async () => {
+    itIfMongo('should return 401 when no auth token is provided', async () => {
       const userData = {
         username: 'newuser',
         email: 'newuser@example.com',
@@ -157,7 +162,7 @@ describe('Users API Integration Tests', () => {
       await request(app).post('/api/users').send(userData).expect(401);
     });
 
-    it('should return 403 for regular user', async () => {
+    itIfMongo('should return 403 for regular user', async () => {
       const userData = {
         username: 'newuser',
         email: 'newuser@example.com',
@@ -175,7 +180,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for missing required fields', async () => {
+    itIfMongo('should return 400 for missing required fields', async () => {
       const userData = {
         username: 'newuser'
         // Missing email and password
@@ -191,7 +196,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for duplicate email', async () => {
+    itIfMongo('should return 400 for duplicate email', async () => {
       const userData = {
         username: 'anotheruser',
         email: 'regular@example.com', // Already exists
@@ -210,7 +215,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error.message).toContain('already');
     });
 
-    it('should validate email format with Zod', async () => {
+    itIfMongo('should validate email format with Zod', async () => {
       // Email validation is now implemented with Zod schemas
       const userData = {
         username: 'newuser',
@@ -229,7 +234,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
 
-    it('should return 400 for short password', async () => {
+    itIfMongo('should return 400 for short password', async () => {
       const userData = {
         username: 'newuser',
         email: 'newuser@example.com',
@@ -249,7 +254,7 @@ describe('Users API Integration Tests', () => {
   });
 
   describe('PUT /api/users/:id', () => {
-    it('should update a user as superuser', async () => {
+    itIfMongo('should update a user as superuser', async () => {
       const updatedData = {
         username: 'updateduser',
         email: 'updated@example.com'
@@ -265,7 +270,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.data.email).toBe('updated@example.com');
     });
 
-    it('should update user password as superuser', async () => {
+    itIfMongo('should update user password as superuser', async () => {
       const updatedData = {
         password: 'newpassword123'
       };
@@ -289,7 +294,7 @@ describe('Users API Integration Tests', () => {
       expect(loginResponse.body.data).toHaveProperty('token');
     });
 
-    it('should update user role as superuser', async () => {
+    itIfMongo('should update user role as superuser', async () => {
       const updatedData = {
         role: 'superuser'
       };
@@ -303,11 +308,11 @@ describe('Users API Integration Tests', () => {
       expect(response.body.data.role).toBe('superuser');
     });
 
-    it('should return 401 when no auth token is provided', async () => {
+    itIfMongo('should return 401 when no auth token is provided', async () => {
       await request(app).put(`/api/users/${regularUserId}`).send({ username: 'updated' }).expect(401);
     });
 
-    it('should return 403 for regular user', async () => {
+    itIfMongo('should return 403 for regular user', async () => {
       const response = await request(app)
         .put(`/api/users/${regularUserId}`)
         .set('Authorization', `Bearer ${regularUserToken}`)
@@ -318,7 +323,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for non-existent user', async () => {
+    itIfMongo('should return 400 for non-existent user', async () => {
       const response = await request(app)
         .put('/api/users/507f1f77bcf86cd799439011')
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -329,7 +334,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for invalid user id', async () => {
+    itIfMongo('should return 400 for invalid user id', async () => {
       const response = await request(app)
         .put('/api/users/invalid-id')
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -342,7 +347,7 @@ describe('Users API Integration Tests', () => {
   });
 
   describe('DELETE /api/users/:id', () => {
-    it('should delete a user as superuser', async () => {
+    itIfMongo('should delete a user as superuser', async () => {
       const response = await request(app)
         .delete(`/api/users/${regularUserId}`)
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -360,11 +365,11 @@ describe('Users API Integration Tests', () => {
         .expect(401);
     });
 
-    it('should return 401 when no auth token is provided', async () => {
+    itIfMongo('should return 401 when no auth token is provided', async () => {
       await request(app).delete(`/api/users/${regularUserId}`).expect(401);
     });
 
-    it('should return 403 for regular user', async () => {
+    itIfMongo('should return 403 for regular user', async () => {
       const response = await request(app)
         .delete(`/api/users/${regularUserId}`)
         .set('Authorization', `Bearer ${regularUserToken}`)
@@ -374,7 +379,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for non-existent user', async () => {
+    itIfMongo('should return 400 for non-existent user', async () => {
       const response = await request(app)
         .delete('/api/users/507f1f77bcf86cd799439011')
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -384,7 +389,7 @@ describe('Users API Integration Tests', () => {
       expect(response.body.error).toHaveProperty('code');
     });
 
-    it('should return 400 for invalid user id', async () => {
+    itIfMongo('should return 400 for invalid user id', async () => {
       const response = await request(app)
         .delete('/api/users/invalid-id')
         .set('Authorization', `Bearer ${superuserToken}`)
@@ -396,7 +401,7 @@ describe('Users API Integration Tests', () => {
   });
 
   describe('Authorization', () => {
-    it('should allow superuser to manage all users', async () => {
+    itIfMongo('should allow superuser to manage all users', async () => {
       // List users
       await request(app).get('/api/users').set('Authorization', `Bearer ${superuserToken}`).expect(200);
 
@@ -426,7 +431,7 @@ describe('Users API Integration Tests', () => {
         .expect(200);
     });
 
-    it('should deny regular user from managing users', async () => {
+    itIfMongo('should deny regular user from managing users', async () => {
       // List users
       await request(app).get('/api/users').set('Authorization', `Bearer ${regularUserToken}`).expect(403);
 
