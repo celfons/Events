@@ -230,6 +230,16 @@ Quando ativado, o sistema envia automaticamente:
 - **Formatação automática**: Números de telefone são formatados automaticamente para o padrão E.164
 - **Mensagens em português**: Templates otimizados para o público brasileiro
 
+### Testando a integração
+
+Após configurar as credenciais, você pode testar a integração usando o script de exemplo:
+
+```bash
+node whatsapp-example.js
+```
+
+Este script demonstra como enviar os três tipos de mensagens disponíveis.
+
 ### Documentação oficial
 
 Para mais informações sobre a API do WhatsApp Business:
