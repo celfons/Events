@@ -81,23 +81,45 @@ class MongoEventRepository extends EventRepository {
       updateQuery.$inc = { availableSlots: -1 };
     }
 
-    const updatedEvent = await EventModel.findOneAndUpdate(
-      {
-        _id: eventId,
-        // Only check available slots if confirming
-        ...(participantData.status === 'confirmed' && { availableSlots: { $gt: 0 } }),
-        participants: {
-          $not: {
-            $elemMatch: {
-              email: participantData.email.toLowerCase(),
-              status: { $in: ['pending', 'confirmed'] }
-            }
+    // Build the query conditions
+    const queryConditions = {
+      _id: eventId,
+      participants: {
+        $not: {
+          $elemMatch: {
+            email: participantData.email.toLowerCase(),
+            status: { $in: ['pending', 'confirmed'] }
           }
         }
-      },
-      updateQuery,
-      { new: true, runValidators: true }
-    );
+      }
+    };
+
+    // For pending registrations, check that total pending+confirmed is less than totalSlots
+    // For confirmed registrations, check that availableSlots > 0
+    if (participantData.status === 'pending') {
+      // Use aggregation to check if there's space (pending + confirmed < totalSlots)
+      queryConditions.$expr = {
+        $lt: [
+          {
+            $size: {
+              $filter: {
+                input: '$participants',
+                as: 'p',
+                cond: { $in: ['$$p.status', ['pending', 'confirmed']] }
+              }
+            }
+          },
+          '$totalSlots'
+        ]
+      };
+    } else if (participantData.status === 'confirmed') {
+      queryConditions.availableSlots = { $gt: 0 };
+    }
+
+    const updatedEvent = await EventModel.findOneAndUpdate(queryConditions, updateQuery, {
+      new: true,
+      runValidators: true
+    });
 
     if (!updatedEvent) return null;
 

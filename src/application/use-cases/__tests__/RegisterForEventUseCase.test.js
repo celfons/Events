@@ -161,7 +161,12 @@ describe('RegisterForEventUseCase', () => {
       const mockEvent = {
         id: '123',
         title: 'Test Event',
+        totalSlots: 2,
         availableSlots: 0,
+        participants: [
+          { id: '1', status: 'confirmed' },
+          { id: '2', status: 'confirmed' }
+        ],
         hasAvailableSlots: jest.fn().mockReturnValue(false)
       };
 
@@ -173,7 +178,6 @@ describe('RegisterForEventUseCase', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('No available slots for this event');
-      expect(mockEvent.hasAvailableSlots).toHaveBeenCalled();
     });
   });
 

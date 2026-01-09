@@ -51,8 +51,12 @@ class RegisterForEventUseCase {
         };
       }
 
-      // Check if event has available slots
-      if (!event.hasAvailableSlots()) {
+      // Check if event has available slots (considering both pending and confirmed participants)
+      const activeParticipants = (event.participants || []).filter(
+        p => p.status === 'pending' || p.status === 'confirmed'
+      ).length;
+
+      if (activeParticipants >= event.totalSlots) {
         return {
           success: false,
           error: 'No available slots for this event'
