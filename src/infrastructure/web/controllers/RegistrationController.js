@@ -1,9 +1,10 @@
 const { ErrorResponse, SuccessResponse, RegistrationResponse } = require('../dto');
 
 class RegistrationController {
-  constructor(registerForEventUseCase, cancelRegistrationUseCase) {
+  constructor(registerForEventUseCase, cancelRegistrationUseCase, confirmRegistrationUseCase) {
     this.registerForEventUseCase = registerForEventUseCase;
     this.cancelRegistrationUseCase = cancelRegistrationUseCase;
+    this.confirmRegistrationUseCase = confirmRegistrationUseCase;
   }
 
   async register(req, res) {
@@ -29,6 +30,26 @@ class RegistrationController {
     }
 
     const result = await this.cancelRegistrationUseCase.execute(eventId, id);
+
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
+    }
+
+    const successResponse = SuccessResponse.ok(null, result.message);
+    return res.status(200).json(successResponse.toJSON());
+  }
+
+  async confirm(req, res) {
+    const { id } = req.params;
+    const { eventId, verificationCode } = req.body;
+
+    if (!eventId || !verificationCode) {
+      const errorResponse = ErrorResponse.invalidInput('eventId and verificationCode are required in request body');
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
+    }
+
+    const result = await this.confirmRegistrationUseCase.execute(eventId, id, verificationCode);
 
     if (!result.success) {
       const errorResponse = ErrorResponse.invalidInput(result.error);

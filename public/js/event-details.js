@@ -9,12 +9,16 @@ const loadingElement = document.getElementById('loading');
 const eventDetailsContainer = document.getElementById('eventDetailsContainer');
 const errorContainer = document.getElementById('errorContainer');
 const registerForm = document.getElementById('registerForm');
+const confirmForm = document.getElementById('confirmForm');
 const registrationError = document.getElementById('registrationError');
+const verificationError = document.getElementById('verificationError');
 const registrationForm = document.getElementById('registrationForm');
+const verificationForm = document.getElementById('verificationForm');
 const registrationSuccess = document.getElementById('registrationSuccess');
 
-// Store registration ID
+// Store registration ID and participant ID
 let currentRegistrationId = null;
+let currentParticipantId = null;
 
 // Storage key for registration data
 const STORAGE_KEY_PREFIX = 'event_registration_';
@@ -64,6 +68,20 @@ function restoreRegistrationState() {
                 }
                 
                 currentRegistrationId = registrationData.registrationId;
+                currentParticipantId = registrationData.participantId;
+                
+                // Check registration status
+                if (registrationData.status === 'pending') {
+                    // Show verification form
+                    registrationForm.classList.add('d-none');
+                    verificationForm.classList.remove('d-none');
+                    registrationSuccess.classList.add('d-none');
+                } else if (registrationData.status === 'confirmed') {
+                    // Show cancellation button
+                    registrationForm.classList.add('d-none');
+                    verificationForm.classList.add('d-none');
+                    registrationSuccess.classList.remove('d-none');
+                }
                 
                 // Restore form data - check elements exist before setting values
                 const nameInput = document.getElementById('name');
@@ -78,12 +96,6 @@ function restoreRegistrationState() {
                 }
                 if (phoneInput && registrationData.phone) {
                     phoneInput.value = registrationData.phone;
-                }
-                
-                // Show cancellation button
-                if (registrationForm && registrationSuccess) {
-                    registrationForm.classList.add('d-none');
-                    registrationSuccess.classList.remove('d-none');
                 }
             } catch (parseError) {
                 console.error('Error parsing registration data:', parseError);
@@ -102,7 +114,7 @@ function restoreRegistrationState() {
 }
 
 // Save registration state to localStorage
-function saveRegistrationState(registrationId, name, email, phone) {
+function saveRegistrationState(registrationId, participantId, name, email, phone, status = 'pending') {
     try {
         const storageKey = getStorageKey();
         if (!storageKey) {
@@ -118,10 +130,12 @@ function saveRegistrationState(registrationId, name, email, phone) {
         
         const registrationData = {
             registrationId,
+            participantId: participantId || null,
             eventId,
             name: name || '',
             email: email || '',
             phone: phone || '',
+            status: status,
             timestamp: new Date().toISOString()
         };
         localStorage.setItem(storageKey, JSON.stringify(registrationData));
@@ -291,22 +305,93 @@ registerForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         // Success - API returns { data: RegistrationResponse }
+        // Save as pending registration
         currentRegistrationId = data.data.id;
+        currentParticipantId = data.data.id; // Use the registration ID as participant ID
         
-        // Save registration state to localStorage
-        saveRegistrationState(data.data.id, name, email, phone);
+        // Save registration state to localStorage with pending status
+        saveRegistrationState(data.data.id, data.data.id, name, email, phone, 'pending');
         
+        // Show verification form
         registrationForm.classList.add('d-none');
-        registrationSuccess.classList.remove('d-none');
+        verificationForm.classList.remove('d-none');
         registrationError.classList.add('d-none');
-
-        // Reload event details to update available slots
-        await loadEventDetails();
     } catch (error) {
         showError(registrationError, error.message);
         const registerButton = document.getElementById('registerButton');
         registerButton.disabled = false;
         registerButton.innerHTML = '<i class="bi bi-check-circle"></i> Inscrever-se';
+    }
+});
+
+// Handle verification form submission
+confirmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const verificationCode = document.getElementById('verificationCode').value.trim();
+
+    if (!verificationCode || verificationCode.length !== 6) {
+        showError(verificationError, 'Digite um código de 6 dígitos');
+        return;
+    }
+
+    if (!currentRegistrationId || !currentParticipantId) {
+        showError(verificationError, 'Erro: dados de inscrição não encontrados');
+        return;
+    }
+
+    try {
+        const confirmButton = document.getElementById('confirmButton');
+        confirmButton.disabled = true;
+        confirmButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Confirmando...';
+
+        const response = await fetch(`${API_URL}/api/registrations/${currentParticipantId}/confirm`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                eventId,
+                verificationCode
+            })
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Erro ao confirmar inscrição';
+            try {
+                const error = await response.json();
+                errorMessage = error.error?.message || error.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use default message
+            }
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+
+        // Success - update status to confirmed
+        const storageKey = getStorageKey();
+        if (storageKey) {
+            const storedData = localStorage.getItem(storageKey);
+            if (storedData) {
+                const registrationData = JSON.parse(storedData);
+                registrationData.status = 'confirmed';
+                localStorage.setItem(storageKey, JSON.stringify(registrationData));
+            }
+        }
+        
+        // Show success message
+        verificationForm.classList.add('d-none');
+        registrationSuccess.classList.remove('d-none');
+        verificationError.classList.add('d-none');
+
+        // Reload event details to update available slots
+        await loadEventDetails();
+    } catch (error) {
+        showError(verificationError, error.message);
+        const confirmButton = document.getElementById('confirmButton');
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = '<i class="bi bi-check-circle-fill"></i> Confirmar Inscrição';
     }
 });
 
@@ -383,6 +468,18 @@ function handleBackNavigation() {
 // Handle back button clicks
 document.getElementById('backButton')?.addEventListener('click', handleBackNavigation);
 document.getElementById('backButtonSuccess')?.addEventListener('click', handleBackNavigation);
+document.getElementById('backToFormButton')?.addEventListener('click', () => {
+    // Go back to registration form, clear verification form
+    verificationForm.classList.add('d-none');
+    registrationForm.classList.remove('d-none');
+    document.getElementById('verificationCode').value = '';
+    verificationError.classList.add('d-none');
+    
+    // Clear the pending registration from localStorage
+    clearRegistrationState();
+    currentRegistrationId = null;
+    currentParticipantId = null;
+});
 
 // Helper function
 function showError(element, message) {

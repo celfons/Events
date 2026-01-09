@@ -92,6 +92,59 @@ function createRegistrationRoutes(registrationController) {
     asyncHandler((req, res) => registrationController.cancel(req, res))
   );
 
+  /**
+   * @swagger
+   * /api/registrations/{id}/confirm:
+   *   post:
+   *     summary: Confirm a registration with verification code
+   *     tags: [Registrations]
+   *     description: Confirm a pending registration by validating the verification code
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Participant ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - eventId
+   *               - verificationCode
+   *             properties:
+   *               eventId:
+   *                 type: string
+   *               verificationCode:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Registration confirmed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessMessage'
+   *       400:
+   *         description: Bad request - Invalid code or registration not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.post(
+    '/:id/confirm',
+    asyncHandler((req, res) => registrationController.confirm(req, res))
+  );
+
   return router;
 }
 
