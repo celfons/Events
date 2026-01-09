@@ -67,13 +67,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = `SonarCloud Quality Gate Failed - ${new Date().toISOString().split('T')[0]}`;
+            const author = context.payload.pusher?.name || context.actor || 'unknown';
             const body = `## SonarCloud Quality Gate Failure
             
             The SonarCloud quality gate has failed for the latest push to main branch.
             
             **Details:**
             - Commit: ${context.sha}
-            - Author: ${context.payload.pusher.name}
+            - Author: ${author}
             - Workflow Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
             
             **Action Required:**
