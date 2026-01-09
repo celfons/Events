@@ -49,7 +49,7 @@ JWT_SECRET=CHANGE_THIS_SECRET
 ```bash
 export SUPERUSER_USERNAME="admin"
 export SUPERUSER_EMAIL="admin@example.com"
-export SUPERUSER_PASSWORD="SuaSenhaForte123!"
+export SUPERUSER_PASSWORD="YOUR_SECURE_PASSWORD"
 npm run create-superuser
 ```
 
