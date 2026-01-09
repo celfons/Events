@@ -18,22 +18,6 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
       const eventId = '507f1f77bcf86cd799439011';
       const email = 'john@example.com';
 
-      // Mock an event with an expired pending registration
-      const mockEvent = {
-        _id: eventId,
-        participants: [
-          {
-            _id: '507f1f77bcf86cd799439012',
-            email: 'john@example.com',
-            name: 'John Doe',
-            phone: '+1234567890',
-            status: 'pending',
-            verificationCodeExpiresAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago (expired)
-            registeredAt: new Date()
-          }
-        ]
-      };
-
       EventModel.findOne = jest.fn().mockResolvedValue(null);
 
       const result = await repository.findParticipantByEmail(eventId, email);
@@ -121,22 +105,6 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
     it('should not find participant with expired pending registration', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       const phone = '+1234567890';
-
-      // Mock an event with an expired pending registration
-      const mockEvent = {
-        _id: eventId,
-        participants: [
-          {
-            _id: '507f1f77bcf86cd799439012',
-            email: 'john@example.com',
-            name: 'John Doe',
-            phone: '+1234567890',
-            status: 'pending',
-            verificationCodeExpiresAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago (expired)
-            registeredAt: new Date()
-          }
-        ]
-      };
 
       EventModel.findOne = jest.fn().mockResolvedValue(null);
 
