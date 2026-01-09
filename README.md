@@ -1,5 +1,10 @@
 # Events Platform 🎉
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=celfons_Events&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=celfons_Events)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=celfons_Events&metric=coverage)](https://sonarcloud.io/summary/new_code?id=celfons_Events)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=celfons_Events&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=celfons_Events)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=celfons_Events&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=celfons_Events)
+
 Uma plataforma simples e prática para gerenciar eventos e inscrições, desenvolvida com Node.js e MongoDB.
 
 ## O que é?
@@ -186,6 +191,16 @@ A aplicação implementa várias medidas de segurança:
 - Sanitização de dados
 - Rate limiting para prevenir ataques
 - Headers de segurança HTTP
+
+## Qualidade de Código
+
+O projeto utiliza SonarCloud para análise contínua de qualidade de código. A cada push ou pull request, o código é automaticamente analisado para:
+- 🔍 Detectar bugs e vulnerabilidades de segurança
+- 📊 Medir cobertura de testes
+- 🧹 Identificar code smells e dívida técnica
+- ✅ Garantir padrões de qualidade
+
+Você pode ver os resultados da análise no [dashboard do SonarCloud](https://sonarcloud.io/summary/new_code?id=celfons_Events).
 
 ## Integração com WhatsApp Business
 
