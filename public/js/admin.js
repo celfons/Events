@@ -232,6 +232,7 @@ function createEventRow(event) {
         : '<span class="badge bg-secondary">Inativo</span>';
 
     row.innerHTML = `
+        <td>${escapeHtml(event.eventCode || 'N/A')}</td>
         <td>${escapeHtml(event.title)}</td>
         <td>${formattedDate}</td>
         <td>${event.availableSlots}</td>
