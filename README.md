@@ -141,11 +141,26 @@ Execute os testes para garantir que tudo está funcionando:
 # Rodar todos os testes
 npm test
 
+# Rodar apenas testes de UI (frontend)
+npm test -- public/js/__tests__
+
+# Rodar testes excluindo testes de integração
+npm test -- --testPathIgnorePatterns="integration"
+
 # Ver cobertura de código
 npm run test:coverage
 ```
 
-O projeto possui uma suite completa de testes automatizados cobrindo todas as funcionalidades principais.
+O projeto possui uma suite completa de testes automatizados cobrindo todas as funcionalidades principais:
+
+- **Testes de Backend**: Use cases, entidades, validações, middleware
+- **Testes de UI (Frontend)**: Interface do usuário, contratos de API, manipulação DOM
+  - `auth-utils.js` - Gerenciamento de autenticação
+  - `index.js` - Página de listagem de eventos
+  - `event-details.js` - Página de detalhes e inscrição
+  - `admin.js` - Painel administrativo
+
+Para mais detalhes sobre os testes de UI, veja [public/js/__tests__/README.md](public/js/__tests__/README.md).
 
 ## Deploy
 
