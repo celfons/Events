@@ -279,9 +279,7 @@ function AdminPage() {
     try {
       const response = await fetch(`${API_URL}/api/registrations`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           eventId: selectedEvent.id,
           name: participantFormData.name,
@@ -293,8 +291,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setParticipantError(data.error?.message || 'Erro ao adicionar participante');
-        setAddingParticipant(false);
+        setParticipantError(data.error || 'Erro ao adicionar participante');
         return;
       }
 
@@ -303,10 +300,10 @@ function AdminPage() {
       setParticipantFormData({ name: '', email: '', phone: '' });
       loadParticipants(selectedEvent.id); // Reload participants
       loadEvents(); // Reload events to update available slots
-      setAddingParticipant(false);
     } catch (error) {
       console.error('Error adding participant:', error);
       setParticipantError('Erro ao adicionar participante. Tente novamente mais tarde.');
+    } finally {
       setAddingParticipant(false);
     }
   };
