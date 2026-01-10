@@ -487,23 +487,22 @@ function UsersPage() {
                       {editError}
                     </div>
                   )}
+                  <div className="modal-footer">
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                    >
+                      Atualizar
+                    </button>
+                  </div>
                 </form>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  onClick={handleEditUser}
-                >
-                  Atualizar
-                </button>
               </div>
             </div>
           </div>
