@@ -464,7 +464,6 @@ function UsersPage() {
                       id="editPassword"
                       value={editFormData.password}
                       onChange={(e) => setEditFormData({...editFormData, password: e.target.value})}
-                      minLength="6"
                       placeholder="Deixe em branco para não alterar"
                     />
                     <small className="form-text text-muted">Mínimo de 6 caracteres se desejar alterar</small>
