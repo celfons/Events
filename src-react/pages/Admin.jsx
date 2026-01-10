@@ -19,6 +19,8 @@ function AdminPage() {
   const [activeOnly, setActiveOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [createFormData, setCreateFormData] = useState({
     title: '',
     description: '',
@@ -26,7 +28,16 @@ function AdminPage() {
     totalSlots: '',
     local: ''
   });
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    dateTime: '',
+    totalSlots: '',
+    local: '',
+    isActive: true
+  });
   const [createError, setCreateError] = useState('');
+  const [editError, setEditError] = useState('');
   
   const eventsPerPage = 10;
 
@@ -162,6 +173,63 @@ function AdminPage() {
     }
   };
 
+  const openEditModal = (event) => {
+    setSelectedEvent(event);
+    // Format datetime for datetime-local input
+    const dateTime = new Date(event.dateTime);
+    const formattedDateTime = dateTime.toISOString().slice(0, 16);
+    
+    setEditFormData({
+      title: event.title,
+      description: event.description,
+      dateTime: formattedDateTime,
+      totalSlots: event.totalSlots,
+      local: event.local || '',
+      isActive: event.isActive !== false
+    });
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const handleUpdateEvent = async (e) => {
+    e.preventDefault();
+    setEditError('');
+
+    try {
+      const response = await fetch(`${API_URL}/api/events/${selectedEvent.id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ...editFormData,
+          totalSlots: parseInt(editFormData.totalSlots, 10)
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setEditError(data.error || 'Erro ao atualizar evento');
+        return;
+      }
+
+      showSuccess('Evento atualizado com sucesso!');
+      setShowEditModal(false);
+      setSelectedEvent(null);
+      setEditFormData({
+        title: '',
+        description: '',
+        dateTime: '',
+        totalSlots: '',
+        local: '',
+        isActive: true
+      });
+      loadEvents(); // Reload the events list
+    } catch (error) {
+      console.error('Error updating event:', error);
+      setEditError('Erro ao atualizar evento. Tente novamente mais tarde.');
+    }
+  };
+
   // Pagination
   const startIndex = (currentPage - 1) * eventsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
@@ -276,21 +344,21 @@ function AdminPage() {
                         <td>
                           <div className="btn-group" role="group" aria-label="Event actions">
                             <button 
-                              className="btn btn-sm btn-outline-primary"
+                              className="btn btn-sm btn-primary"
                               title="Editar"
-                              onClick={() => window.location.href = `/event/${event.id}`}
+                              onClick={() => openEditModal(event)}
                             >
                               <i className="bi bi-pencil"></i>
                             </button>
                             <button 
-                              className="btn btn-sm btn-outline-info"
+                              className="btn btn-sm btn-info"
                               title="Ver Participantes"
                               onClick={() => window.location.href = `/event/${event.id}`}
                             >
                               <i className="bi bi-people"></i>
                             </button>
                             <button 
-                              className="btn btn-sm btn-outline-danger"
+                              className="btn btn-sm btn-danger"
                               title="Excluir"
                               onClick={() => {
                                 if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"?`)) {
@@ -325,7 +393,17 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: ''
+                    });
+                    setCreateError('');
+                  }}
                 ></button>
               </div>
               <div className="modal-body">
@@ -400,14 +478,23 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn btn-secondary" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: ''
+                    });
+                    setCreateError('');
+                  }}
                 >
                   Cancelar
                 </button>
                 <button 
-                  type="button" 
+                  type="submit" 
                   className="btn btn-primary"
-                  onClick={handleCreateEvent}
                 >
                   Criar Evento
                 </button>
@@ -417,6 +504,144 @@ function AdminPage() {
         </div>
       )}
       {showCreateModal && <div className="modal-backdrop fade show"></div>}
+
+      {/* Edit Event Modal */}
+      {showEditModal && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Editar Evento</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedEvent(null);
+                    setEditFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: '',
+                      isActive: true
+                    });
+                    setEditError('');
+                  }}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleUpdateEvent}>
+                  <div className="mb-3">
+                    <label htmlFor="editEventTitle" className="form-label">Título *</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="editEventTitle"
+                      placeholder="Workshop de Node.js"
+                      value={editFormData.title}
+                      onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="editEventDescription" className="form-label">Descrição *</label>
+                    <textarea 
+                      className="form-control" 
+                      id="editEventDescription"
+                      rows="3"
+                      placeholder="Aprenda os fundamentos do Node.js..."
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="editEventDateTime" className="form-label">Data e Horário *</label>
+                    <input 
+                      type="datetime-local" 
+                      className="form-control" 
+                      id="editEventDateTime"
+                      value={editFormData.dateTime}
+                      onChange={(e) => setEditFormData({...editFormData, dateTime: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="editEventSlots" className="form-label">Número de Vagas *</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      id="editEventSlots"
+                      min="1"
+                      placeholder="50"
+                      value={editFormData.totalSlots}
+                      onChange={(e) => setEditFormData({...editFormData, totalSlots: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="editEventLocal" className="form-label">Local</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="editEventLocal"
+                      placeholder="Auditório Principal, Sala 301, etc."
+                      value={editFormData.local}
+                      onChange={(e) => setEditFormData({...editFormData, local: e.target.value})}
+                    />
+                  </div>
+                  <div className="mb-3 form-check">
+                    <input 
+                      type="checkbox" 
+                      className="form-check-input" 
+                      id="editEventIsActive"
+                      checked={editFormData.isActive}
+                      onChange={(e) => setEditFormData({...editFormData, isActive: e.target.checked})}
+                    />
+                    <label className="form-check-label" htmlFor="editEventIsActive">
+                      Ativo
+                    </label>
+                  </div>
+                  {editError && (
+                    <div className="alert alert-danger" role="alert">
+                      {editError}
+                    </div>
+                  )}
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedEvent(null);
+                    setEditFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: '',
+                      isActive: true
+                    });
+                    setEditError('');
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                >
+                  Atualizar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showEditModal && <div className="modal-backdrop fade show"></div>}
     </>
   );
 }
