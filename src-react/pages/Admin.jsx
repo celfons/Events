@@ -276,21 +276,21 @@ function AdminPage() {
                         <td>
                           <div className="btn-group" role="group" aria-label="Event actions">
                             <button 
-                              className="btn btn-sm btn-outline-primary"
+                              className="btn btn-sm btn-primary"
                               title="Editar"
                               onClick={() => window.location.href = `/event/${event.id}`}
                             >
                               <i className="bi bi-pencil"></i>
                             </button>
                             <button 
-                              className="btn btn-sm btn-outline-info"
+                              className="btn btn-sm btn-info"
                               title="Ver Participantes"
                               onClick={() => window.location.href = `/event/${event.id}`}
                             >
                               <i className="bi bi-people"></i>
                             </button>
                             <button 
-                              className="btn btn-sm btn-outline-danger"
+                              className="btn btn-sm btn-danger"
                               title="Excluir"
                               onClick={() => {
                                 if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"?`)) {
@@ -405,7 +405,7 @@ function AdminPage() {
                   Cancelar
                 </button>
                 <button 
-                  type="button" 
+                  type="submit" 
                   className="btn btn-primary"
                   onClick={handleCreateEvent}
                 >
