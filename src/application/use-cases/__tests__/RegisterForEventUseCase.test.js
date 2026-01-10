@@ -298,7 +298,7 @@ describe('RegisterForEventUseCase', () => {
       const result = await registerForEventUseCase.execute(registrationData);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to register. Event may be full or was deleted.');
+      expect(result.error).toBe('No available slots for this event');
     });
   });
 

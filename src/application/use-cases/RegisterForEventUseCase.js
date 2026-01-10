@@ -102,7 +102,7 @@ class RegisterForEventUseCase {
       if (!registration) {
         return {
           success: false,
-          error: 'Failed to register. Event may be full or was deleted.'
+          error: 'No available slots for this event'
         };
       }
 
