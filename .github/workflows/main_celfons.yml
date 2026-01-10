@@ -2,12 +2,10 @@ name: Build and deploy Node.js app to Azure Web App - celfons
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -20,70 +18,64 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
+        uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
 
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js (LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '20.x'
           cache: 'npm'
 
-      - name: Cache node modules
+      - name: Cache npm (sem node_modules)
         uses: actions/cache@v4
-        id: npm-cache
         with:
-          path: |
-            node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-npm-
 
-      - name: Install dependencies
-        timeout-minutes: 10
+      - name: Install dependencies (dev incluído)
         run: |
           node -v
           npm -v
-          npm ci --no-audit --no-fund --loglevel=verbose
+          npm ci --no-audit --no-fund
 
-      - name: Inspect scripts and binaries
+      - name: Build front-end (webpack via script)
         run: |
-          jq -r '.scripts' package.json || cat package.json
-          ls -la node_modules/.bin || true
-
-      - name: Verify dev dependencies installed
-        run: |
-          test -d node_modules || (echo "node_modules ausente, 'npm ci' falhou?"; exit 1)
-          test -f node_modules/.bin/webpack || (echo "webpack não encontrado em node_modules/.bin"; ls -la node_modules/.bin; exit 1)
-
-      - name: Build React application
-        timeout-minutes: 10
-        run: |
-          echo "Building React application..."
-          npx --yes webpack --mode production
-          echo "React build completed successfully"
-          ls -la public/js/react-build/ || (echo "Diretório de build do React não encontrado"; exit 1)
+          npm run build
+          # Verifica artefatos esperados do webpack
+          ls -la public/js/react-build/ || (echo "Diretório de build do React não encontrado em public/js/react-build/"; exit 1)
 
       - name: Run tests with coverage
-        timeout-minutes: 10
-        run: |
-          npm run test:coverage
+        run: npm run test:coverage
 
-      - name: Upload artifact for deployment job
+      - name: Prepare release folder (prod only)
+        run: |
+          mkdir -p release
+          rsync -av \
+            --exclude=node_modules \
+            --exclude=coverage \
+            --exclude=.git \
+            ./ ./release/
+
+          pushd release
+          npm ci --omit=dev --no-audit --no-fund
+          popd
+
+          # Confirmar novamente os artefatos de front-end
+          ls -la release/public/js/react-build/ || (echo "Build do front-end não está em release/public/js/react-build/"; exit 1)
+
+      - name: Upload artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: |
-            .
-            !node_modules
-            !coverage
-            !.git
+          path: release
           retention-days: 1
 
   deploy:
@@ -96,24 +88,15 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
+        uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
 
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
-
-      - name: Install production dependencies
-        run: |
-          npm ci --omit=dev --no-audit --no-fund
-
-      - name: Verify React build artifacts
-        run: |
-          echo "Verifying React build artifacts..."
-          ls -la public/js/react-build/ || (echo "ERROR: React build artifacts missing!"; exit 1)
-          echo "React build artifacts verified successfully"
+          path: .
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -122,9 +105,8 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_37511074FCA94D0791A9EC3C53CDCE27 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4215D10A3479457F8908E8BE198EDACF }}
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (zip deploy, sem Oryx)
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
           app-name: 'celfons'
           slot-name: 'Production'
