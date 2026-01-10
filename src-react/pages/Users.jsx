@@ -10,12 +10,20 @@ import { getToken, isSuperuser } from '../utils/auth';
 
 function UsersPage() {
   const { user, logout } = useAuth();
-  const { toasts, showError, removeToast } = useToast();
+  const { toasts, showSuccess, showError, removeToast } = useToast();
   
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createFormData, setCreateFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'user'
+  });
+  const [createError, setCreateError] = useState('');
 
   // Redirect if not superuser
   useEffect(() => {
@@ -80,6 +88,39 @@ function UsersPage() {
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+
+    try {
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(createFormData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setCreateError(data.error || 'Erro ao criar usuário');
+        return;
+      }
+
+      showSuccess('Usuário criado com sucesso!');
+      setShowCreateModal(false);
+      setCreateFormData({
+        username: '',
+        email: '',
+        password: '',
+        role: 'user'
+      });
+      loadUsers(); // Reload the users list
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setCreateError('Erro ao criar usuário. Tente novamente mais tarde.');
+    }
+  };
+
   if (!user || !isSuperuser()) {
     return <div>Loading...</div>;
   }
@@ -96,6 +137,12 @@ function UsersPage() {
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Usuários</h2>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => setShowCreateModal(true)}
+            >
+              <i className="bi bi-plus-circle"></i> Criar Usuário
+            </button>
           </div>
 
           <div className="mb-4">
@@ -180,6 +227,97 @@ function UsersPage() {
 
       <Footer />
       <Toast toasts={toasts} onRemove={removeToast} />
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Criar Novo Usuário</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowCreateModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleCreateUser}>
+                  <div className="mb-3">
+                    <label htmlFor="username" className="form-label">Nome de Usuário *</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="username"
+                      value={createFormData.username}
+                      onChange={(e) => setCreateFormData({...createFormData, username: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email *</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      id="email"
+                      value={createFormData.email}
+                      onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Senha *</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      id="password"
+                      value={createFormData.password}
+                      onChange={(e) => setCreateFormData({...createFormData, password: e.target.value})}
+                      minLength="6"
+                      required
+                    />
+                    <small className="form-text text-muted">Mínimo de 6 caracteres</small>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="role" className="form-label">Papel</label>
+                    <select 
+                      className="form-select" 
+                      id="role"
+                      value={createFormData.role}
+                      onChange={(e) => setCreateFormData({...createFormData, role: e.target.value})}
+                    >
+                      <option value="user">Usuário</option>
+                      <option value="superuser">Superusuário</option>
+                    </select>
+                  </div>
+                  {createError && (
+                    <div className="alert alert-danger" role="alert">
+                      {createError}
+                    </div>
+                  )}
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={handleCreateUser}
+                >
+                  Criar Usuário
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCreateModal && <div className="modal-backdrop fade show"></div>}
     </>
   );
 }
