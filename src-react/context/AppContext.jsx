@@ -55,11 +55,13 @@ export function AuthProvider({ children }) {
 }
 
 // Toast Provider
+let toastIdCounter = 0;
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   const showToast = (message, type = 'success', duration = 3000) => {
-    const id = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+    const id = 'toast-' + Date.now() + '-' + (++toastIdCounter);
     const toast = { id, message, type, duration };
     
     setToasts(prev => [...prev, toast]);

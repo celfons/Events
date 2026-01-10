@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
 
+let toastIdCounter = 0;
+
 export function useToast() {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = 'success', duration = 3000) => {
-    const id = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+    const id = 'toast-' + Date.now() + '-' + ++toastIdCounter;
     const toast = { id, message, type, duration };
 
     setToasts(prev => [...prev, toast]);
