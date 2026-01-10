@@ -19,6 +19,9 @@ function EventDetailsPage() {
     email: '',
     phone: ''
   });
+  const [pendingRegistration, setPendingRegistration] = useState(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [confirming, setConfirming] = useState(false);
 
   // Get event ID from URL
   const eventId = window.location.pathname.split('/').pop();
@@ -72,13 +75,58 @@ function EventDetailsPage() {
         throw new Error(error.error?.message || 'Erro ao realizar inscrição');
       }
 
-      showSuccess('Inscrição realizada com sucesso!');
+      const responseData = await response.json();
+      const registration = responseData.data;
+
+      // Check if registration needs confirmation (has status pending)
+      if (registration.status === 'pending') {
+        setPendingRegistration(registration);
+        showSuccess('Código de verificação enviado via WhatsApp!');
+      } else {
+        // Registration is already confirmed (authenticated user)
+        showSuccess('Inscrição realizada com sucesso!');
+        setFormData({ name: '', email: '', phone: '' });
+        loadEventDetails(); // Refresh to update available slots
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+    setRegistering(false);
+  };
+
+  const handleConfirmRegistration = async (e) => {
+    e.preventDefault();
+    
+    if (!verificationCode || verificationCode.length !== 6) {
+      showError('Digite o código de 6 dígitos');
+      return;
+    }
+
+    setConfirming(true);
+    try {
+      const response = await fetch(`${API_URL}/api/registrations/${pendingRegistration.id}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: eventId,
+          verificationCode: verificationCode
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Código de verificação inválido');
+      }
+
+      showSuccess('Inscrição confirmada com sucesso!');
+      setPendingRegistration(null);
+      setVerificationCode('');
       setFormData({ name: '', email: '', phone: '' });
       loadEventDetails(); // Refresh to update available slots
     } catch (error) {
       showError(error.message);
     }
-    setRegistering(false);
+    setConfirming(false);
   };
 
   const handleShare = () => {
@@ -182,45 +230,88 @@ function EventDetailsPage() {
                 <div className="card-body">
                   <h5 className="card-title">Inscrição</h5>
                   {event.availableSlots > 0 ? (
-                    <form onSubmit={handleRegister}>
-                      <div className="mb-3">
-                        <label className="form-label">Nome Completo *</label>
-                        <input 
-                          type="text" 
-                          className="form-control"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">E-mail *</label>
-                        <input 
-                          type="email" 
-                          className="form-control"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Telefone *</label>
-                        <input 
-                          type="tel" 
-                          className="form-control"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <button 
-                        type="submit" 
-                        className="btn btn-primary w-100"
-                        disabled={registering}
-                      >
-                        {registering ? 'Inscrevendo...' : 'Inscrever-se'}
-                      </button>
-                    </form>
+                    <>
+                      {!pendingRegistration ? (
+                        <form onSubmit={handleRegister}>
+                          <div className="mb-3">
+                            <label className="form-label">Nome Completo *</label>
+                            <input 
+                              type="text" 
+                              className="form-control"
+                              value={formData.name}
+                              onChange={(e) => setFormData({...formData, name: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">E-mail *</label>
+                            <input 
+                              type="email" 
+                              className="form-control"
+                              value={formData.email}
+                              onChange={(e) => setFormData({...formData, email: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">Telefone *</label>
+                            <input 
+                              type="tel" 
+                              className="form-control"
+                              value={formData.phone}
+                              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <button 
+                            type="submit" 
+                            className="btn btn-primary w-100"
+                            disabled={registering}
+                          >
+                            {registering ? 'Inscrevendo...' : 'Inscrever-se'}
+                          </button>
+                        </form>
+                      ) : (
+                        <form onSubmit={handleConfirmRegistration}>
+                          <div className="alert alert-info">
+                            <i className="bi bi-whatsapp"></i> Um código de verificação foi enviado para o WhatsApp <strong>{pendingRegistration.phone}</strong>
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">Código de Verificação *</label>
+                            <input 
+                              type="text" 
+                              className="form-control text-center"
+                              style={{ fontSize: '1.5rem', letterSpacing: '0.5rem' }}
+                              value={verificationCode}
+                              onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="000000"
+                              maxLength="6"
+                              required
+                            />
+                            <small className="form-text text-muted">
+                              Digite o código de 6 dígitos recebido via WhatsApp
+                            </small>
+                          </div>
+                          <button 
+                            type="submit" 
+                            className="btn btn-success w-100 mb-2"
+                            disabled={confirming}
+                          >
+                            {confirming ? 'Confirmando...' : 'Confirmar Inscrição'}
+                          </button>
+                          <button 
+                            type="button" 
+                            className="btn btn-outline-secondary w-100"
+                            onClick={() => {
+                              setPendingRegistration(null);
+                              setVerificationCode('');
+                            }}
+                          >
+                            Cancelar
+                          </button>
+                        </form>
+                      )}
+                    </>
                   ) : (
                     <div className="alert alert-warning">
                       <i className="bi bi-exclamation-triangle"></i> Evento esgotado
