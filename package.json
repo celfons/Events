@@ -11,6 +11,8 @@
     "create-default-user": "node create-default-user.js",
     "build:react": "webpack --mode production",
     "build:react:dev": "webpack --mode development",
+    "build": "npm run build:react",
+    "prebuild": "npm run build:react",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -79,6 +81,7 @@
     "pino-http": "^11.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-router-dom": "^7.12.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.3.5"
