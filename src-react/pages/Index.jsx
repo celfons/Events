@@ -67,14 +67,11 @@ function EventsPage() {
       const eventsData = responseData.data || [];
 
       if (!Array.isArray(eventsData)) {
-        setEvents([]);
         setFutureEvents([]);
         setFilteredEvents([]);
         setLoading(false);
         return;
       }
-
-      setEvents(eventsData);
       
       // Filter events from today onwards
       const now = new Date();

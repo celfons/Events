@@ -140,6 +140,7 @@ function UsersPage() {
                     <th>Nome de Usuário</th>
                     <th>Papel</th>
                     <th>Data de Criação</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,6 +159,15 @@ function UsersPage() {
                           month: '2-digit',
                           year: 'numeric'
                         })}
+                      </td>
+                      <td>
+                        <a 
+                          href={`/users/${user.id}`}
+                          className="btn btn-sm btn-outline-primary"
+                          title="Ver Detalhes"
+                        >
+                          <i className="bi bi-eye"></i>
+                        </a>
                       </td>
                     </tr>
                   ))}
