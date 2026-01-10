@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { verifyBootstrapIconClass, setupCommonMocks, cleanupAfterTests } from './test-utils';
 
 // Mock the hooks and components
 jest.mock('../hooks/useAuth', () => ({
@@ -54,12 +54,11 @@ jest.mock('../utils/helpers', () => ({
 
 describe('Index Page - Event List', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn();
+    setupCommonMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    cleanupAfterTests();
   });
 
   it('should load events from API on mount', async () => {
@@ -129,46 +128,20 @@ describe('Index Page - Event List', () => {
 });
 
 describe('Index Page - Bootstrap Icons', () => {
-  it('verify search icon class is present', () => {
-    const iconClass = 'bi bi-search';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-search');
-  });
+  const iconTests = [
+    { name: 'search', className: 'bi bi-search' },
+    { name: 'calendar', className: 'bi bi-calendar' },
+    { name: 'people', className: 'bi bi-people' },
+    { name: 'location', className: 'bi bi-geo-alt' },
+    { name: 'tag', className: 'bi bi-tag-fill' },
+    { name: 'info', className: 'bi bi-info-circle' },
+    { name: 'clear', className: 'bi bi-x' }
+  ];
 
-  it('verify calendar icon class is present', () => {
-    const iconClass = 'bi bi-calendar';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-calendar');
-  });
-
-  it('verify people icon class is present', () => {
-    const iconClass = 'bi bi-people';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-people');
-  });
-
-  it('verify location icon class is present', () => {
-    const iconClass = 'bi bi-geo-alt';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-geo-alt');
-  });
-
-  it('verify tag icon class is present', () => {
-    const iconClass = 'bi bi-tag-fill';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-tag-fill');
-  });
-
-  it('verify info icon class is present', () => {
-    const iconClass = 'bi bi-info-circle';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-info-circle');
-  });
-
-  it('verify clear icon class is present', () => {
-    const iconClass = 'bi bi-x';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-x');
+  iconTests.forEach(({ name, className }) => {
+    it(`verify ${name} icon class is present`, () => {
+      verifyBootstrapIconClass(className, className.split(' ')[1]);
+    });
   });
 });
 

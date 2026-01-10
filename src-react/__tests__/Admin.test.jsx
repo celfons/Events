@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { verifyBootstrapIconClass, setupCommonMocks, cleanupAfterTests } from './test-utils';
 
 // Mock the hooks and components
 jest.mock('../hooks/useAuth', () => ({
@@ -49,61 +49,33 @@ jest.mock('../utils/auth', () => ({
   getToken: jest.fn(() => 'fake-token')
 }));
 
-describe('Admin Page - Create Event Button', () => {
-  beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks();
-    
-    // Mock fetch for loadEvents
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({
-          data: []
-        })
-      })
-    );
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
+describe('Admin Page - Bootstrap Icons', () => {
   it('verify create event button has bootstrap icon class', () => {
-    // Test that the icon class bi bi-plus-circle is used in the Admin component
-    const iconClass = 'bi bi-plus-circle';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-plus-circle');
+    verifyBootstrapIconClass('bi bi-plus-circle', 'bi-plus-circle');
   });
-});
 
-describe('Admin Page - Update Event Button', () => {
   it('verify edit button has bootstrap icon class', () => {
-    // Test that the icon class bi bi-pencil is used
-    const iconClass = 'bi bi-pencil';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-pencil');
+    verifyBootstrapIconClass('bi bi-pencil', 'bi-pencil');
   });
 
   it('verify delete button has bootstrap icon class', () => {
-    // Test that the icon class bi bi-trash is used
-    const iconClass = 'bi bi-trash';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-trash');
+    verifyBootstrapIconClass('bi bi-trash', 'bi-trash');
   });
 
   it('verify participants button has bootstrap icon class', () => {
-    // Test that the icon class bi bi-people is used
-    const iconClass = 'bi bi-people';
-    expect(iconClass).toContain('bi');
-    expect(iconClass).toContain('bi-people');
+    verifyBootstrapIconClass('bi bi-people', 'bi-people');
   });
 });
 
-describe('Admin Page - Event Creation Flow', () => {
+
+
+describe('Admin Page - Event API Integration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn();
+    setupCommonMocks();
+  });
+
+  afterEach(() => {
+    cleanupAfterTests();
   });
 
   it('should call API with correct data when creating event', async () => {
@@ -144,13 +116,6 @@ describe('Admin Page - Event Creation Flow', () => {
 
     const data = await response.json();
     expect(data.data).toHaveProperty('id');
-  });
-});
-
-describe('Admin Page - Event Update Flow', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn();
   });
 
   it('should call API with correct data when updating event', async () => {
