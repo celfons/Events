@@ -24,6 +24,14 @@ function AdminPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [participantFormData, setParticipantFormData] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
+  const [participantError, setParticipantError] = useState('');
+  const [addingParticipant, setAddingParticipant] = useState(false);
   const [createFormData, setCreateFormData] = useState({
     title: '',
     description: '',
@@ -257,7 +265,50 @@ function AdminPage() {
   const openParticipantsModal = (event) => {
     setSelectedEvent(event);
     setShowParticipantsModal(true);
+    setShowAddParticipant(false);
+    setParticipantFormData({ name: '', email: '', phone: '' });
+    setParticipantError('');
     loadParticipants(event.id);
+  };
+
+  const handleAddParticipant = async (e) => {
+    e.preventDefault();
+    setParticipantError('');
+    setAddingParticipant(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/registrations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          eventId: selectedEvent.id,
+          name: participantFormData.name,
+          email: participantFormData.email,
+          phone: participantFormData.phone
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setParticipantError(data.error?.message || 'Erro ao adicionar participante');
+        setAddingParticipant(false);
+        return;
+      }
+
+      showSuccess('Participante adicionado com sucesso!');
+      setShowAddParticipant(false);
+      setParticipantFormData({ name: '', email: '', phone: '' });
+      loadParticipants(selectedEvent.id); // Reload participants
+      loadEvents(); // Reload events to update available slots
+      setAddingParticipant(false);
+    } catch (error) {
+      console.error('Error adding participant:', error);
+      setParticipantError('Erro ao adicionar participante. Tente novamente mais tarde.');
+      setAddingParticipant(false);
+    }
   };
 
   // Pagination
@@ -436,8 +487,8 @@ function AdminPage() {
                   }}
                 ></button>
               </div>
-              <div className="modal-body">
-                <form onSubmit={handleCreateEvent}>
+              <form onSubmit={handleCreateEvent}>
+                <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="eventTitle" className="form-label">Título *</label>
                     <input 
@@ -502,33 +553,33 @@ function AdminPage() {
                       {createError}
                     </div>
                   )}
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateFormData({
-                      title: '',
-                      description: '',
-                      dateTime: '',
-                      totalSlots: '',
-                      local: ''
-                    });
-                    setCreateError('');
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                >
-                  Criar Evento
-                </button>
-              </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-secondary" 
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setCreateFormData({
+                        title: '',
+                        description: '',
+                        dateTime: '',
+                        totalSlots: '',
+                        local: ''
+                      });
+                      setCreateError('');
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-sm btn-primary"
+                  >
+                    Criar Evento
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -560,8 +611,8 @@ function AdminPage() {
                   }}
                 ></button>
               </div>
-              <div className="modal-body">
-                <form onSubmit={handleUpdateEvent}>
+              <form onSubmit={handleUpdateEvent}>
+                <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="editEventTitle" className="form-label">Título *</label>
                     <input 
@@ -638,35 +689,35 @@ function AdminPage() {
                       {editError}
                     </div>
                   )}
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedEvent(null);
-                    setEditFormData({
-                      title: '',
-                      description: '',
-                      dateTime: '',
-                      totalSlots: '',
-                      local: '',
-                      isActive: true
-                    });
-                    setEditError('');
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                >
-                  Atualizar
-                </button>
-              </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-secondary" 
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedEvent(null);
+                      setEditFormData({
+                        title: '',
+                        description: '',
+                        dateTime: '',
+                        totalSlots: '',
+                        local: '',
+                        isActive: true
+                      });
+                      setEditError('');
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-sm btn-primary"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -693,67 +744,149 @@ function AdminPage() {
                 ></button>
               </div>
               <div className="modal-body">
-                {loadingParticipants && (
-                  <div className="text-center my-3">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Carregando...</span>
-                    </div>
-                  </div>
-                )}
+                {!showAddParticipant ? (
+                  <>
+                    {loadingParticipants && (
+                      <div className="text-center my-3">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Carregando...</span>
+                        </div>
+                      </div>
+                    )}
 
-                {!loadingParticipants && participants.length === 0 && (
-                  <div className="alert alert-info text-center" role="alert">
-                    <i className="bi bi-info-circle"></i> Nenhum participante confirmado ainda.
-                  </div>
-                )}
+                    {!loadingParticipants && participants.length === 0 && (
+                      <div className="alert alert-info text-center" role="alert">
+                        <i className="bi bi-info-circle"></i> Nenhum participante confirmado ainda.
+                      </div>
+                    )}
 
-                {!loadingParticipants && participants.length > 0 && (
-                  <div className="table-responsive">
-                    <table className="table table-hover">
-                      <thead className="table-light">
-                        <tr>
-                          <th>Nome</th>
-                          <th>Email</th>
-                          <th>Telefone</th>
-                          <th>Data de Inscrição</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {participants.map((participant) => (
-                          <tr key={participant.id || `${participant.email}-${participant.registeredAt}`}>
-                            <td>{participant.name}</td>
-                            <td>{participant.email}</td>
-                            <td>{participant.phone}</td>
-                            <td>
-                              {participant.registeredAt 
-                                ? new Date(participant.registeredAt).toLocaleString('pt-BR', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })
-                                : 'N/A'
-                              }
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="mt-3">
-                      <strong>Total de participantes confirmados: {participants.length}</strong>
+                    {!loadingParticipants && participants.length > 0 && (
+                      <div className="table-responsive">
+                        <table className="table table-hover">
+                          <thead className="table-light">
+                            <tr>
+                              <th>Nome</th>
+                              <th>Email</th>
+                              <th>Telefone</th>
+                              <th>Data de Inscrição</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {participants.map((participant) => (
+                              <tr key={participant.id || `${participant.email}-${participant.registeredAt}`}>
+                                <td>{participant.name}</td>
+                                <td>{participant.email}</td>
+                                <td>{participant.phone}</td>
+                                <td>
+                                  {participant.registeredAt 
+                                    ? new Date(participant.registeredAt).toLocaleString('pt-BR', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })
+                                    : 'N/A'
+                                  }
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="mt-3">
+                          <strong>Total de participantes confirmados: {participants.length}</strong>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!loadingParticipants && selectedEvent && selectedEvent.availableSlots > 0 && (
+                      <div className="mt-3">
+                        <button 
+                          className="btn btn-sm btn-success"
+                          onClick={() => setShowAddParticipant(true)}
+                        >
+                          <i className="bi bi-person-plus"></i> Adicionar Participante
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <form onSubmit={handleAddParticipant}>
+                    <div className="mb-3">
+                      <label htmlFor="participantName" className="form-label">Nome Completo *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        id="participantName"
+                        placeholder="João Silva"
+                        value={participantFormData.name}
+                        onChange={(e) => setParticipantFormData({...participantFormData, name: e.target.value})}
+                        required
+                      />
                     </div>
-                  </div>
+                    <div className="mb-3">
+                      <label htmlFor="participantEmail" className="form-label">Email *</label>
+                      <input 
+                        type="email" 
+                        className="form-control" 
+                        id="participantEmail"
+                        placeholder="joao@example.com"
+                        value={participantFormData.email}
+                        onChange={(e) => setParticipantFormData({...participantFormData, email: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="participantPhone" className="form-label">Telefone *</label>
+                      <input 
+                        type="tel" 
+                        className="form-control" 
+                        id="participantPhone"
+                        placeholder="+5511999999999"
+                        value={participantFormData.phone}
+                        onChange={(e) => setParticipantFormData({...participantFormData, phone: e.target.value})}
+                        required
+                      />
+                    </div>
+                    {participantError && (
+                      <div className="alert alert-danger" role="alert">
+                        {participantError}
+                      </div>
+                    )}
+                    <div className="d-flex gap-2">
+                      <button 
+                        type="button"
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => {
+                          setShowAddParticipant(false);
+                          setParticipantFormData({ name: '', email: '', phone: '' });
+                          setParticipantError('');
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit"
+                        className="btn btn-sm btn-success"
+                        disabled={addingParticipant}
+                      >
+                        {addingParticipant ? 'Adicionando...' : 'Adicionar'}
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
               <div className="modal-footer">
                 <button 
                   type="button" 
-                  className="btn btn-secondary" 
+                  className="btn btn-sm btn-secondary" 
                   onClick={() => {
                     setShowParticipantsModal(false);
                     setSelectedEvent(null);
                     setParticipants([]);
+                    setShowAddParticipant(false);
+                    setParticipantFormData({ name: '', email: '', phone: '' });
+                    setParticipantError('');
                   }}
                 >
                   Fechar
