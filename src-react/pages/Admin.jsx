@@ -32,6 +32,7 @@ function AdminPage() {
   });
   const [participantError, setParticipantError] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
+  const [cancelingParticipant, setCancelingParticipant] = useState(null);
   const [createFormData, setCreateFormData] = useState({
     title: '',
     description: '',
@@ -319,6 +320,50 @@ function AdminPage() {
     }
   };
 
+  const handleCancelRegistration = async (participantId) => {
+    if (!window.confirm('Tem certeza que deseja cancelar esta inscrição?')) {
+      return;
+    }
+
+    setCancelingParticipant(participantId);
+    try {
+      const response = await fetch(`${API_URL}/api/registrations/${participantId}/cancel`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          eventId: selectedEvent.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.error || 'Erro ao cancelar inscrição');
+        return;
+      }
+
+      showSuccess('Inscrição cancelada com sucesso!');
+      loadParticipants(selectedEvent.id); // Reload participants
+      loadEvents(); // Reload events to update available slots
+      // Update selectedEvent to reflect the new available slots
+      setSelectedEvent((prev) => {
+        if (!prev || prev.id !== selectedEvent.id) {
+          return prev;
+        }
+        const currentSlots = typeof prev.availableSlots === 'number' ? prev.availableSlots : 0;
+        return {
+          ...prev,
+          availableSlots: currentSlots + 1,
+        };
+      });
+    } catch (error) {
+      console.error('Error canceling registration:', error);
+      showError('Erro ao cancelar inscrição. Tente novamente mais tarde.');
+    } finally {
+      setCancelingParticipant(null);
+    }
+  };
+
   // Pagination
   const startIndex = (currentPage - 1) * eventsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
@@ -477,25 +522,25 @@ function AdminPage() {
         <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Criar Novo Evento</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateFormData({
-                      title: '',
-                      description: '',
-                      dateTime: '',
-                      totalSlots: '',
-                      local: ''
-                    });
-                    setCreateError('');
-                  }}
-                ></button>
-              </div>
               <form onSubmit={handleCreateEvent}>
+                <div className="modal-header">
+                  <h5 className="modal-title">Criar Novo Evento</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setCreateFormData({
+                        title: '',
+                        description: '',
+                        dateTime: '',
+                        totalSlots: '',
+                        local: ''
+                      });
+                      setCreateError('');
+                    }}
+                  ></button>
+                </div>
                 <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="eventTitle" className="form-label">Título *</label>
@@ -599,27 +644,27 @@ function AdminPage() {
         <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Editar Evento</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedEvent(null);
-                    setEditFormData({
-                      title: '',
-                      description: '',
-                      dateTime: '',
-                      totalSlots: '',
-                      local: '',
-                      isActive: true
-                    });
-                    setEditError('');
-                  }}
-                ></button>
-              </div>
               <form onSubmit={handleUpdateEvent}>
+                <div className="modal-header">
+                  <h5 className="modal-title">Editar Evento</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedEvent(null);
+                      setEditFormData({
+                        title: '',
+                        description: '',
+                        dateTime: '',
+                        totalSlots: '',
+                        local: '',
+                        isActive: true
+                      });
+                      setEditError('');
+                    }}
+                  ></button>
+                </div>
                 <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="editEventTitle" className="form-label">Título *</label>
@@ -777,6 +822,7 @@ function AdminPage() {
                               <th>Email</th>
                               <th>Telefone</th>
                               <th>Data de Inscrição</th>
+                              <th>Ações</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -796,6 +842,25 @@ function AdminPage() {
                                       })
                                     : 'N/A'
                                   }
+                                </td>
+                                <td>
+                                  <button 
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => handleCancelRegistration(participant.id)}
+                                    disabled={cancelingParticipant === participant.id}
+                                    title="Cancelar Inscrição"
+                                  >
+                                    {cancelingParticipant === participant.id ? (
+                                      <>
+                                        <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Cancelando...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <i className="bi bi-x-circle"></i> Cancelar
+                                      </>
+                                    )}
+                                  </button>
                                 </td>
                               </tr>
                             ))}
