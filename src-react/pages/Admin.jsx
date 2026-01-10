@@ -10,7 +10,7 @@ import { getToken } from '../utils/auth';
 
 function AdminPage() {
   const { user, logout } = useAuth();
-  const { toasts, showError, removeToast } = useToast();
+  const { toasts, showSuccess, showError, removeToast } = useToast();
   
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -18,6 +18,15 @@ function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOnly, setActiveOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createFormData, setCreateFormData] = useState({
+    title: '',
+    description: '',
+    dateTime: '',
+    totalSlots: '',
+    local: ''
+  });
+  const [createError, setCreateError] = useState('');
   
   const eventsPerPage = 10;
 
@@ -95,6 +104,64 @@ function AdminPage() {
     setCurrentPage(1);
   };
 
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+
+    try {
+      const response = await fetch(`${API_URL}/api/events`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ...createFormData,
+          totalSlots: parseInt(createFormData.totalSlots, 10)
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setCreateError(data.error || 'Erro ao criar evento');
+        return;
+      }
+
+      showSuccess('Evento criado com sucesso!');
+      setShowCreateModal(false);
+      setCreateFormData({
+        title: '',
+        description: '',
+        dateTime: '',
+        totalSlots: '',
+        local: ''
+      });
+      loadEvents(); // Reload the events list
+    } catch (error) {
+      console.error('Error creating event:', error);
+      setCreateError('Erro ao criar evento. Tente novamente mais tarde.');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        showError(data.error || 'Erro ao excluir evento');
+        return;
+      }
+
+      showSuccess('Evento excluído com sucesso!');
+      loadEvents(); // Reload the events list
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      showError('Erro ao excluir evento. Tente novamente mais tarde.');
+    }
+  };
+
   // Pagination
   const startIndex = (currentPage - 1) * eventsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
@@ -115,9 +182,12 @@ function AdminPage() {
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Eventos</h2>
-            <a href="/admin/event/new" className="btn btn-primary">
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowCreateModal(true)}
+            >
               <i className="bi bi-plus-circle"></i> Criar Evento
-            </a>
+            </button>
           </div>
 
           {/* Search and Filters */}
@@ -204,21 +274,32 @@ function AdminPage() {
                           </span>
                         </td>
                         <td>
-                          <div className="btn-group" role="group">
-                            <a 
-                              href={`/admin/event/${event.id}`}
+                          <div className="btn-group" role="group" aria-label="Event actions">
+                            <button 
                               className="btn btn-sm btn-outline-primary"
                               title="Editar"
+                              onClick={() => window.location.href = `/event/${event.id}`}
                             >
                               <i className="bi bi-pencil"></i>
-                            </a>
-                            <a 
-                              href={`/admin/event/${event.id}/participants`}
+                            </button>
+                            <button 
                               className="btn btn-sm btn-outline-info"
                               title="Ver Participantes"
+                              onClick={() => window.location.href = `/event/${event.id}`}
                             >
                               <i className="bi bi-people"></i>
-                            </a>
+                            </button>
+                            <button 
+                              className="btn btn-sm btn-outline-danger"
+                              title="Excluir"
+                              onClick={() => {
+                                if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"?`)) {
+                                  handleDeleteEvent(event.id);
+                                }
+                              }}
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -233,6 +314,109 @@ function AdminPage() {
 
       <Footer />
       <Toast toasts={toasts} onRemove={removeToast} />
+
+      {/* Create Event Modal */}
+      {showCreateModal && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Criar Novo Evento</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowCreateModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleCreateEvent}>
+                  <div className="mb-3">
+                    <label htmlFor="eventTitle" className="form-label">Título *</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="eventTitle"
+                      placeholder="Workshop de Node.js"
+                      value={createFormData.title}
+                      onChange={(e) => setCreateFormData({...createFormData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="eventDescription" className="form-label">Descrição *</label>
+                    <textarea 
+                      className="form-control" 
+                      id="eventDescription"
+                      rows="3"
+                      placeholder="Aprenda os fundamentos do Node.js..."
+                      value={createFormData.description}
+                      onChange={(e) => setCreateFormData({...createFormData, description: e.target.value})}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="eventDateTime" className="form-label">Data e Horário *</label>
+                    <input 
+                      type="datetime-local" 
+                      className="form-control" 
+                      id="eventDateTime"
+                      value={createFormData.dateTime}
+                      onChange={(e) => setCreateFormData({...createFormData, dateTime: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="eventSlots" className="form-label">Número de Vagas *</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      id="eventSlots"
+                      min="1"
+                      placeholder="50"
+                      value={createFormData.totalSlots}
+                      onChange={(e) => setCreateFormData({...createFormData, totalSlots: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="eventLocal" className="form-label">Local</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="eventLocal"
+                      placeholder="Auditório Principal, Sala 301, etc."
+                      value={createFormData.local}
+                      onChange={(e) => setCreateFormData({...createFormData, local: e.target.value})}
+                    />
+                  </div>
+                  {createError && (
+                    <div className="alert alert-danger" role="alert">
+                      {createError}
+                    </div>
+                  )}
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={handleCreateEvent}
+                >
+                  Criar Evento
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCreateModal && <div className="modal-backdrop fade show"></div>}
     </>
   );
 }
