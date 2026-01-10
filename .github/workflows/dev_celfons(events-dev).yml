@@ -16,6 +16,11 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
@@ -43,6 +48,11 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
