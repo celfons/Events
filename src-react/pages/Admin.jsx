@@ -393,7 +393,17 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: ''
+                    });
+                    setCreateError('');
+                  }}
                 ></button>
               </div>
               <div className="modal-body">
@@ -468,7 +478,17 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn btn-secondary" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: ''
+                    });
+                    setCreateError('');
+                  }}
                 >
                   Cancelar
                 </button>

@@ -338,7 +338,16 @@ function UsersPage() {
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      username: '',
+                      email: '',
+                      password: '',
+                      role: 'user'
+                    });
+                    setCreateError('');
+                  }}
                 ></button>
               </div>
               <div className="modal-body">
@@ -401,7 +410,16 @@ function UsersPage() {
                 <button 
                   type="button" 
                   className="btn btn-secondary" 
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateFormData({
+                      username: '',
+                      email: '',
+                      password: '',
+                      role: 'user'
+                    });
+                    setCreateError('');
+                  }}
                 >
                   Cancelar
                 </button>
