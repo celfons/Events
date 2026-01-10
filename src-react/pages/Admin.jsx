@@ -20,7 +20,10 @@ function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [createFormData, setCreateFormData] = useState({
     title: '',
     description: '',
@@ -230,6 +233,33 @@ function AdminPage() {
     }
   };
 
+  const loadParticipants = async (eventId) => {
+    try {
+      setLoadingParticipants(true);
+      const response = await fetch(`${API_URL}/api/events/${eventId}/participants`, {
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar participantes');
+      }
+
+      const responseData = await response.json();
+      setParticipants(responseData.data || []);
+      setLoadingParticipants(false);
+    } catch (error) {
+      console.error('Error loading participants:', error);
+      showError('Erro ao carregar participantes. Tente novamente mais tarde.');
+      setLoadingParticipants(false);
+    }
+  };
+
+  const openParticipantsModal = (event) => {
+    setSelectedEvent(event);
+    setShowParticipantsModal(true);
+    loadParticipants(event.id);
+  };
+
   // Pagination
   const startIndex = (currentPage - 1) * eventsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
@@ -348,14 +378,14 @@ function AdminPage() {
                               title="Editar"
                               onClick={() => openEditModal(event)}
                             >
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil"></i> Editar
                             </button>
                             <button 
                               className="btn btn-sm btn-info"
                               title="Ver Participantes"
-                              onClick={() => window.location.href = `/event/${event.id}`}
+                              onClick={() => openParticipantsModal(event)}
                             >
-                              <i className="bi bi-people"></i>
+                              <i className="bi bi-people"></i> Participantes
                             </button>
                             <button 
                               className="btn btn-sm btn-danger"
@@ -366,7 +396,7 @@ function AdminPage() {
                                 }
                               }}
                             >
-                              <i className="bi bi-trash"></i>
+                              <i className="bi bi-trash"></i> Excluir
                             </button>
                           </div>
                         </td>
@@ -642,6 +672,98 @@ function AdminPage() {
         </div>
       )}
       {showEditModal && <div className="modal-backdrop fade show"></div>}
+
+      {/* Participants Modal */}
+      {showParticipantsModal && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Participantes - {selectedEvent?.title}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => {
+                    setShowParticipantsModal(false);
+                    setSelectedEvent(null);
+                    setParticipants([]);
+                  }}
+                ></button>
+              </div>
+              <div className="modal-body">
+                {loadingParticipants && (
+                  <div className="text-center my-3">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Carregando...</span>
+                    </div>
+                  </div>
+                )}
+
+                {!loadingParticipants && participants.length === 0 && (
+                  <div className="alert alert-info text-center" role="alert">
+                    <i className="bi bi-info-circle"></i> Nenhum participante confirmado ainda.
+                  </div>
+                )}
+
+                {!loadingParticipants && participants.length > 0 && (
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Nome</th>
+                          <th>Email</th>
+                          <th>Telefone</th>
+                          <th>Data de Inscrição</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {participants.map((participant) => (
+                          <tr key={participant.id || `${participant.email}-${participant.registeredAt}`}>
+                            <td>{participant.name}</td>
+                            <td>{participant.email}</td>
+                            <td>{participant.phone}</td>
+                            <td>
+                              {participant.registeredAt 
+                                ? new Date(participant.registeredAt).toLocaleString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : 'N/A'
+                              }
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="mt-3">
+                      <strong>Total de participantes confirmados: {participants.length}</strong>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    setShowParticipantsModal(false);
+                    setSelectedEvent(null);
+                    setParticipants([]);
+                  }}
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showParticipantsModal && <div className="modal-backdrop fade show"></div>}
     </>
   );
 }
