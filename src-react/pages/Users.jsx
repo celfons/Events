@@ -29,7 +29,8 @@ function UsersPage() {
     username: '',
     email: '',
     password: '',
-    role: 'user'
+    role: 'user',
+    isActive: true
   });
   const [createError, setCreateError] = useState('');
   const [editError, setEditError] = useState('');
@@ -138,7 +139,8 @@ function UsersPage() {
       const updateData = {
         username: editFormData.username,
         email: editFormData.email,
-        role: editFormData.role
+        role: editFormData.role,
+        isActive: editFormData.isActive
       };
 
       // Only include password if it was provided
@@ -166,7 +168,8 @@ function UsersPage() {
         username: '',
         email: '',
         password: '',
-        role: 'user'
+        role: 'user',
+        isActive: true
       });
       loadUsers(); // Reload the users list
     } catch (error) {
@@ -206,7 +209,8 @@ function UsersPage() {
       username: user.username,
       email: user.email,
       password: '',
-      role: user.role
+      role: user.role,
+      isActive: user.isActive !== false
     });
     setEditError('');
     setShowEditModal(true);
@@ -277,6 +281,7 @@ function UsersPage() {
                     <th>Email</th>
                     <th>Nome de Usuário</th>
                     <th>Papel</th>
+                    <th>Status</th>
                     <th>Data de Criação</th>
                     <th>Ações</th>
                   </tr>
@@ -289,6 +294,11 @@ function UsersPage() {
                       <td>
                         <span className={`badge bg-${user.role === 'superuser' ? 'danger' : 'primary'}`}>
                           {user.role === 'superuser' ? 'Superusuário' : 'Usuário'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge bg-${user.isActive !== false ? 'success' : 'secondary'}`}>
+                          {user.isActive !== false ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
                       <td>
@@ -305,14 +315,14 @@ function UsersPage() {
                             title="Editar"
                             onClick={() => openEditModal(user)}
                           >
-                            <i className="bi bi-pencil"></i>
+                            <i className="bi bi-pencil"></i> Editar
                           </button>
                           <button 
                             className="btn btn-sm btn-danger"
                             title="Excluir"
                             onClick={() => handleDeleteUser(user.id, user.username)}
                           >
-                            <i className="bi bi-trash"></i>
+                            <i className="bi bi-trash"></i> Excluir
                           </button>
                         </div>
                       </td>
@@ -453,7 +463,8 @@ function UsersPage() {
                       username: '',
                       email: '',
                       password: '',
-                      role: 'user'
+                      role: 'user',
+                      isActive: true
                     });
                     setEditError('');
                   }}
@@ -508,6 +519,18 @@ function UsersPage() {
                       <option value="superuser">Superusuário</option>
                     </select>
                   </div>
+                  <div className="mb-3 form-check">
+                    <input 
+                      type="checkbox" 
+                      className="form-check-input" 
+                      id="editUserIsActive"
+                      checked={editFormData.isActive}
+                      onChange={(e) => setEditFormData({...editFormData, isActive: e.target.checked})}
+                    />
+                    <label className="form-check-label" htmlFor="editUserIsActive">
+                      Ativo
+                    </label>
+                  </div>
                   {editError && (
                     <div className="alert alert-danger" role="alert">
                       {editError}
@@ -524,7 +547,8 @@ function UsersPage() {
                           username: '',
                           email: '',
                           password: '',
-                          role: 'user'
+                          role: 'user',
+                          isActive: true
                         });
                         setEditError('');
                       }}
