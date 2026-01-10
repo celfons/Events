@@ -10,7 +10,7 @@ import { getToken, isSuperuser } from '../utils/auth';
 
 function UsersPage() {
   const { user, logout } = useAuth();
-  const { toasts, showSuccess, showError, removeToast } = useToast();
+  const { toasts, showError, removeToast } = useToast();
   
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);

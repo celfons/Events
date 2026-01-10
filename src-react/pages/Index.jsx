@@ -12,7 +12,6 @@ function EventsPage() {
   const { user, login, logout } = useAuth();
   const { toasts, showSuccess, showError, removeToast } = useToast();
   
-  const [events, setEvents] = useState([]);
   const [futureEvents, setFutureEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);

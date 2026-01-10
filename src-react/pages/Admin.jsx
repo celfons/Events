@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -10,7 +10,7 @@ import { getToken } from '../utils/auth';
 
 function AdminPage() {
   const { user, logout } = useAuth();
-  const { toasts, showSuccess, showError, removeToast } = useToast();
+  const { toasts, showError, removeToast } = useToast();
   
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -96,7 +96,6 @@ function AdminPage() {
   };
 
   // Pagination
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
   const startIndex = (currentPage - 1) * eventsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
 
