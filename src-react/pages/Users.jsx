@@ -408,7 +408,6 @@ function UsersPage() {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  onClick={handleCreateUser}
                 >
                   Criar Usuário
                 </button>
@@ -429,7 +428,17 @@ function UsersPage() {
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowEditModal(false)}
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedUser(null);
+                    setEditFormData({
+                      username: '',
+                      email: '',
+                      password: '',
+                      role: 'user'
+                    });
+                    setEditError('');
+                  }}
                 ></button>
               </div>
               <div className="modal-body">
@@ -490,7 +499,17 @@ function UsersPage() {
                     <button 
                       type="button" 
                       className="btn btn-secondary" 
-                      onClick={() => setShowEditModal(false)}
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setSelectedUser(null);
+                        setEditFormData({
+                          username: '',
+                          email: '',
+                          password: '',
+                          role: 'user'
+                        });
+                        setEditError('');
+                      }}
                     >
                       Cancelar
                     </button>

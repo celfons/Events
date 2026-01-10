@@ -475,7 +475,6 @@ function AdminPage() {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  onClick={handleCreateEvent}
                 >
                   Criar Evento
                 </button>
@@ -496,7 +495,19 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowEditModal(false)}
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedEvent(null);
+                    setEditFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: '',
+                      isActive: true
+                    });
+                    setEditError('');
+                  }}
                 ></button>
               </div>
               <div className="modal-body">
@@ -583,14 +594,25 @@ function AdminPage() {
                 <button 
                   type="button" 
                   className="btn btn-secondary" 
-                  onClick={() => setShowEditModal(false)}
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedEvent(null);
+                    setEditFormData({
+                      title: '',
+                      description: '',
+                      dateTime: '',
+                      totalSlots: '',
+                      local: '',
+                      isActive: true
+                    });
+                    setEditError('');
+                  }}
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  onClick={handleUpdateEvent}
                 >
                   Atualizar
                 </button>
