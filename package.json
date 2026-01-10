@@ -44,7 +44,9 @@
     ],
     "testMatch": [
       "**/__tests__/**/*.test.js",
-      "**/?(*.)+(spec|test).js"
+      "**/__tests__/**/*.test.jsx",
+      "**/?(*.)+(spec|test).js",
+      "**/?(*.)+(spec|test).jsx"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
