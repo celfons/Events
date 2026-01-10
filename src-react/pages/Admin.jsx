@@ -300,6 +300,17 @@ function AdminPage() {
       setParticipantFormData({ name: '', email: '', phone: '' });
       loadParticipants(selectedEvent.id); // Reload participants
       loadEvents(); // Reload events to update available slots
+      // Ensure selectedEvent reflects the updated availableSlots so the UI updates immediately
+      setSelectedEvent((prev) => {
+        if (!prev || prev.id !== selectedEvent.id) {
+          return prev;
+        }
+        const currentSlots = typeof prev.availableSlots === 'number' ? prev.availableSlots : 0;
+        return {
+          ...prev,
+          availableSlots: Math.max(0, currentSlots - 1),
+        };
+      });
     } catch (error) {
       console.error('Error adding participant:', error);
       setParticipantError('Erro ao adicionar participante. Tente novamente mais tarde.');
