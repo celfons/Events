@@ -854,6 +854,8 @@ function AdminPage() {
                         value={participantFormData.phone}
                         onChange={(e) => setParticipantFormData({...participantFormData, phone: e.target.value})}
                         required
+                        pattern="[+]?[0-9]{10,15}"
+                        title="Informe um telefone no formato internacional, por exemplo: +5511999999999"
                       />
                     </div>
                     {participantError && (
