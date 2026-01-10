@@ -6,7 +6,7 @@ import Toast from '../components/Toast';
 import LoginModal from '../components/LoginModal';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { API_URL, escapeHtml } from '../utils/helpers';
+import { API_URL } from '../utils/helpers';
 
 function EventsPage() {
   const { user, login, logout } = useAuth();

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export default function Toast({ toasts, onRemove }) {
   const colorMap = {
@@ -39,7 +39,7 @@ export default function Toast({ toasts, onRemove }) {
 }
 
 function ToastItem({ toast, colorMap, iconMap, titleMap, onRemove }) {
-  const toastRef = React.useRef(null);
+  const toastRef = useRef(null);
 
   useEffect(() => {
     if (toastRef.current && window.bootstrap) {
