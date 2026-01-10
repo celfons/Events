@@ -317,14 +317,14 @@ function UsersPage() {
                             title="Editar"
                             onClick={() => openEditModal(user)}
                           >
-                            <i className="bi bi-pencil"></i> Editar
+                            <i className="bi bi-pencil"></i>
                           </button>
                           <button 
                             className="btn btn-sm btn-danger"
                             title="Excluir"
                             onClick={() => handleDeleteUser(user.id, user.username)}
                           >
-                            <i className="bi bi-trash"></i> Excluir
+                            <i className="bi bi-trash"></i>
                           </button>
                         </div>
                       </td>
@@ -345,26 +345,26 @@ function UsersPage() {
         <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Criar Novo Usuário</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateFormData({
-                      username: '',
-                      email: '',
-                      password: '',
-                      role: 'user',
-                      isActive: true
-                    });
-                    setCreateError('');
-                  }}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleCreateUser}>
+              <form onSubmit={handleCreateUser}>
+                <div className="modal-header">
+                  <h5 className="modal-title">Criar Novo Usuário</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setCreateFormData({
+                        username: '',
+                        email: '',
+                        password: '',
+                        role: 'user',
+                        isActive: true
+                      });
+                      setCreateError('');
+                    }}
+                  ></button>
+                </div>
+                <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="username" className="form-label">Nome de Usuário *</label>
                     <input 
@@ -429,33 +429,33 @@ function UsersPage() {
                       {createError}
                     </div>
                   )}
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateFormData({
-                      username: '',
-                      email: '',
-                      password: '',
-                      role: 'user',
-                      isActive: true
-                    });
-                    setCreateError('');
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                >
-                  Criar Usuário
-                </button>
-              </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setCreateFormData({
+                        username: '',
+                        email: '',
+                        password: '',
+                        role: 'user',
+                        isActive: true
+                      });
+                      setCreateError('');
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                  >
+                    Criar Usuário
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -467,27 +467,27 @@ function UsersPage() {
         <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Editar Usuário</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedUser(null);
-                    setEditFormData({
-                      username: '',
-                      email: '',
-                      password: '',
-                      role: 'user',
-                      isActive: true
-                    });
-                    setEditError('');
-                  }}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleEditUser}>
+              <form onSubmit={handleEditUser}>
+                <div className="modal-header">
+                  <h5 className="modal-title">Editar Usuário</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedUser(null);
+                      setEditFormData({
+                        username: '',
+                        email: '',
+                        password: '',
+                        role: 'user',
+                        isActive: true
+                      });
+                      setEditError('');
+                    }}
+                  ></button>
+                </div>
+                <div className="modal-body">
                   <div className="mb-3">
                     <label htmlFor="editUsername" className="form-label">Nome de Usuário *</label>
                     <input 
@@ -552,34 +552,34 @@ function UsersPage() {
                       {editError}
                     </div>
                   )}
-                  <div className="modal-footer">
-                    <button 
-                      type="button" 
-                      className="btn btn-secondary" 
-                      onClick={() => {
-                        setShowEditModal(false);
-                        setSelectedUser(null);
-                        setEditFormData({
-                          username: '',
-                          email: '',
-                          password: '',
-                          role: 'user',
-                          isActive: true
-                        });
-                        setEditError('');
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary"
-                    >
-                      Atualizar
-                    </button>
-                  </div>
-                </form>
-              </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedUser(null);
+                      setEditFormData({
+                        username: '',
+                        email: '',
+                        password: '',
+                        role: 'user',
+                        isActive: true
+                      });
+                      setEditError('');
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
