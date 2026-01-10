@@ -26,6 +26,7 @@ Esta é uma aplicação web completa que permite criar, gerenciar e visualizar e
 
 - **Node.js** e **Express** - Backend
 - **MongoDB** - Banco de dados
+- **React 18** - Interface de usuário moderna
 - **Bootstrap 5** - Interface responsiva
 - **JWT** - Autenticação segura
 
@@ -87,12 +88,17 @@ Crie o superusuário:
 npm run create-superuser
 ```
 
-5. **Inicie a aplicação**
+5. **Compile a interface React** (primeira vez e após mudanças no código)
+```bash
+npm run build:react
+```
+
+6. **Inicie a aplicação**
 ```bash
 npm start
 ```
 
-6. **Acesse no navegador**
+7. **Acesse no navegador**
 - Página inicial: http://localhost:3000
 - Painel admin: http://localhost:3000/admin
 - Documentação da API: http://localhost:3000/api-docs
@@ -253,6 +259,25 @@ Para mais informações sobre a API do WhatsApp Business:
 3. Faça commit das suas mudanças (`git commit -m 'Adiciona nova feature'`)
 4. Faça push para a branch (`git push origin minha-feature`)
 5. Abra um Pull Request
+
+## Refatoração React
+
+A interface do usuário foi refatorada de JavaScript vanilla para React, mantendo toda a funcionalidade existente e os contratos de API. 
+
+### Características da refatoração:
+- ✅ **Componentes React** modernos e reutilizáveis
+- ✅ **Custom Hooks** para lógica compartilhada (useAuth, useToast)
+- ✅ **Testes** com Jest e React Testing Library
+- ✅ **Webpack + Babel** para transpilação e bundling
+- ✅ **Mesmo comportamento** - nenhuma mudança na funcionalidade
+
+### Arquivos importantes:
+- `src-react/` - Código-fonte React
+- `src-react/README.md` - Documentação detalhada da refatoração
+- `webpack.config.js` - Configuração do build
+- `.babelrc` - Configuração do Babel
+
+Para mais detalhes sobre a refatoração React, consulte [src-react/README.md](src-react/README.md).
 
 ## Licença
 
