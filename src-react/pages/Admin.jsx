@@ -719,19 +719,22 @@ function AdminPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {participants.map((participant, index) => (
-                          <tr key={participant.id || index}>
+                        {participants.map((participant) => (
+                          <tr key={participant.id || `${participant.email}-${participant.registeredAt}`}>
                             <td>{participant.name}</td>
                             <td>{participant.email}</td>
                             <td>{participant.phone}</td>
                             <td>
-                              {new Date(participant.registeredAt).toLocaleString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                              {participant.registeredAt 
+                                ? new Date(participant.registeredAt).toLocaleString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : 'N/A'
+                              }
                             </td>
                           </tr>
                         ))}

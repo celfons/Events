@@ -210,7 +210,7 @@ function UsersPage() {
       email: user.email,
       password: '',
       role: user.role,
-      isActive: user.isActive !== false
+      isActive: Boolean(user.isActive)
     });
     setEditError('');
     setShowEditModal(true);
@@ -297,8 +297,8 @@ function UsersPage() {
                         </span>
                       </td>
                       <td>
-                        <span className={`badge bg-${user.isActive !== false ? 'success' : 'secondary'}`}>
-                          {user.isActive !== false ? 'Ativo' : 'Inativo'}
+                        <span className={`badge bg-${Boolean(user.isActive) ? 'success' : 'secondary'}`}>
+                          {Boolean(user.isActive) ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
                       <td>
