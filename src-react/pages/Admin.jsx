@@ -205,6 +205,7 @@ function AdminPage() {
                         </td>
                         <td>
                           <fieldset className="btn-group">
+                            <legend>Ações do formulário</legend>
                             <a 
                               href={`/admin/event/${event.id}`}
                               className="btn btn-sm btn-outline-primary"
