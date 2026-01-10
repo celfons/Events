@@ -11,6 +11,38 @@ on:
   workflow_dispatch:
 
 jobs:
+  eslint:
+    name: Run eslint scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install ESLint
+        run: |
+          npm install eslint@8.10.0
+          npm install @microsoft/eslint-formatter-sarif@3.1.0
+
+      - name: Run ESLint
+        env:
+          SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
+        run: npx eslint .
+          --config .eslintrc.js
+          --ext .js,.jsx,.ts,.tsx
+          --format @microsoft/eslint-formatter-sarif
+          --output-file eslint-results.sarif
+        continue-on-error: true
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: eslint-results.sarif
+          wait-for-processing: true
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -33,13 +65,35 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
 
-      - name: npm install, build, and test
+      - name: Cache node modules
+        uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
         timeout-minutes: 10
         run: |
           node -v
           npm -v
           npm ci --no-audit --no-fund --loglevel=verbose
-          npm run build --if-present
+
+      - name: Build React application
+        timeout-minutes: 5
+        run: |
+          echo "Building React application..."
+          npm run build:react
+          echo "React build completed successfully"
+          ls -la public/js/react-build/
+
+      - name: Run tests with coverage
+        timeout-minutes: 10
+        run: |
           npm run test:coverage
 
       - name: Upload artifact for deployment job
@@ -47,7 +101,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: |
+            .
+            !node_modules
+            !coverage
+            !.git
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
@@ -67,6 +126,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+
+      - name: Install production dependencies
+        run: |
+          npm ci --omit=dev --no-audit --no-fund
+
+      - name: Verify React build artifacts
+        run: |
+          echo "Verifying React build artifacts..."
+          ls -la public/js/react-build/ || echo "React build directory not found"
+          if [ ! -d "public/js/react-build" ]; then
+            echo "ERROR: React build artifacts missing!"
+            exit 1
+          fi
+          echo "React build artifacts verified successfully"
 
       - name: Login to Azure
         uses: azure/login@v2

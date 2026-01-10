@@ -150,19 +150,19 @@ function createApp() {
 
   // Serve HTML pages
   app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/index.html'));
+    res.sendFile(path.join(__dirname, '../public/views/index-react.html'));
   });
 
   app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/admin.html'));
+    res.sendFile(path.join(__dirname, '../public/views/admin-react.html'));
   });
 
   app.get('/users', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/users.html'));
+    res.sendFile(path.join(__dirname, '../public/views/users-react.html'));
   });
 
   app.get('/event/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/views/event-details.html'));
+    res.sendFile(path.join(__dirname, '../public/views/event-details-react.html'));
   });
 
   // Health check

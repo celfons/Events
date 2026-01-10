@@ -3,7 +3,7 @@ const globals = require('globals');
 
 module.exports = [
   {
-    ignores: ['node_modules', 'coverage', 'dist', 'build', '*.min.js', 'public', '.github']
+    ignores: ['node_modules', 'coverage', 'dist', 'build', '*.min.js', 'public', '.github', 'src-react']
   },
   js.configs.recommended,
   {
