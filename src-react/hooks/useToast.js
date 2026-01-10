@@ -2,25 +2,36 @@ import { useState, useCallback } from 'react';
 
 let toastIdCounter = 0;
 
+const createToastId = () => {
+  return 'toast-' + Date.now() + '-' + ++toastIdCounter;
+};
+
+const addToastToList = (prev, toast) => {
+  return [...prev, toast];
+};
+
+const removeToastFromList = (prev, id) => {
+  return prev.filter(t => t.id !== id);
+};
+
 export function useToast() {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = 'success', duration = 3000) => {
-    const id = 'toast-' + Date.now() + '-' + ++toastIdCounter;
+    const id = createToastId();
     const toast = { id, message, type, duration };
 
-    setToasts(prev => [...prev, toast]);
+    setToasts(prev => addToastToList(prev, toast));
 
-    // Auto remove toast after duration
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts(prev => removeToastFromList(prev, id));
     }, duration);
 
     return id;
   }, []);
 
   const removeToast = useCallback(id => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts(prev => removeToastFromList(prev, id));
   }, []);
 
   const showSuccess = useCallback(message => showToast(message, 'success'), [showToast]);
