@@ -115,6 +115,9 @@ function AdminPage() {
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Eventos</h2>
+            <a href="/admin/event/new" className="btn btn-primary">
+              <i className="bi bi-plus-circle"></i> Criar Evento
+            </a>
           </div>
 
           {/* Search and Filters */}
@@ -173,6 +176,7 @@ function AdminPage() {
                     <th>Data e Horário</th>
                     <th>Vagas Disponíveis</th>
                     <th>Status</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,6 +202,25 @@ function AdminPage() {
                           <span className={`badge bg-${isActive ? 'success' : 'secondary'}`}>
                             {isActive ? 'Ativo' : 'Inativo'}
                           </span>
+                        </td>
+                        <td>
+                          <fieldset className="btn-group">
+                             <legend>Ações do formulário</legend>
+                            <a 
+                              href={`/admin/event/${event.id}`}
+                              className="btn btn-sm btn-outline-primary"
+                              title="Editar"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </a>
+                            <a 
+                              href={`/admin/event/${event.id}/participants`}
+                              className="btn btn-sm btn-outline-info"
+                              title="Ver Participantes"
+                            >
+                              <i className="bi bi-people"></i>
+                            </a>
+                          </fieldset>
                         </td>
                       </tr>
                     );
