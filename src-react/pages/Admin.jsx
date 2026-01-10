@@ -781,7 +781,7 @@ function AdminPage() {
                           </thead>
                           <tbody>
                             {participants.map((participant, index) => (
-                              <tr key={participant.id || `participant-${index}`}>
+                              <tr key={participant.id || participant.email || `participant-${index}`}>
                                 <td>{participant.name}</td>
                                 <td>{participant.email}</td>
                                 <td>{participant.phone}</td>
