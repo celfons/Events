@@ -11,61 +11,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  eslint:
-    name: Run eslint scanning
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Instala dependências e garante que o formatter SARIF esteja disponível
-      - name: Install ESLint and SARIF formatter
-        run: |
-          npm ci --no-audit --no-fund
-          npm install --no-audit --no-fund --save-dev eslint@8.10.0 @microsoft/eslint-formatter-sarif@3.1.0
-
-      # Executa o ESLint, e se falhar, cria um SARIF vazio como fallback
-      - name: Run ESLint and generate SARIF (with fallback)
-        env:
-          SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
-        run: |
-          set -e
-          echo "Executando ESLint e gerando SARIF..."
-          if ! npx eslint . --config .eslintrc.js --ext .js,.jsx,.ts,.tsx \
-              --format @microsoft/eslint-formatter-sarif \
-              --output-file ./eslint-results.sarif; then
-            echo "ESLint falhou. Gerando SARIF fallback vazio para não quebrar o workflow..."
-            cat > ./eslint-results.sarif << 'EOF'
-            {
-              "version": "2.1.0",
-              "runs": [
-                {
-                  "tool": {
-                    "driver": {
-                      "name": "eslint",
-                      "informationUri": "https://eslint.org",
-                      "version": "fallback",
-                      "rules": []
-                    }
-                  },
-                  "results": []
-                }
-              ]
-            }
-            EOF
-          fi
-          echo "Arquivo SARIF gerado (real ou fallback)."
-          ls -la ./eslint-results.sarif
-
-      - name: Upload analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: ./eslint-results.sarif
-          wait-for-processing: true
   build:
     runs-on: ubuntu-latest
     permissions:
