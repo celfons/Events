@@ -1,6 +1,6 @@
 /**
  * WhatsApp Integration Example
- * 
+ *
  * This script demonstrates how to use the WhatsApp Business API integration
  * to send messages to event participants.
  *
