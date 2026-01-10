@@ -12,7 +12,9 @@
     "build:react": "webpack --mode production",
     "build:react:dev": "webpack --mode development",
     "build": "npm run build:react",
-    "prebuild": "npm run build:react",
+    "prebuild": "echo 'Starting build process...'",
+    "postbuild": "echo 'Build completed successfully'",
+    "clean": "rm -rf public/js/react-build coverage",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -20,7 +22,10 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write \"src/**/*.js\" \"*.js\"",
     "format:check": "prettier --check \"src/**/*.js\" \"*.js\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "ci:install": "npm ci --no-audit --no-fund",
+    "ci:build": "npm run build:react",
+    "ci:test": "npm run test:coverage"
   },
   "jest": {
     "testEnvironment": "node",
