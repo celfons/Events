@@ -769,8 +769,8 @@ function AdminPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {participants.map((participant) => (
-                              <tr key={participant.id || `${participant.email}-${participant.registeredAt}`}>
+                            {participants.map((participant, index) => (
+                              <tr key={participant.id || `participant-${index}`}>
                                 <td>{participant.name}</td>
                                 <td>{participant.email}</td>
                                 <td>{participant.phone}</td>
@@ -796,7 +796,7 @@ function AdminPage() {
                       </div>
                     )}
                     
-                    {!loadingParticipants && selectedEvent && selectedEvent.availableSlots > 0 && (
+                    {!loadingParticipants && selectedEvent && (selectedEvent.availableSlots ?? 0) > 0 && (
                       <div className="mt-3">
                         <button 
                           className="btn btn-sm btn-success"
