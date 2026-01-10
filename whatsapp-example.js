@@ -3,7 +3,7 @@
  * 
  * This script demonstrates how to use the WhatsApp Business API integration
  * to send messages to event participants.
- * 
+ *
  * Prerequisites:
  * 1. Set up WhatsApp Business API credentials in .env file
  * 2. Configure WHATSAPP_ENABLED=true
