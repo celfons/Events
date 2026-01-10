@@ -23,7 +23,8 @@ function UsersPage() {
     username: '',
     email: '',
     password: '',
-    role: 'user'
+    role: 'user',
+    isActive: true
   });
   const [editFormData, setEditFormData] = useState({
     username: '',
@@ -122,7 +123,8 @@ function UsersPage() {
         username: '',
         email: '',
         password: '',
-        role: 'user'
+        role: 'user',
+        isActive: true
       });
       loadUsers(); // Reload the users list
     } catch (error) {
@@ -354,7 +356,8 @@ function UsersPage() {
                       username: '',
                       email: '',
                       password: '',
-                      role: 'user'
+                      role: 'user',
+                      isActive: true
                     });
                     setCreateError('');
                   }}
@@ -409,6 +412,18 @@ function UsersPage() {
                       <option value="superuser">Superusuário</option>
                     </select>
                   </div>
+                  <div className="mb-3 form-check">
+                    <input 
+                      type="checkbox" 
+                      className="form-check-input" 
+                      id="createUserIsActive"
+                      checked={createFormData.isActive}
+                      onChange={(e) => setCreateFormData({...createFormData, isActive: e.target.checked})}
+                    />
+                    <label className="form-check-label" htmlFor="createUserIsActive">
+                      Ativo
+                    </label>
+                  </div>
                   {createError && (
                     <div className="alert alert-danger" role="alert">
                       {createError}
@@ -426,7 +441,8 @@ function UsersPage() {
                       username: '',
                       email: '',
                       password: '',
-                      role: 'user'
+                      role: 'user',
+                      isActive: true
                     });
                     setCreateError('');
                   }}
