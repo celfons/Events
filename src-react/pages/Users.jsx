@@ -317,14 +317,14 @@ function UsersPage() {
                             title="Editar"
                             onClick={() => openEditModal(user)}
                           >
-                            <i className="bi bi-pencil"></i> Editar
+                            <i className="bi bi-pencil"></i>
                           </button>
                           <button 
                             className="btn btn-sm btn-danger"
                             title="Excluir"
                             onClick={() => handleDeleteUser(user.id, user.username)}
                           >
-                            <i className="bi bi-trash"></i> Excluir
+                            <i className="bi bi-trash"></i>
                           </button>
                         </div>
                       </td>

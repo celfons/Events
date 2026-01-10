@@ -482,14 +482,14 @@ function AdminPage() {
                               title="Editar"
                               onClick={() => openEditModal(event)}
                             >
-                              <i className="bi bi-pencil"></i> Editar
+                              <i className="bi bi-pencil"></i>
                             </button>
                             <button 
                               className="btn btn-sm btn-info"
                               title="Ver Participantes"
                               onClick={() => openParticipantsModal(event)}
                             >
-                              <i className="bi bi-people"></i> Participantes
+                              <i className="bi bi-people"></i>
                             </button>
                             <button 
                               className="btn btn-sm btn-danger"
@@ -500,7 +500,7 @@ function AdminPage() {
                                 }
                               }}
                             >
-                              <i className="bi bi-trash"></i> Excluir
+                              <i className="bi bi-trash"></i>
                             </button>
                           </div>
                         </td>
@@ -856,9 +856,7 @@ function AdminPage() {
                                         Cancelando...
                                       </>
                                     ) : (
-                                      <>
-                                        <i className="bi bi-x-circle"></i> Cancelar
-                                      </>
+                                      <i className="bi bi-x-circle"></i>
                                     )}
                                   </button>
                                 </td>
@@ -877,8 +875,9 @@ function AdminPage() {
                         <button 
                           className="btn btn-sm btn-success"
                           onClick={() => setShowAddParticipant(true)}
+                          title="Adicionar Participante"
                         >
-                          <i className="bi bi-person-plus"></i> Adicionar Participante
+                          <i className="bi bi-person-plus"></i>
                         </button>
                       </div>
                     )}
