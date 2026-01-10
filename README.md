@@ -1,4 +1,4 @@
-# Events Platform 🎉
+# Events Platform 
 
 Uma plataforma simples e prática para gerenciar eventos e inscrições, desenvolvida com Node.js e MongoDB.
 
