@@ -204,8 +204,7 @@ function AdminPage() {
                           </span>
                         </td>
                         <td>
-                          <fieldset className="btn-group">
-                             <legend>Ações do formulário</legend>
+                          <div className="btn-group" role="group">
                             <a 
                               href={`/admin/event/${event.id}`}
                               className="btn btn-sm btn-outline-primary"
@@ -220,7 +219,7 @@ function AdminPage() {
                             >
                               <i className="bi bi-people"></i>
                             </a>
-                          </fieldset>
+                          </div>
                         </td>
                       </tr>
                     );
