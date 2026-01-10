@@ -35,12 +35,12 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findByUserId(userId) {
-    const events = await EventModel.find({ userId }).sort({ dateTime: -1 });
+    const events = await EventModel.find({ userId: { $eq: userId } }).sort({ dateTime: -1 });
     return events.map(event => this._toDomain(event));
   }
 
   async findByEventCode(eventCode) {
-    const eventModel = await EventModel.findOne({ eventCode: eventCode.toUpperCase() });
+    const eventModel = await EventModel.findOne({ eventCode: { $eq: eventCode.toUpperCase() } });
     if (!eventModel) return null;
     return this._toDomain(eventModel);
   }

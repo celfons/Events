@@ -20,7 +20,7 @@ class MongoUserRepository extends UserRepository {
   }
 
   async findByEmail(email) {
-    const userDoc = await UserModel.findOne({ email });
+    const userDoc = await UserModel.findOne({ email: { $eq: email } });
     if (!userDoc) return null;
 
     return new User({
@@ -35,7 +35,7 @@ class MongoUserRepository extends UserRepository {
   }
 
   async findByUsername(username) {
-    const userDoc = await UserModel.findOne({ username });
+    const userDoc = await UserModel.findOne({ username: { $eq: username } });
     if (!userDoc) return null;
 
     return new User({
@@ -123,7 +123,7 @@ class MongoUserRepository extends UserRepository {
   }
 
   async findModelByEmail(email) {
-    return await UserModel.findOne({ email });
+    return await UserModel.findOne({ email: { $eq: email } });
   }
 }
 
