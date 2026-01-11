@@ -146,5 +146,24 @@ describe('EventResponse', () => {
 
       expect(response.participantsCount).toBe(0);
     });
+
+    it('should handle participants without status property', () => {
+      const event = {
+        id: '123',
+        title: 'Test Event',
+        availableSlots: 50,
+        totalSlots: 50,
+        participants: [
+          { id: '1', status: 'confirmed' },
+          { id: '2' }, // Missing status property
+          { id: '3', status: 'pending' }
+        ]
+      };
+
+      const response = new EventDetailsResponse(event);
+
+      // Should only count the one confirmed participant
+      expect(response.participantsCount).toBe(1);
+    });
   });
 });

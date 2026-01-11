@@ -43,7 +43,7 @@ class EventDetailsResponse extends EventResponse {
       event.participantsCount !== undefined
         ? event.participantsCount
         : event.participants
-          ? event.participants.filter(p => p.status === 'confirmed').length
+          ? event.participants.filter(p => p?.status === 'confirmed').length
           : 0;
   }
 
