@@ -103,8 +103,8 @@ class MongoEventRepository extends EventRepository {
       }
     };
 
-    // For pending registrations, check that total non-expired pending+confirmed is less than totalSlots
-    // For confirmed registrations, check that availableSlots > 0
+    // For both pending and confirmed registrations, check based on actual participant counts
+    // This ensures accuracy even if availableSlots field is out of sync
     if (participantData.status === 'pending') {
       const now = new Date();
       // Use aggregation to check if there's space (non-expired pending + confirmed < totalSlots)
@@ -130,7 +130,22 @@ class MongoEventRepository extends EventRepository {
         ]
       };
     } else if (participantData.status === 'confirmed') {
-      queryConditions.availableSlots = { $gt: 0 };
+      // Check that confirmed participants count is less than totalSlots
+      // This is more reliable than checking availableSlots which might be out of sync
+      queryConditions.$expr = {
+        $lt: [
+          {
+            $size: {
+              $filter: {
+                input: '$participants',
+                as: 'p',
+                cond: { $eq: ['$$p.status', 'confirmed'] }
+              }
+            }
+          },
+          '$totalSlots'
+        ]
+      };
     }
 
     const updatedEvent = await EventModel.findOneAndUpdate(queryConditions, updateQuery, {
@@ -272,12 +287,27 @@ class MongoEventRepository extends EventRepository {
 
   async confirmParticipant(eventId, participantId) {
     // Confirm participant and decrement available slots atomically
+    // Check that confirmed participants count is less than totalSlots
+    // This is more reliable than checking availableSlots which might be out of sync
     const updatedEvent = await EventModel.findOneAndUpdate(
       {
         _id: eventId,
         'participants._id': participantId,
         'participants.status': 'pending',
-        availableSlots: { $gt: 0 }
+        $expr: {
+          $lt: [
+            {
+              $size: {
+                $filter: {
+                  input: '$participants',
+                  as: 'p',
+                  cond: { $eq: ['$$p.status', 'confirmed'] }
+                }
+              }
+            },
+            '$totalSlots'
+          ]
+        }
       },
       {
         $set: {
