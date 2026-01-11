@@ -2,64 +2,13 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
+import './setup-mocks';
 import '@testing-library/jest-dom';
-import { verifyBootstrapIconClass, setupCommonMocks, cleanupAfterTests } from './test-utils';
-
-// Mock the hooks and components
-jest.mock('../hooks/useAuth', () => ({
-  useAuth: jest.fn(() => ({
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn()
-  }))
-}));
-
-jest.mock('../hooks/useToast', () => ({
-  useToast: jest.fn(() => ({
-    toasts: [],
-    showSuccess: jest.fn(),
-    showError: jest.fn(),
-    removeToast: jest.fn()
-  }))
-}));
-
-jest.mock('../components/Navbar', () => {
-  return function MockNavbar() {
-    return <div data-testid="navbar">Navbar</div>;
-  };
-});
-
-jest.mock('../components/Footer', () => {
-  return function MockFooter() {
-    return <div data-testid="footer">Footer</div>;
-  };
-});
-
-jest.mock('../components/Toast', () => {
-  return function MockToast() {
-    return <div data-testid="toast">Toast</div>;
-  };
-});
-
-jest.mock('../components/LoginModal', () => {
-  return function MockLoginModal() {
-    return <div data-testid="login-modal">LoginModal</div>;
-  };
-});
-
-jest.mock('../utils/helpers', () => ({
-  API_URL: 'http://localhost:3000'
-}));
+import { verifyBootstrapIconClass, setupCommonMocks, cleanupAfterTests, filterEventsByQuery } from './test-utils';
 
 describe('Index Page - Event List', () => {
-  beforeEach(() => {
-    setupCommonMocks();
-  });
-
-  afterEach(() => {
-    cleanupAfterTests();
-  });
+  beforeEach(setupCommonMocks);
+  afterEach(cleanupAfterTests);
 
   it('should load events from API on mount', async () => {
     const mockEvents = [
@@ -100,11 +49,7 @@ describe('Index Page - Event List', () => {
       { id: '2', title: 'Python Basics', eventCode: 'PY001' }
     ];
 
-    const searchQuery = 'javascript';
-    const filtered = events.filter(event => 
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (event.eventCode && event.eventCode.includes(searchQuery.toUpperCase()))
-    );
+    const filtered = filterEventsByQuery(events, 'javascript');
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0].title).toBe('JavaScript Workshop');
@@ -116,11 +61,7 @@ describe('Index Page - Event List', () => {
       { id: '2', title: 'Python Basics', eventCode: 'PY001' }
     ];
 
-    const searchQuery = 'PY001';
-    const filtered = events.filter(event => 
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (event.eventCode && event.eventCode.includes(searchQuery.toUpperCase()))
-    );
+    const filtered = filterEventsByQuery(events, 'PY001');
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0].eventCode).toBe('PY001');

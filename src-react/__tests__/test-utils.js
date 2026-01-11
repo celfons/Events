@@ -13,37 +13,10 @@ export function verifyBootstrapIconClass(iconClass, iconName) {
 }
 
 /**
- * Creates a mock successful fetch response
- * @param {*} data - The data to return
- * @returns {Promise} Mock response
- */
-export function mockSuccessFetchResponse(data) {
-  return Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve({ data })
-  });
-}
-
-/**
- * Creates a mock error fetch response
- * @param {string} error - The error message
- * @returns {Promise} Mock response
- */
-export function mockErrorFetchResponse(error) {
-  return Promise.resolve({
-    ok: false,
-    json: () => Promise.resolve({ error })
-  });
-}
-
-/**
  * Setup common mocks for React components and hooks
  */
 export function setupCommonMocks() {
-  // Mock fetch
   global.fetch = jest.fn();
-
-  // Clear all mocks
   jest.clearAllMocks();
 }
 
@@ -52,4 +25,47 @@ export function setupCommonMocks() {
  */
 export function cleanupAfterTests() {
   jest.restoreAllMocks();
+}
+
+/**
+ * Helper to test API calls with common structure
+ */
+export async function testApiCall(url, method, mockData, mockResponse) {
+  global.fetch.mockResolvedValueOnce({
+    ok: true,
+    json: () => Promise.resolve({ data: mockResponse })
+  });
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer fake-token'
+    },
+    body: JSON.stringify(mockData)
+  });
+
+  expect(fetch).toHaveBeenCalledWith(
+    url,
+    expect.objectContaining({
+      method,
+      headers: expect.objectContaining({
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer fake-token'
+      })
+    })
+  );
+
+  return await response.json();
+}
+
+/**
+ * Helper to filter events by search query
+ */
+export function filterEventsByQuery(events, searchQuery) {
+  return events.filter(
+    event =>
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (event.eventCode && event.eventCode.includes(searchQuery.toUpperCase()))
+  );
 }
