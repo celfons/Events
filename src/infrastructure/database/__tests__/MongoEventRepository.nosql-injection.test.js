@@ -175,13 +175,7 @@ describe('MongoEventRepository - NoSQL Injection Protection', () => {
         participants: {
           $elemMatch: {
             email: { $eq: 'test@example.com' },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
@@ -200,13 +194,7 @@ describe('MongoEventRepository - NoSQL Injection Protection', () => {
         participants: {
           $elemMatch: {
             email: { $eq: 'test@example.com' },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
@@ -228,13 +216,7 @@ describe('MongoEventRepository - NoSQL Injection Protection', () => {
         participants: {
           $elemMatch: {
             phone: { $eq: maliciousInput },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
@@ -253,13 +235,7 @@ describe('MongoEventRepository - NoSQL Injection Protection', () => {
         participants: {
           $elemMatch: {
             phone: { $eq: maliciousInput },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
@@ -293,13 +269,7 @@ describe('MongoEventRepository - NoSQL Injection Protection', () => {
         participants: {
           $elemMatch: {
             phone: { $eq: '1234567890' },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
