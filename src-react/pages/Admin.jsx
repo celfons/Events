@@ -11,7 +11,7 @@ import { getToken } from '../utils/auth';
 function AdminPage() {
   const { user, logout } = useAuth();
   const { toasts, showSuccess, showError, removeToast } = useToast();
-  
+
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ function AdminPage() {
   });
   const [createError, setCreateError] = useState('');
   const [editError, setEditError] = useState('');
-  
+
   const eventsPerPage = 10;
 
   // Redirect if not authenticated
@@ -76,7 +76,7 @@ function AdminPage() {
     const token = getToken();
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`
     };
   };
 
@@ -86,7 +86,7 @@ function AdminPage() {
       const response = await fetch(`${API_URL}/api/events/my-events`, {
         headers: getAuthHeaders()
       });
-      
+
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           window.location.href = '/?login=required';
@@ -94,10 +94,10 @@ function AdminPage() {
         }
         throw new Error('Erro ao carregar eventos');
       }
-      
+
       const responseData = await response.json();
       const eventsData = responseData.data || [];
-      
+
       setEvents(eventsData);
       setLoading(false);
     } catch (error) {
@@ -109,25 +109,23 @@ function AdminPage() {
 
   const filterEvents = () => {
     let filtered = events;
-    
+
     // Apply status filter
     if (activeOnly) {
       filtered = filtered.filter(event => event.isActive !== false);
     }
-    
+
     // Apply search filter
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase();
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter(event => event.title.toLowerCase().includes(searchLower));
     }
-    
+
     setFilteredEvents(filtered);
     setCurrentPage(1);
   };
 
-  const handleCreateEvent = async (e) => {
+  const handleCreateEvent = async e => {
     e.preventDefault();
     setCreateError('');
 
@@ -144,7 +142,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setCreateError(data.error || 'Erro ao criar evento');
+        setCreateError(data.error?.message || 'Erro ao criar evento');
         return;
       }
 
@@ -164,7 +162,7 @@ function AdminPage() {
     }
   };
 
-  const handleDeleteEvent = async (eventId) => {
+  const handleDeleteEvent = async eventId => {
     try {
       const response = await fetch(`${API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
@@ -173,7 +171,7 @@ function AdminPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        showError(data.error || 'Erro ao excluir evento');
+        showError(data.error?.message || 'Erro ao excluir evento');
         return;
       }
 
@@ -185,12 +183,12 @@ function AdminPage() {
     }
   };
 
-  const openEditModal = (event) => {
+  const openEditModal = event => {
     setSelectedEvent(event);
     // Format datetime for datetime-local input
     const dateTime = new Date(event.dateTime);
     const formattedDateTime = dateTime.toISOString().slice(0, 16);
-    
+
     setEditFormData({
       title: event.title,
       description: event.description,
@@ -203,7 +201,7 @@ function AdminPage() {
     setShowEditModal(true);
   };
 
-  const handleUpdateEvent = async (e) => {
+  const handleUpdateEvent = async e => {
     e.preventDefault();
     setEditError('');
 
@@ -220,7 +218,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setEditError(data.error || 'Erro ao atualizar evento');
+        setEditError(data.error?.message || 'Erro ao atualizar evento');
         return;
       }
 
@@ -242,7 +240,7 @@ function AdminPage() {
     }
   };
 
-  const loadParticipants = async (eventId) => {
+  const loadParticipants = async eventId => {
     try {
       setLoadingParticipants(true);
       const response = await fetch(`${API_URL}/api/events/${eventId}/participants`, {
@@ -263,7 +261,7 @@ function AdminPage() {
     }
   };
 
-  const openParticipantsModal = (event) => {
+  const openParticipantsModal = event => {
     setSelectedEvent(event);
     setShowParticipantsModal(true);
     setShowAddParticipant(false);
@@ -272,7 +270,7 @@ function AdminPage() {
     loadParticipants(event.id);
   };
 
-  const handleAddParticipant = async (e) => {
+  const handleAddParticipant = async e => {
     e.preventDefault();
     setParticipantError('');
     setAddingParticipant(true);
@@ -292,7 +290,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setParticipantError(data.error || 'Erro ao adicionar participante');
+        setParticipantError(data.error?.message || 'Erro ao adicionar participante');
         return;
       }
 
@@ -302,14 +300,14 @@ function AdminPage() {
       loadParticipants(selectedEvent.id); // Reload participants
       loadEvents(); // Reload events to update available slots
       // Ensure selectedEvent reflects the updated availableSlots so the UI updates immediately
-      setSelectedEvent((prev) => {
+      setSelectedEvent(prev => {
         if (!prev || prev.id !== selectedEvent.id) {
           return prev;
         }
         const currentSlots = typeof prev.availableSlots === 'number' ? prev.availableSlots : 0;
         return {
           ...prev,
-          availableSlots: Math.max(0, currentSlots - 1),
+          availableSlots: Math.max(0, currentSlots - 1)
         };
       });
     } catch (error) {
@@ -320,7 +318,7 @@ function AdminPage() {
     }
   };
 
-  const handleCancelRegistration = async (participantId) => {
+  const handleCancelRegistration = async participantId => {
     if (!window.confirm('Tem certeza que deseja cancelar esta inscrição?')) {
       return;
     }
@@ -338,7 +336,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        showError(data.error || 'Erro ao cancelar inscrição');
+        showError(data.error?.message || 'Erro ao cancelar inscrição');
         return;
       }
 
@@ -346,14 +344,14 @@ function AdminPage() {
       loadParticipants(selectedEvent.id); // Reload participants
       loadEvents(); // Reload events to update available slots
       // Update selectedEvent to reflect the new available slots
-      setSelectedEvent((prev) => {
+      setSelectedEvent(prev => {
         if (!prev || prev.id !== selectedEvent.id) {
           return prev;
         }
         const currentSlots = typeof prev.availableSlots === 'number' ? prev.availableSlots : 0;
         return {
           ...prev,
-          availableSlots: currentSlots + 1,
+          availableSlots: currentSlots + 1
         };
       });
     } catch (error) {
@@ -374,20 +372,13 @@ function AdminPage() {
 
   return (
     <>
-      <Navbar 
-        user={user} 
-        onLogout={logout}
-        currentPage="admin"
-      />
-      
+      <Navbar user={user} onLogout={logout} currentPage="admin" />
+
       <section className="admin-section py-5">
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Eventos</h2>
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowCreateModal(true)}
-            >
+            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
               <i className="bi bi-plus-circle"></i> Criar Evento
             </button>
           </div>
@@ -395,28 +386,27 @@ function AdminPage() {
           {/* Search and Filters */}
           <div className="mb-4">
             <div className="input-group mb-2">
-              <span className="input-group-text"><i className="bi bi-search"></i></span>
-              <input 
-                type="text" 
-                className="form-control" 
+              <span className="input-group-text">
+                <i className="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                className="form-control"
                 placeholder="Buscar eventos por nome..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
-              <button 
-                className="btn btn-outline-secondary" 
-                onClick={() => setSearchQuery('')}
-              >
+              <button className="btn btn-outline-secondary" onClick={() => setSearchQuery('')}>
                 <i className="bi bi-x"></i> Limpar
               </button>
             </div>
             <div className="form-check form-switch">
-              <input 
-                className="form-check-input" 
-                type="checkbox" 
+              <input
+                className="form-check-input"
+                type="checkbox"
                 id="activeOnlySwitch"
                 checked={activeOnly}
-                onChange={(e) => setActiveOnly(e.target.checked)}
+                onChange={e => setActiveOnly(e.target.checked)}
               />
               <label className="form-check-label" htmlFor="activeOnlySwitch">
                 <i className="bi bi-funnel"></i> Mostrar apenas eventos ativos
@@ -477,21 +467,21 @@ function AdminPage() {
                         </td>
                         <td>
                           <div className="btn-group" role="group" aria-label="Event actions">
-                            <button 
+                            <button
                               className="btn btn-sm btn-primary"
                               title="Editar"
                               onClick={() => openEditModal(event)}
                             >
                               <i className="bi bi-pencil"></i>
                             </button>
-                            <button 
+                            <button
                               className="btn btn-sm btn-info"
                               title="Ver Participantes"
                               onClick={() => openParticipantsModal(event)}
                             >
                               <i className="bi bi-people"></i>
                             </button>
-                            <button 
+                            <button
                               className="btn btn-sm btn-danger"
                               title="Excluir"
                               onClick={() => {
@@ -525,9 +515,9 @@ function AdminPage() {
               <form onSubmit={handleCreateEvent}>
                 <div className="modal-header">
                   <h5 className="modal-title">Criar Novo Evento</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => {
                       setShowCreateModal(false);
                       setCreateFormData({
@@ -543,62 +533,72 @@ function AdminPage() {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="eventTitle" className="form-label">Título *</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="eventTitle" className="form-label">
+                      Título *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="eventTitle"
                       placeholder="Workshop de Node.js"
                       value={createFormData.title}
-                      onChange={(e) => setCreateFormData({...createFormData, title: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, title: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="eventDescription" className="form-label">Descrição *</label>
-                    <textarea 
-                      className="form-control" 
+                    <label htmlFor="eventDescription" className="form-label">
+                      Descrição *
+                    </label>
+                    <textarea
+                      className="form-control"
                       id="eventDescription"
                       rows="3"
                       placeholder="Aprenda os fundamentos do Node.js..."
                       value={createFormData.description}
-                      onChange={(e) => setCreateFormData({...createFormData, description: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, description: e.target.value })}
                       required
                     ></textarea>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="eventDateTime" className="form-label">Data e Horário *</label>
-                    <input 
-                      type="datetime-local" 
-                      className="form-control" 
+                    <label htmlFor="eventDateTime" className="form-label">
+                      Data e Horário *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      className="form-control"
                       id="eventDateTime"
                       value={createFormData.dateTime}
-                      onChange={(e) => setCreateFormData({...createFormData, dateTime: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, dateTime: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="eventSlots" className="form-label">Número de Vagas *</label>
-                    <input 
-                      type="number" 
-                      className="form-control" 
+                    <label htmlFor="eventSlots" className="form-label">
+                      Número de Vagas *
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
                       id="eventSlots"
                       min="1"
                       placeholder="50"
                       value={createFormData.totalSlots}
-                      onChange={(e) => setCreateFormData({...createFormData, totalSlots: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, totalSlots: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="eventLocal" className="form-label">Local</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="eventLocal" className="form-label">
+                      Local
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="eventLocal"
                       placeholder="Auditório Principal, Sala 301, etc."
                       value={createFormData.local}
-                      onChange={(e) => setCreateFormData({...createFormData, local: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, local: e.target.value })}
                     />
                   </div>
                   {createError && (
@@ -608,9 +608,9 @@ function AdminPage() {
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-sm btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
                     onClick={() => {
                       setShowCreateModal(false);
                       setCreateFormData({
@@ -625,10 +625,7 @@ function AdminPage() {
                   >
                     Cancelar
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-sm btn-primary"
-                  >
+                  <button type="submit" className="btn btn-sm btn-primary">
                     Criar Evento
                   </button>
                 </div>
@@ -647,9 +644,9 @@ function AdminPage() {
               <form onSubmit={handleUpdateEvent}>
                 <div className="modal-header">
                   <h5 className="modal-title">Editar Evento</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedEvent(null);
@@ -667,71 +664,81 @@ function AdminPage() {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="editEventTitle" className="form-label">Título *</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="editEventTitle" className="form-label">
+                      Título *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="editEventTitle"
                       placeholder="Workshop de Node.js"
                       value={editFormData.title}
-                      onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, title: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editEventDescription" className="form-label">Descrição *</label>
-                    <textarea 
-                      className="form-control" 
+                    <label htmlFor="editEventDescription" className="form-label">
+                      Descrição *
+                    </label>
+                    <textarea
+                      className="form-control"
                       id="editEventDescription"
                       rows="3"
                       placeholder="Aprenda os fundamentos do Node.js..."
                       value={editFormData.description}
-                      onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, description: e.target.value })}
                       required
                     ></textarea>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editEventDateTime" className="form-label">Data e Horário *</label>
-                    <input 
-                      type="datetime-local" 
-                      className="form-control" 
+                    <label htmlFor="editEventDateTime" className="form-label">
+                      Data e Horário *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      className="form-control"
                       id="editEventDateTime"
                       value={editFormData.dateTime}
-                      onChange={(e) => setEditFormData({...editFormData, dateTime: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, dateTime: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editEventSlots" className="form-label">Número de Vagas *</label>
-                    <input 
-                      type="number" 
-                      className="form-control" 
+                    <label htmlFor="editEventSlots" className="form-label">
+                      Número de Vagas *
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
                       id="editEventSlots"
                       min="1"
                       placeholder="50"
                       value={editFormData.totalSlots}
-                      onChange={(e) => setEditFormData({...editFormData, totalSlots: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, totalSlots: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editEventLocal" className="form-label">Local</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="editEventLocal" className="form-label">
+                      Local
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="editEventLocal"
                       placeholder="Auditório Principal, Sala 301, etc."
                       value={editFormData.local}
-                      onChange={(e) => setEditFormData({...editFormData, local: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, local: e.target.value })}
                     />
                   </div>
                   <div className="mb-3 form-check">
-                    <input 
-                      type="checkbox" 
-                      className="form-check-input" 
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
                       id="editEventIsActive"
                       checked={editFormData.isActive}
-                      onChange={(e) => setEditFormData({...editFormData, isActive: e.target.checked})}
+                      onChange={e => setEditFormData({ ...editFormData, isActive: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="editEventIsActive">
                       Ativo
@@ -744,9 +751,9 @@ function AdminPage() {
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-sm btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedEvent(null);
@@ -763,10 +770,7 @@ function AdminPage() {
                   >
                     Cancelar
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-sm btn-primary"
-                  >
+                  <button type="submit" className="btn btn-sm btn-primary">
                     Atualizar
                   </button>
                 </div>
@@ -783,12 +787,10 @@ function AdminPage() {
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">
-                  Participantes - {selectedEvent?.title}
-                </h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
+                <h5 className="modal-title">Participantes - {selectedEvent?.title}</h5>
+                <button
+                  type="button"
+                  className="btn-close"
                   onClick={() => {
                     setShowParticipantsModal(false);
                     setSelectedEvent(null);
@@ -832,7 +834,7 @@ function AdminPage() {
                                 <td>{participant.email}</td>
                                 <td>{participant.phone}</td>
                                 <td>
-                                  {participant.registeredAt 
+                                  {participant.registeredAt
                                     ? new Date(participant.registeredAt).toLocaleString('pt-BR', {
                                         day: '2-digit',
                                         month: '2-digit',
@@ -840,11 +842,10 @@ function AdminPage() {
                                         hour: '2-digit',
                                         minute: '2-digit'
                                       })
-                                    : 'N/A'
-                                  }
+                                    : 'N/A'}
                                 </td>
                                 <td>
-                                  <button 
+                                  <button
                                     className="btn btn-sm btn-danger"
                                     onClick={() => handleCancelRegistration(participant.id)}
                                     disabled={cancelingParticipant === participant.id}
@@ -852,7 +853,11 @@ function AdminPage() {
                                   >
                                     {cancelingParticipant === participant.id ? (
                                       <>
-                                        <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        <span
+                                          className="spinner-border spinner-border-sm me-1"
+                                          role="status"
+                                          aria-hidden="true"
+                                        ></span>
                                         Cancelando...
                                       </>
                                     ) : (
@@ -869,10 +874,10 @@ function AdminPage() {
                         </div>
                       </div>
                     )}
-                    
+
                     {!loadingParticipants && selectedEvent && (selectedEvent.availableSlots ?? 0) > 0 && (
                       <div className="mt-3">
-                        <button 
+                        <button
                           className="btn btn-sm btn-success"
                           onClick={() => setShowAddParticipant(true)}
                           title="Adicionar Participante"
@@ -885,38 +890,44 @@ function AdminPage() {
                 ) : (
                   <form onSubmit={handleAddParticipant}>
                     <div className="mb-3">
-                      <label htmlFor="participantName" className="form-label">Nome Completo *</label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
+                      <label htmlFor="participantName" className="form-label">
+                        Nome Completo *
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
                         id="participantName"
                         placeholder="João Silva"
                         value={participantFormData.name}
-                        onChange={(e) => setParticipantFormData({...participantFormData, name: e.target.value})}
+                        onChange={e => setParticipantFormData({ ...participantFormData, name: e.target.value })}
                         required
                       />
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="participantEmail" className="form-label">Email *</label>
-                      <input 
-                        type="email" 
-                        className="form-control" 
+                      <label htmlFor="participantEmail" className="form-label">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        className="form-control"
                         id="participantEmail"
                         placeholder="joao@example.com"
                         value={participantFormData.email}
-                        onChange={(e) => setParticipantFormData({...participantFormData, email: e.target.value})}
+                        onChange={e => setParticipantFormData({ ...participantFormData, email: e.target.value })}
                         required
                       />
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="participantPhone" className="form-label">Telefone *</label>
-                      <input 
-                        type="tel" 
-                        className="form-control" 
+                      <label htmlFor="participantPhone" className="form-label">
+                        Telefone *
+                      </label>
+                      <input
+                        type="tel"
+                        className="form-control"
                         id="participantPhone"
                         placeholder="+5511999999999"
                         value={participantFormData.phone}
-                        onChange={(e) => setParticipantFormData({...participantFormData, phone: e.target.value})}
+                        onChange={e => setParticipantFormData({ ...participantFormData, phone: e.target.value })}
                         required
                         pattern="[+]?[0-9]{10,15}"
                         title="Informe um telefone no formato internacional, por exemplo: +5511999999999"
@@ -928,7 +939,7 @@ function AdminPage() {
                       </div>
                     )}
                     <div className="d-flex gap-2">
-                      <button 
+                      <button
                         type="button"
                         className="btn btn-sm btn-secondary"
                         onClick={() => {
@@ -939,11 +950,7 @@ function AdminPage() {
                       >
                         Cancelar
                       </button>
-                      <button 
-                        type="submit"
-                        className="btn btn-sm btn-success"
-                        disabled={addingParticipant}
-                      >
+                      <button type="submit" className="btn btn-sm btn-success" disabled={addingParticipant}>
                         {addingParticipant ? 'Adicionando...' : 'Adicionar'}
                       </button>
                     </div>
@@ -951,9 +958,9 @@ function AdminPage() {
                 )}
               </div>
               <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-sm btn-secondary" 
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary"
                   onClick={() => {
                     setShowParticipantsModal(false);
                     setSelectedEvent(null);

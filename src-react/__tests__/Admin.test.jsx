@@ -34,12 +34,10 @@ describe('Admin Page - Event API Integration', () => {
       local: 'Test Location'
     };
 
-    const data = await testApiCall(
-      'http://localhost:3000/api/events',
-      'POST',
-      mockEventData,
-      { ...mockEventData, id: '1' }
-    );
+    const data = await testApiCall('http://localhost:3000/api/events', 'POST', mockEventData, {
+      ...mockEventData,
+      id: '1'
+    });
 
     expect(data.data).toHaveProperty('id');
   });
@@ -54,12 +52,10 @@ describe('Admin Page - Event API Integration', () => {
       isActive: true
     };
 
-    const data = await testApiCall(
-      'http://localhost:3000/api/events/1',
-      'PUT',
-      mockEventData,
-      { ...mockEventData, id: '1' }
-    );
+    const data = await testApiCall('http://localhost:3000/api/events/1', 'PUT', mockEventData, {
+      ...mockEventData,
+      id: '1'
+    });
 
     expect(data.data).toHaveProperty('id');
   });
@@ -67,14 +63,21 @@ describe('Admin Page - Event API Integration', () => {
   it('should handle update errors correctly', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ error: 'Update failed' })
+      json: () =>
+        Promise.resolve({
+          error: {
+            code: 'UPDATE_ERROR',
+            message: 'Update failed',
+            timestamp: new Date().toISOString()
+          }
+        })
     });
 
     const response = await fetch('http://localhost:3000/api/events/1', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer fake-token'
+        Authorization: 'Bearer fake-token'
       },
       body: JSON.stringify({})
     });
@@ -82,5 +85,6 @@ describe('Admin Page - Event API Integration', () => {
     expect(response.ok).toBe(false);
     const data = await response.json();
     expect(data).toHaveProperty('error');
+    expect(data.error).toHaveProperty('message');
   });
 });
