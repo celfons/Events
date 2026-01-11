@@ -11,11 +11,11 @@ class MongoEventRepository extends EventRepository {
       description: event.description,
       dateTime: event.dateTime,
       totalSlots: event.totalSlots,
-      availableSlots: event.availableSlots !== undefined ? event.availableSlots : event.totalSlots,
+      availableSlots: event.availableSlots ?? event.totalSlots,
       participants: [],
       userId: event.userId,
       local: event.local,
-      isActive: event.isActive !== undefined ? event.isActive : true,
+      isActive: event.isActive ?? true,
       eventCode: event.eventCode
     });
 
@@ -370,7 +370,7 @@ class MongoEventRepository extends EventRepository {
       createdAt: eventModel.createdAt,
       userId: eventModel.userId ? eventModel.userId.toString() : null,
       local: eventModel.local,
-      isActive: eventModel.isActive !== undefined ? eventModel.isActive : true,
+      isActive: eventModel.isActive ?? true,
       eventCode: eventModel.eventCode
     });
   }
