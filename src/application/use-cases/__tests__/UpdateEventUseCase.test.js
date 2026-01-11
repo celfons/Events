@@ -470,6 +470,248 @@ describe('UpdateEventUseCase', () => {
     });
   });
 
+  describe('WhatsApp Notifications', () => {
+    let mockMessagingService;
+
+    beforeEach(() => {
+      mockMessagingService = {
+        sendEventUpdate: jest.fn().mockResolvedValue({ success: true })
+      };
+    });
+
+    it('should send WhatsApp notifications when event date changes', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '123';
+      const existingEvent = {
+        id: eventId,
+        title: 'Test Event',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Original Location',
+        participants: [
+          { id: '1', name: 'John Doe', phone: '11987654321', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane Smith', phone: '11987654322', email: 'jane@test.com', status: 'confirmed' }
+        ]
+      };
+
+      const updateData = {
+        dateTime: new Date('2025-01-15T14:00:00')
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        dateTime: updateData.dateTime,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, dateTime: updateData.dateTime })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(2);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith({
+        to: '11987654321',
+        name: 'John Doe',
+        eventTitle: 'Test Event',
+        newDate: updateData.dateTime,
+        newLocal: null
+      });
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith({
+        to: '11987654322',
+        name: 'Jane Smith',
+        eventTitle: 'Test Event',
+        newDate: updateData.dateTime,
+        newLocal: null
+      });
+    });
+
+    it('should send WhatsApp notifications when event location changes', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '456';
+      const existingEvent = {
+        id: eventId,
+        title: 'Workshop Event',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Original Location',
+        participants: [{ id: '1', name: 'Alice', phone: '11987654321', email: 'alice@test.com', status: 'confirmed' }]
+      };
+
+      const updateData = {
+        local: 'New Location Building'
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        local: updateData.local,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, local: updateData.local })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith({
+        to: '11987654321',
+        name: 'Alice',
+        eventTitle: 'Workshop Event',
+        newDate: null,
+        newLocal: 'New Location Building'
+      });
+    });
+
+    it('should send WhatsApp notifications when both date and location change', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '789';
+      const existingEvent = {
+        id: eventId,
+        title: 'Conference',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Old Venue',
+        participants: [{ id: '1', name: 'Bob', phone: '11987654321', email: 'bob@test.com', status: 'confirmed' }]
+      };
+
+      const updateData = {
+        dateTime: new Date('2025-01-20T09:00:00'),
+        local: 'New Convention Center'
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        ...updateData,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, ...updateData })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith({
+        to: '11987654321',
+        name: 'Bob',
+        eventTitle: 'Conference',
+        newDate: updateData.dateTime,
+        newLocal: 'New Convention Center'
+      });
+    });
+
+    it('should not send WhatsApp notifications when date and location do not change', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '999';
+      const existingEvent = {
+        id: eventId,
+        title: 'Meetup',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Same Location',
+        participants: [
+          { id: '1', name: 'Charlie', phone: '11987654321', email: 'charlie@test.com', status: 'confirmed' }
+        ]
+      };
+
+      const updateData = {
+        title: 'Updated Meetup Title'
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        title: updateData.title,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, title: updateData.title })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should only notify confirmed participants', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+
+      const eventId = '111';
+      const existingEvent = {
+        id: eventId,
+        title: 'Test Event',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Location',
+        participants: [
+          { id: '1', name: 'Confirmed User', phone: '11987654321', email: 'confirmed@test.com', status: 'confirmed' },
+          { id: '2', name: 'Pending User', phone: '11987654322', email: 'pending@test.com', status: 'pending' },
+          { id: '3', name: 'Cancelled User', phone: '11987654323', email: 'cancelled@test.com', status: 'cancelled' }
+        ]
+      };
+
+      const updateData = {
+        dateTime: new Date('2025-01-15T14:00:00')
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        dateTime: updateData.dateTime,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, dateTime: updateData.dateTime })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith({
+        to: '11987654321',
+        name: 'Confirmed User',
+        eventTitle: 'Test Event',
+        newDate: updateData.dateTime,
+        newLocal: null
+      });
+    });
+
+    it('should continue successfully even if WhatsApp notification fails', async () => {
+      const updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+      mockMessagingService.sendEventUpdate.mockRejectedValue(new Error('WhatsApp API error'));
+
+      const eventId = '222';
+      const existingEvent = {
+        id: eventId,
+        title: 'Test Event',
+        dateTime: new Date('2024-12-31T10:00:00'),
+        local: 'Location',
+        participants: [{ id: '1', name: 'User', phone: '11987654321', email: 'user@test.com', status: 'confirmed' }]
+      };
+
+      const updateData = {
+        dateTime: new Date('2025-01-15T14:00:00')
+      };
+
+      const updatedEvent = {
+        ...existingEvent,
+        dateTime: updateData.dateTime,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, dateTime: updateData.dateTime })
+      };
+
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+
+      const result = await updateEventUseCaseWithMessaging.execute(eventId, updateData);
+
+      expect(result.success).toBe(true);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalled();
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle repository errors gracefully', async () => {
       mockEventRepository.findById.mockRejectedValue(new Error('Database error'));

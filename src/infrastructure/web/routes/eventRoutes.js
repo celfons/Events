@@ -325,6 +325,69 @@ function createEventRoutes(eventController) {
     asyncHandler((req, res) => eventController.deleteEvent(req, res))
   );
 
+  /**
+   * @swagger
+   * /api/events/{id}/send-reminder:
+   *   post:
+   *     summary: Send event reminder to participants
+   *     tags: [Events]
+   *     security:
+   *       - bearerAuth: []
+   *     description: Send WhatsApp reminder notifications to all confirmed participants of an event (authentication required)
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Event ID
+   *     responses:
+   *       200:
+   *         description: Event reminders sent successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     total:
+   *                       type: number
+   *                     sent:
+   *                       type: number
+   *                     failed:
+   *                       type: number
+   *                     errors:
+   *                       type: array
+   *       400:
+   *         description: Bad request
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Unauthorized - Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.post(
+    '/:id/send-reminder',
+    authenticateToken,
+    validate({ params: eventIdParamSchema }),
+    asyncHandler((req, res) => eventController.sendEventReminder(req, res))
+  );
+
   return router;
 }
 

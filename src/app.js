@@ -27,6 +27,7 @@ const GetEventParticipantsUseCase = require('./application/use-cases/GetEventPar
 const RegisterForEventUseCase = require('./application/use-cases/RegisterForEventUseCase');
 const CancelRegistrationUseCase = require('./application/use-cases/CancelRegistrationUseCase');
 const ConfirmRegistrationUseCase = require('./application/use-cases/ConfirmRegistrationUseCase');
+const SendEventReminderUseCase = require('./application/use-cases/SendEventReminderUseCase');
 const LoginUseCase = require('./application/use-cases/LoginUseCase');
 const RegisterUseCase = require('./application/use-cases/RegisterUseCase');
 const ListUsersUseCase = require('./application/use-cases/ListUsersUseCase');
@@ -102,12 +103,13 @@ function createApp() {
   const listUserEventsUseCase = new ListUserEventsUseCase(eventRepository);
   const getEventDetailsUseCase = new GetEventDetailsUseCase(eventRepository);
   const createEventUseCase = new CreateEventUseCase(eventRepository);
-  const updateEventUseCase = new UpdateEventUseCase(eventRepository);
+  const updateEventUseCase = new UpdateEventUseCase(eventRepository, whatsAppService);
   const deleteEventUseCase = new DeleteEventUseCase(eventRepository);
   const getEventParticipantsUseCase = new GetEventParticipantsUseCase(eventRepository);
   const registerForEventUseCase = new RegisterForEventUseCase(eventRepository, whatsAppService);
   const cancelRegistrationUseCase = new CancelRegistrationUseCase(eventRepository, whatsAppService);
   const confirmRegistrationUseCase = new ConfirmRegistrationUseCase(eventRepository, whatsAppService);
+  const sendEventReminderUseCase = new SendEventReminderUseCase(eventRepository, whatsAppService);
   const loginUseCase = new LoginUseCase(userRepository);
   const registerUseCase = new RegisterUseCase(userRepository);
   const listUsersUseCase = new ListUsersUseCase(userRepository);
@@ -122,7 +124,8 @@ function createApp() {
     updateEventUseCase,
     deleteEventUseCase,
     getEventParticipantsUseCase,
-    listUserEventsUseCase
+    listUserEventsUseCase,
+    sendEventReminderUseCase
   );
   const registrationController = new RegistrationController(
     registerForEventUseCase,

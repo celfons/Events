@@ -1,6 +1,9 @@
+const logger = require('../../infrastructure/logging/logger');
+
 class UpdateEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, messagingService = null) {
     this.eventRepository = eventRepository;
+    this.messagingService = messagingService;
   }
 
   async execute(id, eventData, userId = null) {
@@ -100,8 +103,35 @@ class UpdateEventUseCase {
         updateData.availableSlots = newAvailableSlots;
       }
 
+      // Track if date or location changed for notifications
+      const dateChanged = updateData.dateTime !== undefined && updateData.dateTime !== existingEvent.dateTime;
+      const locationChanged = updateData.local !== undefined && updateData.local !== existingEvent.local;
+
       // Update only provided fields
       const updatedEvent = await this.eventRepository.update(id, updateData);
+
+      // Send WhatsApp notifications to confirmed participants if date or location changed
+      if (this.messagingService && (dateChanged || locationChanged)) {
+        const confirmedParticipants = existingEvent.participants.filter(p => p.status === 'confirmed');
+
+        confirmedParticipants.forEach(participant => {
+          this.messagingService
+            .sendEventUpdate({
+              to: participant.phone,
+              name: participant.name,
+              eventTitle: existingEvent.title,
+              newDate: dateChanged ? updateData.dateTime : null,
+              newLocal: locationChanged ? updateData.local : null
+            })
+            .catch(error => {
+              logger.error('Failed to send WhatsApp event update notification', {
+                error: error.message,
+                participantId: participant.id,
+                eventId: id
+              });
+            });
+        });
+      }
 
       return {
         success: true,
