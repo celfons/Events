@@ -169,7 +169,7 @@ class MongoEventRepository extends EventRepository {
       _id: eventId,
       participants: {
         $elemMatch: {
-          email: normalizedEmail,
+          email: { $eq: normalizedEmail },
           $or: [
             { status: 'confirmed' },
             {
@@ -219,7 +219,7 @@ class MongoEventRepository extends EventRepository {
       _id: eventId,
       participants: {
         $elemMatch: {
-          phone: phone,
+          phone: { $eq: phone },
           $or: [
             { status: 'confirmed' },
             {
