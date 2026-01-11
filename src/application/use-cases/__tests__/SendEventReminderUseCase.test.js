@@ -1,19 +1,10 @@
 const SendEventReminderUseCase = require('../SendEventReminderUseCase');
+const { createMockEvent } = require('./testHelpers');
 
 describe('SendEventReminderUseCase', () => {
   let mockEventRepository;
   let mockMessagingService;
   let sendEventReminderUseCase;
-
-  // Helper function to create a mock event
-  const createMockEvent = (overrides = {}) => ({
-    id: '123',
-    title: 'Test Event',
-    dateTime: new Date('2024-12-31T10:00:00'),
-    local: 'Test Location',
-    participants: [{ id: '1', name: 'John Doe', phone: '11987654321', email: 'john@test.com', status: 'confirmed' }],
-    ...overrides
-  });
 
   beforeEach(() => {
     mockEventRepository = {

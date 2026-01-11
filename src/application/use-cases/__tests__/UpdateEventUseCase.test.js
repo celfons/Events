@@ -1,4 +1,5 @@
 const UpdateEventUseCase = require('../UpdateEventUseCase');
+const { createMockEvent } = require('./testHelpers');
 
 describe('UpdateEventUseCase', () => {
   let mockEventRepository;
@@ -473,16 +474,6 @@ describe('UpdateEventUseCase', () => {
   describe('WhatsApp Notifications', () => {
     let mockMessagingService;
     let updateEventUseCaseWithMessaging;
-
-    // Helper function to create mock event with participants
-    const createMockEvent = (overrides = {}) => ({
-      id: '123',
-      title: 'Test Event',
-      dateTime: new Date('2024-12-31T10:00:00'),
-      local: 'Original Location',
-      participants: [{ id: '1', name: 'User', phone: '11987654321', email: 'user@test.com', status: 'confirmed' }],
-      ...overrides
-    });
 
     // Helper function to setup test execution
     const setupAndExecuteUpdate = async (existingEvent, updateData) => {

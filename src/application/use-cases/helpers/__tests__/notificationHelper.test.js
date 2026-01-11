@@ -1,4 +1,8 @@
-const { getConfirmedParticipants, sendNotificationsWithErrorHandling } = require('../notificationHelper');
+const {
+  getConfirmedParticipants,
+  sendNotificationsWithErrorHandling,
+  sendNotificationsWithTracking
+} = require('../notificationHelper');
 
 describe('notificationHelper', () => {
   describe('getConfirmedParticipants', () => {
@@ -70,6 +74,59 @@ describe('notificationHelper', () => {
       await sendNotificationsWithErrorHandling(participants, sendFunction);
 
       expect(sendFunction).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('sendNotificationsWithTracking', () => {
+    it('should track successful notifications', async () => {
+      const participants = [
+        { id: '1', name: 'User1' },
+        { id: '2', name: 'User2' }
+      ];
+      const sendFunction = jest.fn().mockResolvedValue({ success: true });
+
+      const results = await sendNotificationsWithTracking(participants, sendFunction);
+
+      expect(results).toMatchObject({ total: 2, sent: 2, failed: 0 });
+      expect(results.errors).toHaveLength(0);
+    });
+
+    it('should track failed notifications', async () => {
+      const participants = [{ id: '1', name: 'User1' }];
+      const sendFunction = jest.fn().mockResolvedValue({ success: false, error: 'Invalid phone' });
+
+      const results = await sendNotificationsWithTracking(participants, sendFunction);
+
+      expect(results).toMatchObject({ total: 1, sent: 0, failed: 1 });
+      expect(results.errors).toContainEqual({ participantId: '1', error: 'Invalid phone' });
+    });
+
+    it('should track exceptions', async () => {
+      const participants = [{ id: '1', name: 'User1' }];
+      const sendFunction = jest.fn().mockRejectedValue(new Error('Network error'));
+
+      const results = await sendNotificationsWithTracking(participants, sendFunction);
+
+      expect(results).toMatchObject({ total: 1, sent: 0, failed: 1 });
+      expect(results.errors).toContainEqual({ participantId: '1', error: 'Network error' });
+    });
+
+    it('should track mixed results', async () => {
+      const participants = [
+        { id: '1', name: 'User1' },
+        { id: '2', name: 'User2' },
+        { id: '3', name: 'User3' }
+      ];
+      const sendFunction = jest
+        .fn()
+        .mockResolvedValueOnce({ success: true })
+        .mockResolvedValueOnce({ success: false, error: 'Invalid' })
+        .mockRejectedValueOnce(new Error('Exception'));
+
+      const results = await sendNotificationsWithTracking(participants, sendFunction);
+
+      expect(results).toMatchObject({ total: 3, sent: 1, failed: 2 });
+      expect(results.errors).toHaveLength(2);
     });
   });
 });
