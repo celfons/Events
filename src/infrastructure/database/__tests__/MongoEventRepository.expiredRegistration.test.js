@@ -14,7 +14,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
   });
 
   describe('findParticipantByEmail', () => {
-    it('should not find participant with expired pending registration', async () => {
+    it('should not find participant with pending registration (expired or non-expired)', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       const email = 'john@example.com';
 
@@ -23,28 +23,6 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
       const result = await repository.findParticipantByEmail(eventId, email);
 
       expect(result).toBeNull();
-      expect(EventModel.findOne).toHaveBeenCalledWith({
-        _id: eventId,
-        participants: {
-          $elemMatch: {
-            email: { $eq: email.toLowerCase() },
-            status: 'confirmed'
-          }
-        }
-      });
-    });
-
-    it('should not find participant with non-expired pending registration', async () => {
-      const eventId = '507f1f77bcf86cd799439011';
-      const email = 'john@example.com';
-
-      // Mock no confirmed participant found (pending registrations are ignored)
-      EventModel.findOne = jest.fn().mockResolvedValue(null);
-
-      const result = await repository.findParticipantByEmail(eventId, email);
-
-      expect(result).toBeNull();
-      // New behavior: only checks for confirmed participants
       expect(EventModel.findOne).toHaveBeenCalledWith({
         _id: eventId,
         participants: {
@@ -87,7 +65,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
   });
 
   describe('findParticipantByPhone', () => {
-    it('should not find participant with expired pending registration', async () => {
+    it('should not find participant with pending registration (expired or non-expired)', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       const phone = '+1234567890';
 
@@ -96,28 +74,6 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
       const result = await repository.findParticipantByPhone(eventId, phone);
 
       expect(result).toBeNull();
-      expect(EventModel.findOne).toHaveBeenCalledWith({
-        _id: eventId,
-        participants: {
-          $elemMatch: {
-            phone: { $eq: phone },
-            status: 'confirmed'
-          }
-        }
-      });
-    });
-
-    it('should not find participant with non-expired pending registration', async () => {
-      const eventId = '507f1f77bcf86cd799439011';
-      const phone = '+1234567890';
-
-      // Mock no confirmed participant found (pending registrations are ignored)
-      EventModel.findOne = jest.fn().mockResolvedValue(null);
-
-      const result = await repository.findParticipantByPhone(eventId, phone);
-
-      expect(result).toBeNull();
-      // New behavior: only checks for confirmed participants
       expect(EventModel.findOne).toHaveBeenCalledWith({
         _id: eventId,
         participants: {

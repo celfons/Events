@@ -163,49 +163,18 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error.message).toContain('already registered');
     });
 
-    it('should allow registration when previous registration has expired verification code', async () => {
-      // Register once with expired verification code
-      const expiredRegistration = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1234567890',
-        status: 'pending',
-        verificationCode: '123456',
-        verificationCodeExpiresAt: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago (expired)
-      };
-
-      await eventRepository.addParticipant(eventId, expiredRegistration);
-
-      // Try to register again with same email - should succeed for expired pending registrations
-      const registrationData = {
-        eventId: eventId,
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1234567890'
-      };
-
-      const response = await request(app).post('/api/registrations').send(registrationData).expect(201);
-
-      expect(response.body).toHaveProperty('data');
-      expect(response.body.data).toHaveProperty('id');
-      expect(response.body.data.email).toBe('john@example.com');
-      expect(response.body.data.status).toBe('pending');
-    });
-
-    it('should allow registration when previous registration is pending (non-expired)', async () => {
-      // Register once with non-expired pending status
+    const testReRegistrationWithPendingStatus = async (verificationCodeExpiresAt, testDescription) => {
       const pendingRegistration = {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+1234567890',
         status: 'pending',
         verificationCode: '123456',
-        verificationCodeExpiresAt: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes from now (not expired)
+        verificationCodeExpiresAt
       };
 
       await eventRepository.addParticipant(eventId, pendingRegistration);
 
-      // Try to register again with same email - should succeed for non-expired pending registrations too
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -219,6 +188,20 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data.email).toBe('john@example.com');
       expect(response.body.data.status).toBe('pending');
+    };
+
+    it('should allow registration when previous registration has expired verification code', async () => {
+      await testReRegistrationWithPendingStatus(
+        new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago (expired)
+        'expired pending registrations'
+      );
+    });
+
+    it('should allow registration when previous registration is pending (non-expired)', async () => {
+      await testReRegistrationWithPendingStatus(
+        new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now (not expired)
+        'non-expired pending registrations'
+      );
     });
 
     it('should not allow registration when previous registration is confirmed', async () => {
