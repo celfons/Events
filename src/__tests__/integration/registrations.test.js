@@ -145,7 +145,17 @@ describe('Registrations API Integration Tests', () => {
     });
 
     it('should return 400 when participant is already registered', async () => {
-      // Register once
+      // Register once with confirmed status
+      const confirmedRegistration = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        status: 'confirmed'
+      };
+
+      await eventRepository.addParticipant(eventId, confirmedRegistration);
+
+      // Try to register again with same email
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -153,9 +163,6 @@ describe('Registrations API Integration Tests', () => {
         phone: '+1234567890'
       };
 
-      await request(app).post('/api/registrations').send(registrationData).expect(201);
-
-      // Try to register again with same email
       const response = await request(app).post('/api/registrations').send(registrationData).expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -163,7 +170,7 @@ describe('Registrations API Integration Tests', () => {
       expect(response.body.error.message).toContain('already registered');
     });
 
-    const testReRegistrationWithPendingStatus = async (verificationCodeExpiresAt, testDescription) => {
+    const testReRegistrationWithPendingStatus = async verificationCodeExpiresAt => {
       const pendingRegistration = {
         name: 'John Doe',
         email: 'john@example.com',
@@ -192,15 +199,13 @@ describe('Registrations API Integration Tests', () => {
 
     it('should allow registration when previous registration has expired verification code', async () => {
       await testReRegistrationWithPendingStatus(
-        new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago (expired)
-        'expired pending registrations'
+        new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago (expired)
       );
     });
 
     it('should allow registration when previous registration is pending (non-expired)', async () => {
       await testReRegistrationWithPendingStatus(
-        new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now (not expired)
-        'non-expired pending registrations'
+        new Date(Date.now() + 15 * 60 * 1000) // 15 minutes from now (not expired)
       );
     });
 
