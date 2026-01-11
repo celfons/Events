@@ -11,7 +11,7 @@ import { getToken, isSuperuser } from '../utils/auth';
 function UsersPage() {
   const { user, logout } = useAuth();
   const { toasts, showSuccess, showError, removeToast } = useToast();
-  
+
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ function UsersPage() {
     const token = getToken();
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`
     };
   };
 
@@ -68,7 +68,7 @@ function UsersPage() {
       const response = await fetch(`${API_URL}/api/users`, {
         headers: getAuthHeaders()
       });
-      
+
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           window.location.href = '/?login=required';
@@ -76,7 +76,7 @@ function UsersPage() {
         }
         throw new Error('Erro ao carregar usuários');
       }
-      
+
       const responseData = await response.json();
       setUsers(responseData.data || []);
       setLoading(false);
@@ -90,16 +90,17 @@ function UsersPage() {
   const filterUsers = () => {
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase();
-      setFilteredUsers(users.filter(user => 
-        user.username.toLowerCase().includes(searchLower) ||
-        user.email.toLowerCase().includes(searchLower)
-      ));
+      setFilteredUsers(
+        users.filter(
+          user => user.username.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower)
+        )
+      );
     } else {
       setFilteredUsers(users);
     }
   };
 
-  const handleCreateUser = async (e) => {
+  const handleCreateUser = async e => {
     e.preventDefault();
     setCreateError('');
 
@@ -133,7 +134,7 @@ function UsersPage() {
     }
   };
 
-  const handleEditUser = async (e) => {
+  const handleEditUser = async e => {
     e.preventDefault();
     setEditError('');
 
@@ -205,7 +206,7 @@ function UsersPage() {
     }
   };
 
-  const openEditModal = (user) => {
+  const openEditModal = user => {
     setSelectedUser(user);
     setEditFormData({
       username: user.username,
@@ -224,38 +225,30 @@ function UsersPage() {
 
   return (
     <>
-      <Navbar 
-        user={user} 
-        onLogout={logout}
-        currentPage="users"
-      />
-      
+      <Navbar user={user} onLogout={logout} currentPage="users" />
+
       <section className="users-section py-5">
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Usuários</h2>
-            <button 
-              className="btn btn-primary" 
-              onClick={() => setShowCreateModal(true)}
-            >
+            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
               <i className="bi bi-plus-circle"></i> Criar Usuário
             </button>
           </div>
 
           <div className="mb-4">
             <div className="input-group">
-              <span className="input-group-text"><i className="bi bi-search"></i></span>
-              <input 
-                type="text" 
-                className="form-control" 
+              <span className="input-group-text">
+                <i className="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                className="form-control"
                 placeholder="Buscar usuários por nome ou email..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
-              <button 
-                className="btn btn-outline-secondary" 
-                onClick={() => setSearchQuery('')}
-              >
+              <button className="btn btn-outline-secondary" onClick={() => setSearchQuery('')}>
                 <i className="bi bi-x"></i> Limpar
               </button>
             </div>
@@ -312,14 +305,10 @@ function UsersPage() {
                       </td>
                       <td>
                         <div className="btn-group" role="group" aria-label="User actions">
-                          <button 
-                            className="btn btn-sm btn-primary"
-                            title="Editar"
-                            onClick={() => openEditModal(user)}
-                          >
+                          <button className="btn btn-sm btn-primary" title="Editar" onClick={() => openEditModal(user)}>
                             <i className="bi bi-pencil"></i>
                           </button>
-                          <button 
+                          <button
                             className="btn btn-sm btn-danger"
                             title="Excluir"
                             onClick={() => handleDeleteUser(user.id, user.username)}
@@ -348,9 +337,9 @@ function UsersPage() {
               <form onSubmit={handleCreateUser}>
                 <div className="modal-header">
                   <h5 className="modal-title">Criar Novo Usuário</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => {
                       setShowCreateModal(false);
                       setCreateFormData({
@@ -366,59 +355,67 @@ function UsersPage() {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Nome de Usuário *</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="username" className="form-label">
+                      Nome de Usuário *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="username"
                       value={createFormData.username}
-                      onChange={(e) => setCreateFormData({...createFormData, username: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, username: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email *</label>
-                    <input 
-                      type="email" 
-                      className="form-control" 
+                    <label htmlFor="email" className="form-label">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
                       id="email"
                       value={createFormData.email}
-                      onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, email: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Senha *</label>
-                    <input 
-                      type="password" 
-                      className="form-control" 
+                    <label htmlFor="password" className="form-label">
+                      Senha *
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
                       id="password"
                       value={createFormData.password}
-                      onChange={(e) => setCreateFormData({...createFormData, password: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, password: e.target.value })}
                       minLength="6"
                       required
                     />
                     <small className="form-text text-muted">Mínimo de 6 caracteres</small>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="role" className="form-label">Papel</label>
-                    <select 
-                      className="form-select" 
+                    <label htmlFor="role" className="form-label">
+                      Papel
+                    </label>
+                    <select
+                      className="form-select"
                       id="role"
                       value={createFormData.role}
-                      onChange={(e) => setCreateFormData({...createFormData, role: e.target.value})}
+                      onChange={e => setCreateFormData({ ...createFormData, role: e.target.value })}
                     >
                       <option value="user">Usuário</option>
                       <option value="superuser">Superusuário</option>
                     </select>
                   </div>
                   <div className="mb-3 form-check">
-                    <input 
-                      type="checkbox" 
-                      className="form-check-input" 
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
                       id="createUserIsActive"
                       checked={createFormData.isActive}
-                      onChange={(e) => setCreateFormData({...createFormData, isActive: e.target.checked})}
+                      onChange={e => setCreateFormData({ ...createFormData, isActive: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="createUserIsActive">
                       Ativo
@@ -431,9 +428,9 @@ function UsersPage() {
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     onClick={() => {
                       setShowCreateModal(false);
                       setCreateFormData({
@@ -448,10 +445,7 @@ function UsersPage() {
                   >
                     Cancelar
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                  >
+                  <button type="submit" className="btn btn-primary">
                     Criar Usuário
                   </button>
                 </div>
@@ -470,9 +464,9 @@ function UsersPage() {
               <form onSubmit={handleEditUser}>
                 <div className="modal-header">
                   <h5 className="modal-title">Editar Usuário</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedUser(null);
@@ -489,46 +483,54 @@ function UsersPage() {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="editUsername" className="form-label">Nome de Usuário *</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label htmlFor="editUsername" className="form-label">
+                      Nome de Usuário *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
                       id="editUsername"
                       value={editFormData.username}
-                      onChange={(e) => setEditFormData({...editFormData, username: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, username: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editEmail" className="form-label">Email *</label>
-                    <input 
-                      type="email" 
-                      className="form-control" 
+                    <label htmlFor="editEmail" className="form-label">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
                       id="editEmail"
                       value={editFormData.email}
-                      onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editPassword" className="form-label">Nova Senha (opcional)</label>
-                    <input 
-                      type="password" 
-                      className="form-control" 
+                    <label htmlFor="editPassword" className="form-label">
+                      Nova Senha (opcional)
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
                       id="editPassword"
                       value={editFormData.password}
-                      onChange={(e) => setEditFormData({...editFormData, password: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, password: e.target.value })}
                       placeholder="Deixe em branco para não alterar"
                     />
                     <small className="form-text text-muted">Mínimo de 6 caracteres se desejar alterar</small>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="editRole" className="form-label">Papel *</label>
-                    <select 
-                      className="form-control" 
+                    <label htmlFor="editRole" className="form-label">
+                      Papel *
+                    </label>
+                    <select
+                      className="form-control"
                       id="editRole"
                       value={editFormData.role}
-                      onChange={(e) => setEditFormData({...editFormData, role: e.target.value})}
+                      onChange={e => setEditFormData({ ...editFormData, role: e.target.value })}
                       required
                     >
                       <option value="user">Usuário</option>
@@ -536,12 +538,12 @@ function UsersPage() {
                     </select>
                   </div>
                   <div className="mb-3 form-check">
-                    <input 
-                      type="checkbox" 
-                      className="form-check-input" 
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
                       id="editUserIsActive"
                       checked={editFormData.isActive}
-                      onChange={(e) => setEditFormData({...editFormData, isActive: e.target.checked})}
+                      onChange={e => setEditFormData({ ...editFormData, isActive: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="editUserIsActive">
                       Ativo
@@ -554,9 +556,9 @@ function UsersPage() {
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedUser(null);
@@ -572,10 +574,7 @@ function UsersPage() {
                   >
                     Cancelar
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                  >
+                  <button type="submit" className="btn btn-primary">
                     Atualizar
                   </button>
                 </div>
