@@ -1,4 +1,5 @@
 const UpdateEventUseCase = require('../UpdateEventUseCase');
+const { createMockEvent, expectSuccessfulResult } = require('./testHelpers');
 
 describe('UpdateEventUseCase', () => {
   let mockEventRepository;
@@ -467,6 +468,106 @@ describe('UpdateEventUseCase', () => {
         totalSlots: 10,
         availableSlots: 8
       });
+    });
+  });
+
+  describe('WhatsApp Notifications', () => {
+    let mockMessagingService;
+    let updateEventUseCaseWithMessaging;
+
+    // Helper function to setup test execution
+    const setupAndExecuteUpdate = async (existingEvent, updateData) => {
+      const updatedEvent = {
+        ...existingEvent,
+        ...updateData,
+        toJSON: jest.fn().mockReturnValue({ ...existingEvent, ...updateData })
+      };
+      mockEventRepository.findById.mockResolvedValue(existingEvent);
+      mockEventRepository.update.mockResolvedValue(updatedEvent);
+      return await updateEventUseCaseWithMessaging.execute(existingEvent.id, updateData);
+    };
+
+    beforeEach(() => {
+      mockMessagingService = {
+        sendEventUpdate: jest.fn().mockResolvedValue({ success: true })
+      };
+      updateEventUseCaseWithMessaging = new UpdateEventUseCase(mockEventRepository, mockMessagingService);
+    });
+
+    it('should send WhatsApp notifications when event date changes', async () => {
+      const existingEvent = createMockEvent({
+        participants: [
+          { id: '1', name: 'John Doe', phone: '11987654321', email: 'john@test.com', status: 'confirmed' },
+          { id: '2', name: 'Jane Smith', phone: '11987654322', email: 'jane@test.com', status: 'confirmed' }
+        ]
+      });
+      const updateData = { dateTime: new Date('2025-01-15T14:00:00') };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should send WhatsApp notifications when event location changes', async () => {
+      const existingEvent = createMockEvent({ title: 'Workshop Event' });
+      const updateData = { local: 'New Location Building' };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ newLocal: 'New Location Building', newDate: null })
+      );
+    });
+
+    it('should send WhatsApp notifications when both date and location change', async () => {
+      const existingEvent = createMockEvent({ title: 'Conference', local: 'Old Venue' });
+      const updateData = { dateTime: new Date('2025-01-20T09:00:00'), local: 'New Convention Center' };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ newDate: updateData.dateTime, newLocal: 'New Convention Center' })
+      );
+    });
+
+    it('should not send WhatsApp notifications when date and location do not change', async () => {
+      const existingEvent = createMockEvent();
+      const updateData = { title: 'Updated Title' };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should only notify confirmed participants', async () => {
+      const existingEvent = createMockEvent({
+        participants: [
+          { id: '1', name: 'Confirmed', phone: '11987654321', email: 'confirmed@test.com', status: 'confirmed' },
+          { id: '2', name: 'Pending', phone: '11987654322', email: 'pending@test.com', status: 'pending' }
+        ]
+      });
+      const updateData = { dateTime: new Date('2025-01-15T14:00:00') };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('should continue successfully even if WhatsApp notification fails', async () => {
+      mockMessagingService.sendEventUpdate.mockRejectedValue(new Error('WhatsApp API error'));
+      const existingEvent = createMockEvent();
+      const updateData = { dateTime: new Date('2025-01-15T14:00:00') };
+
+      const result = await setupAndExecuteUpdate(existingEvent, updateData);
+
+      expectSuccessfulResult(result);
+      expect(mockMessagingService.sendEventUpdate).toHaveBeenCalled();
     });
   });
 

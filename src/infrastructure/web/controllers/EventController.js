@@ -8,7 +8,8 @@ class EventController {
     updateEventUseCase,
     deleteEventUseCase,
     getEventParticipantsUseCase,
-    listUserEventsUseCase
+    listUserEventsUseCase,
+    sendEventReminderUseCase
   ) {
     this.listEventsUseCase = listEventsUseCase;
     this.getEventDetailsUseCase = getEventDetailsUseCase;
@@ -17,6 +18,7 @@ class EventController {
     this.deleteEventUseCase = deleteEventUseCase;
     this.getEventParticipantsUseCase = getEventParticipantsUseCase;
     this.listUserEventsUseCase = listUserEventsUseCase;
+    this.sendEventReminderUseCase = sendEventReminderUseCase;
   }
 
   async listEvents(req, res) {
@@ -116,6 +118,19 @@ class EventController {
 
     const events = EventResponse.fromEntities(result.data);
     const successResponse = SuccessResponse.list(events);
+    return res.status(200).json(successResponse.toJSON());
+  }
+
+  async sendEventReminder(req, res) {
+    const { id } = req.params;
+    const result = await this.sendEventReminderUseCase.execute(id);
+
+    if (!result.success) {
+      const errorResponse = ErrorResponse.invalidInput(result.error);
+      return res.status(errorResponse.status).json(errorResponse.toJSON());
+    }
+
+    const successResponse = SuccessResponse.ok(result.data);
     return res.status(200).json(successResponse.toJSON());
   }
 }

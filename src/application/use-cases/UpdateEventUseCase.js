@@ -1,6 +1,10 @@
+const logger = require('../../infrastructure/logging/logger');
+const { getConfirmedParticipants, sendNotificationsWithErrorHandling } = require('./helpers/notificationHelper');
+
 class UpdateEventUseCase {
-  constructor(eventRepository) {
+  constructor(eventRepository, messagingService = null) {
     this.eventRepository = eventRepository;
+    this.messagingService = messagingService;
   }
 
   async execute(id, eventData, userId = null) {
@@ -100,8 +104,32 @@ class UpdateEventUseCase {
         updateData.availableSlots = newAvailableSlots;
       }
 
+      // Track if date or location changed for notifications
+      const dateChanged =
+        updateData.dateTime !== undefined &&
+        new Date(updateData.dateTime).getTime() !== new Date(existingEvent.dateTime).getTime();
+      const locationChanged = updateData.local !== undefined && updateData.local !== existingEvent.local;
+
       // Update only provided fields
       const updatedEvent = await this.eventRepository.update(id, updateData);
+
+      // Send WhatsApp notifications to confirmed participants if date or location changed
+      if (this.messagingService && (dateChanged || locationChanged)) {
+        const confirmedParticipants = getConfirmedParticipants(existingEvent);
+
+        await sendNotificationsWithErrorHandling(
+          confirmedParticipants,
+          participant =>
+            this.messagingService.sendEventUpdate({
+              to: participant.phone,
+              name: participant.name,
+              eventTitle: existingEvent.title,
+              newDate: dateChanged ? updateData.dateTime : null,
+              newLocal: locationChanged ? updateData.local : null
+            }),
+          { eventId: id, action: 'event update' }
+        );
+      }
 
       return {
         success: true,
