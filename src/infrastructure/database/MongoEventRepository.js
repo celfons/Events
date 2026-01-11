@@ -112,27 +112,15 @@ class MongoEventRepository extends EventRepository {
     if (participantData.status === 'pending') {
       const now = new Date();
       // Use aggregation to check if there's space (non-expired pending + confirmed < totalSlots)
-      queryConditions.$expr = {
-        $lt: [
+      const condition = {
+        $or: [
+          { $eq: ['$$p.status', 'confirmed'] },
           {
-            $size: {
-              $filter: {
-                input: '$participants',
-                as: 'p',
-                cond: {
-                  $or: [
-                    { $eq: ['$$p.status', 'confirmed'] },
-                    {
-                      $and: [{ $eq: ['$$p.status', 'pending'] }, { $gt: ['$$p.verificationCodeExpiresAt', now] }]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          '$totalSlots'
+            $and: [{ $eq: ['$$p.status', 'pending'] }, { $gt: ['$$p.verificationCodeExpiresAt', now] }]
+          }
         ]
       };
+      queryConditions.$expr = this._buildParticipantCountCheck(condition);
     } else if (participantData.status === 'confirmed') {
       // Check that confirmed participants count is less than totalSlots
       // This is more reliable than checking availableSlots which might be out of sync
@@ -333,13 +321,12 @@ class MongoEventRepository extends EventRepository {
   }
 
   /**
-   * Helper method to build MongoDB $expr aggregation for checking if confirmed
-   * participants count is below totalSlots. This is used in addParticipant and
-   * confirmParticipant to validate slot availability based on actual participant
-   * data rather than the potentially stale availableSlots field.
+   * Helper method to build MongoDB $expr aggregation for checking if the count
+   * of participants matching a condition is below totalSlots.
+   * @param {Object} filterCondition - MongoDB condition for filtering participants
    * @returns {Object} MongoDB $expr aggregation object
    */
-  _buildConfirmedParticipantsCheck() {
+  _buildParticipantCountCheck(filterCondition) {
     return {
       $lt: [
         {
@@ -347,13 +334,24 @@ class MongoEventRepository extends EventRepository {
             $filter: {
               input: '$participants',
               as: 'p',
-              cond: { $eq: ['$$p.status', 'confirmed'] }
+              cond: filterCondition
             }
           }
         },
         '$totalSlots'
       ]
     };
+  }
+
+  /**
+   * Helper method to build MongoDB $expr aggregation for checking if confirmed
+   * participants count is below totalSlots. This is used in addParticipant and
+   * confirmParticipant to validate slot availability based on actual participant
+   * data rather than the potentially stale availableSlots field.
+   * @returns {Object} MongoDB $expr aggregation object
+   */
+  _buildConfirmedParticipantsCheck() {
+    return this._buildParticipantCountCheck({ $eq: ['$$p.status', 'confirmed'] });
   }
 
   _toDomain(eventModel) {
