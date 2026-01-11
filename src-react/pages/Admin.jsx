@@ -871,7 +871,7 @@ function AdminPage() {
                           </tbody>
                         </table>
                         <div className="mt-3">
-                          <strong>Total de participantes confirmados: {participants.length}</strong>
+                          <strong>Participantes confirmados: {participants.length}</strong>
                         </div>
                       </div>
                     )}

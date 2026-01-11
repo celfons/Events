@@ -278,7 +278,6 @@ function UsersPage() {
                     <th>Nome de Usuário</th>
                     <th>Papel</th>
                     <th>Status</th>
-                    <th>Data de Criação</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -296,13 +295,6 @@ function UsersPage() {
                         <span className={`badge bg-${Boolean(user.isActive) ? 'success' : 'secondary'}`}>
                           {Boolean(user.isActive) ? 'Ativo' : 'Inativo'}
                         </span>
-                      </td>
-                      <td>
-                        {new Date(user.createdAt).toLocaleString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })}
                       </td>
                       <td>
                         <div className="btn-group" role="group" aria-label="User actions">
