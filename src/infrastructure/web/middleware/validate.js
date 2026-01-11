@@ -39,7 +39,14 @@ function validate(schemas) {
         }));
 
         const errorResponse = ErrorResponse.validationError(formattedErrors);
-        return res.status(errorResponse.status).json(errorResponse.toJSON());
+        const responseBody = errorResponse.toJSON();
+
+        // Add requestId for tracing
+        if (req.requestId) {
+          responseBody.requestId = req.requestId;
+        }
+
+        return res.status(errorResponse.status).json(responseBody);
       }
 
       // Pass other errors to error handler
