@@ -23,6 +23,7 @@ function EventDetailsPage() {
   const [pendingRegistration, setPendingRegistration] = useState(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // Get event ID from URL
   const eventId = window.location.pathname.split('/').pop();
@@ -128,6 +129,34 @@ function EventDetailsPage() {
       showError(error.message);
     }
     setConfirming(false);
+  };
+
+  const handleCancelRegistration = async () => {
+    if (!pendingRegistration) return;
+
+    setCancelling(true);
+    try {
+      const response = await fetchWithTracing(`${API_URL}/api/registrations/${pendingRegistration.id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: eventId
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Erro ao cancelar inscrição');
+      }
+
+      showSuccess('Inscrição cancelada com sucesso!');
+      setPendingRegistration(null);
+      setVerificationCode('');
+      loadEventDetails(); // Refresh to update available slots
+    } catch (error) {
+      showError(error.message);
+    }
+    setCancelling(false);
   };
 
   const handleShare = () => {
@@ -303,12 +332,10 @@ function EventDetailsPage() {
                           <button 
                             type="button" 
                             className="btn btn-outline-secondary w-100"
-                            onClick={() => {
-                              setPendingRegistration(null);
-                              setVerificationCode('');
-                            }}
+                            onClick={handleCancelRegistration}
+                            disabled={cancelling}
                           >
-                            Cancelar
+                            {cancelling ? 'Cancelando...' : 'Cancelar'}
                           </button>
                         </form>
                       )}
