@@ -27,7 +27,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
         _id: eventId,
         participants: {
           $elemMatch: {
-            email: email.toLowerCase(),
+            email: { $eq: email.toLowerCase() },
             $or: [
               { status: 'confirmed' },
               {
@@ -115,7 +115,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
         _id: eventId,
         participants: {
           $elemMatch: {
-            phone: phone,
+            phone: { $eq: phone },
             $or: [
               { status: 'confirmed' },
               {
