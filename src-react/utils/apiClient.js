@@ -13,11 +13,22 @@ function generateUUID() {
 
   // Fallback to crypto.getRandomValues() for cryptographically secure random numbers
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (crypto.getRandomValues(new Uint8Array(1))[0] % 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
+    // Use rejection sampling to avoid modulo bias
+    const randomBytes = new Uint8Array(16);
+    crypto.getRandomValues(randomBytes);
+
+    // Convert to UUID v4 format using the random bytes
+    const hex = Array.from(randomBytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    return [
+      hex.slice(0, 8),
+      hex.slice(8, 12),
+      '4' + hex.slice(13, 16), // version 4
+      ((parseInt(hex.slice(16, 18), 16) & 0x3f) | 0x80).toString(16) + hex.slice(18, 20), // variant
+      hex.slice(20, 32)
+    ].join('-');
   }
 
   // Last resort fallback (should not happen in modern browsers)
