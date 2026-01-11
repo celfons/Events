@@ -7,6 +7,7 @@ import LoginModal from '../components/LoginModal';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { API_URL } from '../utils/helpers';
+import { fetchWithTracing } from '../utils/apiClient';
 
 function EventsPage() {
   const { user, login, logout } = useAuth();
@@ -57,7 +58,7 @@ function EventsPage() {
   const loadEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/events`);
+      const response = await fetchWithTracing(`${API_URL}/api/events`);
       
       if (!response.ok) {
         throw new Error('Erro ao carregar eventos');

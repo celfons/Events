@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getToken, getUser, clearAuthData, saveToken as saveAuthToken } from '../utils/auth';
+import { fetchWithTracing } from '../utils/apiClient';
 
 // Create contexts
 const AuthContext = createContext();
@@ -17,7 +18,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${window.location.origin}/api/auth/login`, {
+      const response = await fetchWithTracing(`${window.location.origin}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

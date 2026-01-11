@@ -62,3 +62,13 @@ jest.mock('../utils/helpers', () => ({
 jest.mock('../utils/auth', () => ({
   getToken: jest.fn(() => 'fake-token')
 }));
+
+// Mock utilities - apiClient
+jest.mock('../utils/apiClient', () => ({
+  fetchWithTracing: jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ data: [] })
+    })
+  )
+}));
