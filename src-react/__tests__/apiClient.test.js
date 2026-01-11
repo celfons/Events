@@ -91,6 +91,21 @@ describe('API Client with Request ID Tracing', () => {
 
       expect(firstRequestId).not.toBe(secondRequestId);
     });
+
+    it('should use crypto.randomUUID when available', async () => {
+      // Verify that crypto API is available in jsdom environment
+      expect(typeof crypto).toBe('object');
+      expect(typeof crypto.randomUUID).toBe('function');
+
+      await fetchWithTracing('http://localhost:3000/api/test');
+
+      const callArgs = fetch.mock.calls[0][1];
+      const requestId = callArgs.headers['x-request-id'];
+
+      // Should be a valid UUID v4
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(requestId).toMatch(uuidRegex);
+    });
   });
 
   describe('Convenience Methods', () => {

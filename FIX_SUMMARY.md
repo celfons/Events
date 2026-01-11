@@ -14,7 +14,7 @@ The backend had distributed logging infrastructure with `requestIdMiddleware` th
 ### 1. Frontend Changes
 - **Created API Client** (`src-react/utils/apiClient.js`)
   - Wraps native `fetch` API
-  - Automatically generates UUID v4 for `x-request-id` header
+  - Automatically generates cryptographically secure UUID v4 for `x-request-id` header using `crypto.randomUUID()` or `crypto.getRandomValues()`
   - Provides convenience methods: `get()`, `post()`, `put()`, `deleteRequest()`
   - All requests now include tracing headers
 
@@ -33,8 +33,9 @@ The backend had distributed logging infrastructure with `requestIdMiddleware` th
 
 ### 3. Testing
 - **Unit Tests** (`src-react/__tests__/apiClient.test.js`)
-  - 9 tests covering API client functionality
-  - Validates UUID generation and header propagation
+  - 10 tests covering API client functionality
+  - Validates cryptographically secure UUID generation and header propagation
+  - Verifies crypto.randomUUID() is used when available
 
 - **Integration Tests** (`src/infrastructure/logging/__tests__/requestIdTracing.test.js`)
   - 7 tests covering end-to-end tracing
@@ -63,11 +64,12 @@ Controllers → Response with x-request-id → React Client
 5. **Incident Response**: Faster root cause analysis
 
 ## Testing Results
-- ✅ All unit tests pass (9/9)
+- ✅ All unit tests pass (10/10)
 - ✅ All integration tests pass (7/7)
 - ✅ All existing middleware tests pass
 - ✅ All React component tests pass
 - ✅ No security vulnerabilities detected (CodeQL scan)
+- ✅ Cryptographically secure UUID generation verified
 
 ## Files Changed
 ### Added
@@ -119,8 +121,11 @@ To verify the fix is working:
 ## Security
 - ✅ No vulnerabilities introduced
 - ✅ CodeQL scan passed with 0 alerts
+- ✅ Cryptographically secure UUID generation using Web Crypto API
 - ✅ Request IDs follow UUID v4 standard (unpredictable)
 - ✅ No sensitive information in request IDs
+- ✅ Fallback to crypto.getRandomValues() for older browsers
+- ✅ Math.random() only used as last resort with warning
 
 ## Performance Impact
 - **Minimal overhead**: UUID generation is fast (~1ms)

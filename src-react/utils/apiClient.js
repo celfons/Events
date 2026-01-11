@@ -1,10 +1,28 @@
 // API Client with Request ID Tracing for distributed logging
 
 /**
- * Generate a UUID v4
+ * Generate a cryptographically secure UUID v4
+ * Uses crypto.randomUUID() when available, falls back to crypto.getRandomValues()
  * @returns {string} UUID v4 string
  */
 function generateUUID() {
+  // Use crypto.randomUUID() if available (modern browsers)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  // Fallback to crypto.getRandomValues() for cryptographically secure random numbers
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (crypto.getRandomValues(new Uint8Array(1))[0] % 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  // Last resort fallback (should not happen in modern browsers)
+  // This maintains backwards compatibility but logs a warning
+  console.warn('Crypto API not available, falling back to Math.random() for UUID generation');
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;

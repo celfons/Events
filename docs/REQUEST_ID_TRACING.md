@@ -34,7 +34,7 @@ We added a new API client utility to the React frontend:
 
 1. **API Client** (`src-react/utils/apiClient.js`)
    - Wraps the native `fetch` API
-   - Automatically generates UUID v4 request IDs for each request
+   - Automatically generates cryptographically secure UUID v4 request IDs for each request using `crypto.randomUUID()` or `crypto.getRandomValues()`
    - Adds `x-request-id` header to all outgoing requests
    - Provides convenience methods: `get()`, `post()`, `put()`, `delete()`
 
@@ -93,6 +93,7 @@ We added a new API client utility to the React frontend:
 3. **Debugging**: Simplified debugging with unique identifiers for each request
 4. **Monitoring**: Better observability for distributed systems
 5. **Log Analysis**: Ability to group related log entries by request ID
+6. **Security**: Cryptographically secure UUID generation using Web Crypto API prevents predictability
 
 ## Usage
 
