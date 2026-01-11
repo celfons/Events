@@ -1,5 +1,5 @@
 const SendEventReminderUseCase = require('../SendEventReminderUseCase');
-const { createMockEvent } = require('./testHelpers');
+const { createMockEvent, expectFailedResult, expectSuccessfulResult } = require('./testHelpers');
 
 describe('SendEventReminderUseCase', () => {
   let mockEventRepository;
@@ -31,7 +31,7 @@ describe('SendEventReminderUseCase', () => {
 
       const result = await sendEventReminderUseCase.execute(event.id);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(result.message).toContain('2 successful, 0 failed');
       expect(result.data).toMatchObject({ total: 2, sent: 2, failed: 0 });
       expect(mockMessagingService.sendEventReminder).toHaveBeenCalledTimes(2);
@@ -54,7 +54,7 @@ describe('SendEventReminderUseCase', () => {
 
       const result = await sendEventReminderUseCase.execute(event.id);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(result.data).toMatchObject({ total: 3, sent: 2, failed: 1 });
       expect(result.data.errors).toContainEqual({ participantId: '2', error: 'Invalid phone number' });
     });
@@ -66,7 +66,7 @@ describe('SendEventReminderUseCase', () => {
 
       const result = await sendEventReminderUseCase.execute(event.id);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(result.data).toMatchObject({ total: 1, sent: 0, failed: 1 });
       expect(result.data.errors[0]).toMatchObject({ participantId: '1', error: 'WhatsApp API error' });
     });
@@ -75,26 +75,20 @@ describe('SendEventReminderUseCase', () => {
   describe('Validation', () => {
     it('should return error when event ID is not provided', async () => {
       const result = await sendEventReminderUseCase.execute(null);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Event ID is required');
+      expectFailedResult(result, 'Event ID is required');
       expect(mockEventRepository.findById).not.toHaveBeenCalled();
     });
 
     it('should return error when messaging service is not configured', async () => {
       const useCaseWithoutMessaging = new SendEventReminderUseCase(mockEventRepository, null);
       const result = await useCaseWithoutMessaging.execute('123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Messaging service is not configured');
+      expectFailedResult(result, 'Messaging service is not configured');
     });
 
     it('should return error when event does not exist', async () => {
       mockEventRepository.findById.mockResolvedValue(null);
       const result = await sendEventReminderUseCase.execute('999');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Event not found');
+      expectFailedResult(result, 'Event not found');
     });
 
     it('should return error when event has no confirmed participants', async () => {
@@ -104,11 +98,8 @@ describe('SendEventReminderUseCase', () => {
         ]
       });
       mockEventRepository.findById.mockResolvedValue(event);
-
       const result = await sendEventReminderUseCase.execute('123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('No confirmed participants to send reminders to');
+      expectFailedResult(result, 'No confirmed participants to send reminders to');
     });
   });
 
@@ -116,9 +107,7 @@ describe('SendEventReminderUseCase', () => {
     it('should handle repository errors gracefully', async () => {
       mockEventRepository.findById.mockRejectedValue(new Error('Database connection error'));
       const result = await sendEventReminderUseCase.execute('123');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Database connection error');
+      expectFailedResult(result, 'Database connection error');
     });
   });
 });

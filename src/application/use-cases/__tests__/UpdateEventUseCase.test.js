@@ -1,5 +1,5 @@
 const UpdateEventUseCase = require('../UpdateEventUseCase');
-const { createMockEvent } = require('./testHelpers');
+const { createMockEvent, expectSuccessfulResult } = require('./testHelpers');
 
 describe('UpdateEventUseCase', () => {
   let mockEventRepository;
@@ -505,7 +505,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(2);
     });
 
@@ -515,7 +515,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ newLocal: 'New Location Building', newDate: null })
@@ -528,7 +528,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ newDate: updateData.dateTime, newLocal: 'New Convention Center' })
       );
@@ -540,7 +540,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).not.toHaveBeenCalled();
     });
 
@@ -555,7 +555,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalledTimes(1);
     });
 
@@ -566,7 +566,7 @@ describe('UpdateEventUseCase', () => {
 
       const result = await setupAndExecuteUpdate(existingEvent, updateData);
 
-      expect(result.success).toBe(true);
+      expectSuccessfulResult(result);
       expect(mockMessagingService.sendEventUpdate).toHaveBeenCalled();
     });
   });

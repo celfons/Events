@@ -18,6 +18,26 @@ function createMockEvent(overrides = {}) {
   };
 }
 
+/**
+ * Expect a failed result with error message
+ * @param {Object} result - Result object to test
+ * @param {string} errorMessage - Expected error message
+ */
+function expectFailedResult(result, errorMessage) {
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(errorMessage);
+}
+
+/**
+ * Expect a successful result
+ * @param {Object} result - Result object to test
+ */
+function expectSuccessfulResult(result) {
+  expect(result.success).toBe(true);
+}
+
 module.exports = {
-  createMockEvent
+  createMockEvent,
+  expectFailedResult,
+  expectSuccessfulResult
 };
