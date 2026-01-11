@@ -80,7 +80,6 @@ class MongoEventRepository extends EventRepository {
     // Add participant - only decrement slots if status is 'confirmed'
     // Ensure no confirmed participant exists with same email
     // Pending registrations (even non-expired) should not block new registrations
-    const now = new Date(); // Store current date to avoid multiple Date() calls
     const updateQuery = {
       $push: { participants: participantData }
     };
@@ -107,6 +106,7 @@ class MongoEventRepository extends EventRepository {
     // For pending registrations, check that total non-expired pending+confirmed is less than totalSlots
     // For confirmed registrations, check that availableSlots > 0
     if (participantData.status === 'pending') {
+      const now = new Date();
       // Use aggregation to check if there's space (non-expired pending + confirmed < totalSlots)
       queryConditions.$expr = {
         $lt: [

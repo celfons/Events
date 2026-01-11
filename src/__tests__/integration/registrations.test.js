@@ -176,7 +176,7 @@ describe('Registrations API Integration Tests', () => {
 
       await eventRepository.addParticipant(eventId, expiredRegistration);
 
-      // Try to register again with same email (should succeed since validation only checks confirmed)
+      // Try to register again with same email - should succeed for expired pending registrations
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
@@ -205,7 +205,7 @@ describe('Registrations API Integration Tests', () => {
 
       await eventRepository.addParticipant(eventId, pendingRegistration);
 
-      // Try to register again with same email (should succeed since validation only checks confirmed)
+      // Try to register again with same email - should succeed for non-expired pending registrations too
       const registrationData = {
         eventId: eventId,
         name: 'John Doe',
