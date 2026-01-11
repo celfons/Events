@@ -38,12 +38,11 @@ class EventDetailsResponse extends EventResponse {
   constructor(event) {
     super(event);
     // Use explicitly passed participantsCount if available, otherwise calculate from participants array
-    // Only count confirmed participants to match the validation logic
     this.participantsCount =
       event.participantsCount !== undefined
         ? event.participantsCount
         : event.participants
-          ? event.participants.filter(p => p?.status === 'confirmed').length
+          ? event.participants.length
           : 0;
   }
 
