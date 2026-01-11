@@ -15,7 +15,7 @@ describe('API Client with Request ID Tracing', () => {
     fetch.mockResolvedValue({
       ok: true,
       status: 200,
-      headers: new Map([['x-request-id', 'test-response-id']]),
+      headers: new Headers([['x-request-id', 'test-response-id']]),
       json: async () => ({ data: 'test' })
     });
   });
@@ -72,7 +72,7 @@ describe('API Client with Request ID Tracing', () => {
       const mockResponse = {
         ok: true,
         status: 200,
-        headers: new Map([['x-request-id', 'test-id']]),
+        headers: new Headers([['x-request-id', 'test-id']]),
         json: async () => ({ data: 'test' })
       };
       fetch.mockResolvedValue(mockResponse);

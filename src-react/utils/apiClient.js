@@ -47,14 +47,6 @@ export async function fetchWithTracing(url, options = {}) {
     headers
   });
 
-  // Log request ID from response for debugging (in development)
-  if (process.env.NODE_ENV !== 'production') {
-    const responseRequestId = response.headers.get('x-request-id');
-    if (responseRequestId && responseRequestId !== requestId) {
-      console.debug(`Request ID mismatch: sent ${requestId}, received ${responseRequestId}`);
-    }
-  }
-
   return response;
 }
 
