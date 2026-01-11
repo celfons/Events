@@ -291,11 +291,6 @@ describe('RegisterForEventUseCase', () => {
         hasAvailableSlots: jest.fn().mockReturnValue(true)
       };
 
-      const updatedEvent = {
-        id: '123',
-        hasAvailableSlots: jest.fn().mockReturnValue(true)
-      };
-
       const createdRegistration = {
         id: '789',
         eventId: '123',
