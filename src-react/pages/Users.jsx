@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { API_URL } from '../utils/helpers';
 import { getToken, isSuperuser } from '../utils/auth';
+import { fetchWithTracing } from '../utils/apiClient';
 
 function UsersPage() {
   const { user, logout } = useAuth();
@@ -65,7 +66,7 @@ function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/users`, {
+      const response = await fetchWithTracing(`${API_URL}/api/users`, {
         headers: getAuthHeaders()
       });
 
@@ -105,7 +106,7 @@ function UsersPage() {
     setCreateError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/users`, {
+      const response = await fetchWithTracing(`${API_URL}/api/users`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(createFormData)
@@ -151,7 +152,7 @@ function UsersPage() {
         updateData.password = editFormData.password;
       }
 
-      const response = await fetch(`${API_URL}/api/users/${selectedUser.id}`, {
+      const response = await fetchWithTracing(`${API_URL}/api/users/${selectedUser.id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(updateData)
@@ -187,7 +188,7 @@ function UsersPage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/users/${userId}`, {
+      const response = await fetchWithTracing(`${API_URL}/api/users/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });

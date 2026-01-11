@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getToken, getUser, clearAuthData, saveToken } from '../utils/auth';
+import { fetchWithTracing } from '../utils/apiClient';
 
 export function useAuth() {
   const [token, setToken] = useState(getToken());
@@ -12,7 +13,7 @@ export function useAuth() {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${window.location.origin}/api/auth/login`, {
+      const response = await fetchWithTracing(`${window.location.origin}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

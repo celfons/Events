@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { API_URL } from '../utils/helpers';
 import { getToken } from '../utils/auth';
+import { fetchWithTracing } from '../utils/apiClient';
 
 function AdminPage() {
   const { user, logout } = useAuth();
@@ -83,7 +84,7 @@ function AdminPage() {
   const loadEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/events/my-events`, {
+      const response = await fetchWithTracing(`${API_URL}/api/events/my-events`, {
         headers: getAuthHeaders()
       });
 
@@ -130,7 +131,7 @@ function AdminPage() {
     setCreateError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/events`, {
+      const response = await fetchWithTracing(`${API_URL}/api/events`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -164,7 +165,7 @@ function AdminPage() {
 
   const handleDeleteEvent = async eventId => {
     try {
-      const response = await fetch(`${API_URL}/api/events/${eventId}`, {
+      const response = await fetchWithTracing(`${API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
@@ -206,7 +207,7 @@ function AdminPage() {
     setEditError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/events/${selectedEvent.id}`, {
+      const response = await fetchWithTracing(`${API_URL}/api/events/${selectedEvent.id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -243,7 +244,7 @@ function AdminPage() {
   const loadParticipants = async eventId => {
     try {
       setLoadingParticipants(true);
-      const response = await fetch(`${API_URL}/api/events/${eventId}/participants`, {
+      const response = await fetchWithTracing(`${API_URL}/api/events/${eventId}/participants`, {
         headers: getAuthHeaders()
       });
 
@@ -276,7 +277,7 @@ function AdminPage() {
     setAddingParticipant(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/registrations`, {
+      const response = await fetchWithTracing(`${API_URL}/api/registrations`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -325,7 +326,7 @@ function AdminPage() {
 
     setCancelingParticipant(participantId);
     try {
-      const response = await fetch(`${API_URL}/api/registrations/${participantId}/cancel`, {
+      const response = await fetchWithTracing(`${API_URL}/api/registrations/${participantId}/cancel`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({

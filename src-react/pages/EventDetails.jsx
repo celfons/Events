@@ -6,6 +6,7 @@ import Toast from '../components/Toast';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { API_URL } from '../utils/helpers';
+import { fetchWithTracing } from '../utils/apiClient';
 
 function EventDetailsPage() {
   const { user, logout } = useAuth();
@@ -33,7 +34,7 @@ function EventDetailsPage() {
   const loadEventDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/events/${eventId}`);
+      const response = await fetchWithTracing(`${API_URL}/api/events/${eventId}`);
       
       if (!response.ok) {
         throw new Error('Erro ao carregar detalhes do evento');
@@ -59,7 +60,7 @@ function EventDetailsPage() {
 
     setRegistering(true);
     try {
-      const response = await fetch(`${API_URL}/api/registrations`, {
+      const response = await fetchWithTracing(`${API_URL}/api/registrations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ function EventDetailsPage() {
 
     setConfirming(true);
     try {
-      const response = await fetch(`${API_URL}/api/registrations/${pendingRegistration.id}/confirm`, {
+      const response = await fetchWithTracing(`${API_URL}/api/registrations/${pendingRegistration.id}/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
