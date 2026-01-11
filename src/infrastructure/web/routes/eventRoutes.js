@@ -333,7 +333,9 @@ function createEventRoutes(eventController) {
    *     tags: [Events]
    *     security:
    *       - bearerAuth: []
-   *     description: Send WhatsApp reminder notifications to all confirmed participants of an event (authentication required)
+   *     description: >
+   *       Send WhatsApp reminder notifications to all confirmed participants
+   *       of an event (authentication required)
    *     parameters:
    *       - in: path
    *         name: id
