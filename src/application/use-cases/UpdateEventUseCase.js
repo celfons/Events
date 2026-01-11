@@ -104,7 +104,9 @@ class UpdateEventUseCase {
       }
 
       // Track if date or location changed for notifications
-      const dateChanged = updateData.dateTime !== undefined && updateData.dateTime !== existingEvent.dateTime;
+      const dateChanged =
+        updateData.dateTime !== undefined &&
+        new Date(updateData.dateTime).getTime() !== new Date(existingEvent.dateTime).getTime();
       const locationChanged = updateData.local !== undefined && updateData.local !== existingEvent.local;
 
       // Update only provided fields
@@ -114,7 +116,8 @@ class UpdateEventUseCase {
       if (this.messagingService && (dateChanged || locationChanged)) {
         const confirmedParticipants = existingEvent.participants.filter(p => p.status === 'confirmed');
 
-        confirmedParticipants.forEach(participant => {
+        // Use Promise.allSettled to handle all notifications concurrently
+        const notificationPromises = confirmedParticipants.map(participant =>
           this.messagingService
             .sendEventUpdate({
               to: participant.phone,
@@ -129,8 +132,12 @@ class UpdateEventUseCase {
                 participantId: participant.id,
                 eventId: id
               });
-            });
-        });
+              return { success: false, error: error.message };
+            })
+        );
+
+        // Wait for all notifications to complete (success or failure)
+        await Promise.allSettled(notificationPromises);
       }
 
       return {
