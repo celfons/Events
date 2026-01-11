@@ -80,6 +80,10 @@ class MongoEventRepository extends EventRepository {
     // Add participant - only decrement slots if status is 'confirmed'
     // Ensure no confirmed participant exists with same email
     // Pending registrations (even non-expired) should not block new registrations
+    //
+    // NOTE: We maintain the availableSlots field for backward compatibility and quick reference,
+    // but validation uses actual participant counts to ensure accuracy even if availableSlots is out of sync.
+    // The field will self-correct over time as registrations/cancellations occur.
     const updateQuery = {
       $push: { participants: participantData }
     };
@@ -289,6 +293,9 @@ class MongoEventRepository extends EventRepository {
     // Confirm participant and decrement available slots atomically
     // Check that confirmed participants count is less than totalSlots
     // This is more reliable than checking availableSlots which might be out of sync
+    //
+    // NOTE: We continue to maintain availableSlots for backward compatibility,
+    // but use actual participant counts for validation to ensure accuracy.
     const updatedEvent = await EventModel.findOneAndUpdate(
       {
         _id: eventId,
