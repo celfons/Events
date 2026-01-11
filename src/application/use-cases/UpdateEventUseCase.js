@@ -1,4 +1,5 @@
 const logger = require('../../infrastructure/logging/logger');
+const { getConfirmedParticipants, sendNotificationsWithErrorHandling } = require('./helpers/notificationHelper');
 
 class UpdateEventUseCase {
   constructor(eventRepository, messagingService = null) {
@@ -114,30 +115,20 @@ class UpdateEventUseCase {
 
       // Send WhatsApp notifications to confirmed participants if date or location changed
       if (this.messagingService && (dateChanged || locationChanged)) {
-        const confirmedParticipants = existingEvent.participants.filter(p => p.status === 'confirmed');
+        const confirmedParticipants = getConfirmedParticipants(existingEvent);
 
-        // Use Promise.allSettled to handle all notifications concurrently
-        const notificationPromises = confirmedParticipants.map(participant =>
-          this.messagingService
-            .sendEventUpdate({
+        await sendNotificationsWithErrorHandling(
+          confirmedParticipants,
+          participant =>
+            this.messagingService.sendEventUpdate({
               to: participant.phone,
               name: participant.name,
               eventTitle: existingEvent.title,
               newDate: dateChanged ? updateData.dateTime : null,
               newLocal: locationChanged ? updateData.local : null
-            })
-            .catch(error => {
-              logger.error('Failed to send WhatsApp event update notification', {
-                error: error.message,
-                participantId: participant.id,
-                eventId: id
-              });
-              return { success: false, error: error.message };
-            })
+            }),
+          { eventId: id, action: 'event update' }
         );
-
-        // Wait for all notifications to complete (success or failure)
-        await Promise.allSettled(notificationPromises);
       }
 
       return {

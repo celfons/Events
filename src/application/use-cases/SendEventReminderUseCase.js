@@ -1,4 +1,5 @@
 const logger = require('../../infrastructure/logging/logger');
+const { getConfirmedParticipants } = require('./helpers/notificationHelper');
 
 /**
  * Use case for sending event reminders to confirmed participants
@@ -38,7 +39,7 @@ class SendEventReminderUseCase {
       }
 
       // Get confirmed participants
-      const confirmedParticipants = event.participants.filter(p => p.status === 'confirmed');
+      const confirmedParticipants = getConfirmedParticipants(event);
 
       if (confirmedParticipants.length === 0) {
         return {
