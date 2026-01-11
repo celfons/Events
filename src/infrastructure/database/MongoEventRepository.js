@@ -136,20 +136,7 @@ class MongoEventRepository extends EventRepository {
     } else if (participantData.status === 'confirmed') {
       // Check that confirmed participants count is less than totalSlots
       // This is more reliable than checking availableSlots which might be out of sync
-      queryConditions.$expr = {
-        $lt: [
-          {
-            $size: {
-              $filter: {
-                input: '$participants',
-                as: 'p',
-                cond: { $eq: ['$$p.status', 'confirmed'] }
-              }
-            }
-          },
-          '$totalSlots'
-        ]
-      };
+      queryConditions.$expr = this._buildConfirmedParticipantsCheck();
     }
 
     const updatedEvent = await EventModel.findOneAndUpdate(queryConditions, updateQuery, {
@@ -301,20 +288,7 @@ class MongoEventRepository extends EventRepository {
         _id: eventId,
         'participants._id': participantId,
         'participants.status': 'pending',
-        $expr: {
-          $lt: [
-            {
-              $size: {
-                $filter: {
-                  input: '$participants',
-                  as: 'p',
-                  cond: { $eq: ['$$p.status', 'confirmed'] }
-                }
-              }
-            },
-            '$totalSlots'
-          ]
-        }
+        $expr: this._buildConfirmedParticipantsCheck()
       },
       {
         $set: {
@@ -356,6 +330,30 @@ class MongoEventRepository extends EventRepository {
       { new: true }
     );
     return !!updatedEvent;
+  }
+
+  /**
+   * Helper method to build MongoDB $expr aggregation for checking if confirmed
+   * participants count is below totalSlots. This is used in addParticipant and
+   * confirmParticipant to validate slot availability based on actual participant
+   * data rather than the potentially stale availableSlots field.
+   * @returns {Object} MongoDB $expr aggregation object
+   */
+  _buildConfirmedParticipantsCheck() {
+    return {
+      $lt: [
+        {
+          $size: {
+            $filter: {
+              input: '$participants',
+              as: 'p',
+              cond: { $eq: ['$$p.status', 'confirmed'] }
+            }
+          }
+        },
+        '$totalSlots'
+      ]
+    };
   }
 
   _toDomain(eventModel) {
