@@ -144,7 +144,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setCreateError(data.error || 'Erro ao criar evento');
+        setCreateError(data.error?.message || 'Erro ao criar evento');
         return;
       }
 
@@ -173,7 +173,7 @@ function AdminPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        showError(data.error || 'Erro ao excluir evento');
+        showError(data.error?.message || 'Erro ao excluir evento');
         return;
       }
 
@@ -220,7 +220,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setEditError(data.error || 'Erro ao atualizar evento');
+        setEditError(data.error?.message || 'Erro ao atualizar evento');
         return;
       }
 
@@ -292,7 +292,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setParticipantError(data.error || 'Erro ao adicionar participante');
+        setParticipantError(data.error?.message || 'Erro ao adicionar participante');
         return;
       }
 
@@ -338,7 +338,7 @@ function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        showError(data.error || 'Erro ao cancelar inscrição');
+        showError(data.error?.message || 'Erro ao cancelar inscrição');
         return;
       }
 

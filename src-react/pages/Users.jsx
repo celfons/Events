@@ -113,7 +113,7 @@ function UsersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setCreateError(data.error || 'Erro ao criar usuário');
+        setCreateError(data.error?.message || 'Erro ao criar usuário');
         return;
       }
 
@@ -159,7 +159,7 @@ function UsersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setEditError(data.error || 'Erro ao atualizar usuário');
+        setEditError(data.error?.message || 'Erro ao atualizar usuário');
         return;
       }
 
@@ -193,7 +193,7 @@ function UsersPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        showError(data.error || 'Erro ao excluir usuário');
+        showError(data.error?.message || 'Erro ao excluir usuário');
         return;
       }
 

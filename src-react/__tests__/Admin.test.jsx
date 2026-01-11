@@ -67,7 +67,13 @@ describe('Admin Page - Event API Integration', () => {
   it('should handle update errors correctly', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ error: 'Update failed' })
+      json: () => Promise.resolve({ 
+        error: { 
+          code: 'UPDATE_ERROR',
+          message: 'Update failed',
+          timestamp: new Date().toISOString()
+        } 
+      })
     });
 
     const response = await fetch('http://localhost:3000/api/events/1', {
@@ -82,5 +88,6 @@ describe('Admin Page - Event API Integration', () => {
     expect(response.ok).toBe(false);
     const data = await response.json();
     expect(data).toHaveProperty('error');
+    expect(data.error).toHaveProperty('message');
   });
 });
