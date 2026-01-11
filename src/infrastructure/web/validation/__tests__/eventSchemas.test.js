@@ -28,6 +28,22 @@ describe('Event Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
+    it('should validate with datetime-local format and transform to ISO 8601', () => {
+      const validData = {
+        title: 'Tech Conference 2024',
+        description: 'Annual technology conference',
+        dateTime: '2024-12-31T10:00',
+        totalSlots: 100,
+        local: 'Convention Center'
+      };
+
+      const result = createEventSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.dateTime).toBe('2024-12-31T10:00:00.000Z');
+      }
+    });
+
     it('should fail validation with missing required fields', () => {
       const invalidData = {
         title: 'Tech Conference 2024',
@@ -131,6 +147,18 @@ describe('Event Validation Schemas', () => {
 
       const result = updateEventSchema.safeParse(validData);
       expect(result.success).toBe(true);
+    });
+
+    it('should validate with datetime-local format and transform to ISO 8601', () => {
+      const validData = {
+        dateTime: '2024-12-31T10:00'
+      };
+
+      const result = updateEventSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.dateTime).toBe('2024-12-31T10:00:00.000Z');
+      }
     });
 
     it('should validate with only one field provided', () => {
