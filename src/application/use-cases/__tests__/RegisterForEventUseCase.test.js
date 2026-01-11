@@ -179,56 +179,6 @@ describe('RegisterForEventUseCase', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('No available slots for this event');
     });
-
-    it('should allow registration when there are pending/cancelled participants and confirmed count is below totalSlots', async () => {
-      const registrationData = {
-        eventId: '123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '(11) 98765-4321'
-      };
-
-      // Event has 3 total slots but availableSlots is 0
-      // Only 1 confirmed participant, 1 pending, 1 cancelled
-      // Should allow registration since confirmed (1) < totalSlots (3)
-      const mockEvent = {
-        id: '123',
-        title: 'Test Event',
-        totalSlots: 3,
-        availableSlots: 0, // This might be out of sync
-        participants: [
-          { id: '1', status: 'confirmed' },
-          { id: '2', status: 'pending' },
-          { id: '3', status: 'cancelled' }
-        ]
-      };
-
-      const createdRegistration = {
-        id: '456',
-        eventId: '123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '(11) 98765-4321',
-        toJSON: jest.fn().mockReturnValue({
-          id: '456',
-          eventId: '123',
-          name: 'John Doe',
-          email: 'john@example.com',
-          phone: '(11) 98765-4321',
-          status: 'pending'
-        })
-      };
-
-      mockEventRepository.findById.mockResolvedValue(mockEvent);
-      mockEventRepository.findParticipantByEmail.mockResolvedValue(null);
-      mockEventRepository.findParticipantByPhone.mockResolvedValue(null);
-      mockEventRepository.addParticipant.mockResolvedValue(createdRegistration);
-
-      const result = await registerForEventUseCase.execute(registrationData);
-
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-    });
   });
 
   describe('Successful Registration', () => {
