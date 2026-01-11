@@ -14,7 +14,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
   });
 
   describe('findParticipantByEmail', () => {
-    it('should not find participant with expired pending registration', async () => {
+    it('should not find participant with pending registration (expired or non-expired)', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       const email = 'john@example.com';
 
@@ -28,47 +28,10 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
         participants: {
           $elemMatch: {
             email: { $eq: email.toLowerCase() },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
-    });
-
-    it('should find participant with non-expired pending registration', async () => {
-      const eventId = '507f1f77bcf86cd799439011';
-      const email = 'john@example.com';
-      const futureDate = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes in future
-
-      // Mock an event with a non-expired pending registration
-      const mockEvent = {
-        _id: eventId,
-        participants: [
-          {
-            _id: '507f1f77bcf86cd799439012',
-            email: 'john@example.com',
-            name: 'John Doe',
-            phone: '+1234567890',
-            status: 'pending',
-            verificationCodeExpiresAt: futureDate,
-            registeredAt: new Date()
-          }
-        ]
-      };
-
-      EventModel.findOne = jest.fn().mockResolvedValue(mockEvent);
-
-      const result = await repository.findParticipantByEmail(eventId, email);
-
-      expect(result).not.toBeNull();
-      expect(result).toBeInstanceOf(Registration);
-      expect(result.email).toBe('john@example.com');
-      expect(result.status).toBe('pending');
     });
 
     it('should find participant with confirmed status', async () => {
@@ -102,7 +65,7 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
   });
 
   describe('findParticipantByPhone', () => {
-    it('should not find participant with expired pending registration', async () => {
+    it('should not find participant with pending registration (expired or non-expired)', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       const phone = '+1234567890';
 
@@ -116,47 +79,10 @@ describe('MongoEventRepository - Expired Registration Validation', () => {
         participants: {
           $elemMatch: {
             phone: { $eq: phone },
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: expect.any(Date) }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       });
-    });
-
-    it('should find participant with non-expired pending registration', async () => {
-      const eventId = '507f1f77bcf86cd799439011';
-      const phone = '+1234567890';
-      const futureDate = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes in future
-
-      // Mock an event with a non-expired pending registration
-      const mockEvent = {
-        _id: eventId,
-        participants: [
-          {
-            _id: '507f1f77bcf86cd799439012',
-            email: 'john@example.com',
-            name: 'John Doe',
-            phone: '+1234567890',
-            status: 'pending',
-            verificationCodeExpiresAt: futureDate,
-            registeredAt: new Date()
-          }
-        ]
-      };
-
-      EventModel.findOne = jest.fn().mockResolvedValue(mockEvent);
-
-      const result = await repository.findParticipantByPhone(eventId, phone);
-
-      expect(result).not.toBeNull();
-      expect(result).toBeInstanceOf(Registration);
-      expect(result.phone).toBe('+1234567890');
-      expect(result.status).toBe('pending');
     });
 
     it('should find participant with confirmed status', async () => {

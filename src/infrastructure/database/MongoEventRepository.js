@@ -78,8 +78,8 @@ class MongoEventRepository extends EventRepository {
 
   async addParticipant(eventId, participantData) {
     // Add participant - only decrement slots if status is 'confirmed'
-    // Ensure no confirmed participant or pending participant with non-expired code exists with same email
-    const now = new Date(); // Store current date to avoid multiple Date() calls
+    // Ensure no confirmed participant exists with same email
+    // Pending registrations (even non-expired) should not block new registrations
     const updateQuery = {
       $push: { participants: participantData }
     };
@@ -90,20 +90,14 @@ class MongoEventRepository extends EventRepository {
     }
 
     // Build the query conditions
-    // Only block if there's a confirmed registration OR a pending registration with non-expired code
+    // Only block if there's a confirmed registration
     const queryConditions = {
       _id: eventId,
       participants: {
         $not: {
           $elemMatch: {
             email: participantData.email.toLowerCase(),
-            $or: [
-              { status: 'confirmed' },
-              {
-                status: 'pending',
-                verificationCodeExpiresAt: { $gt: now }
-              }
-            ]
+            status: 'confirmed'
           }
         }
       }
@@ -112,6 +106,7 @@ class MongoEventRepository extends EventRepository {
     // For pending registrations, check that total non-expired pending+confirmed is less than totalSlots
     // For confirmed registrations, check that availableSlots > 0
     if (participantData.status === 'pending') {
+      const now = new Date();
       // Use aggregation to check if there's space (non-expired pending + confirmed < totalSlots)
       queryConditions.$expr = {
         $lt: [
@@ -159,10 +154,8 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findParticipantByEmail(eventId, email) {
-    // Find participants with matching email that are either:
-    // 1. Confirmed (always check these)
-    // 2. Pending with non-expired verification code (ignore expired pending)
-    const now = new Date(); // Store current date to avoid multiple Date() calls
+    // Find participants with matching email that are confirmed only
+    // Pending registrations (even non-expired) should not block new registrations
     const normalizedEmail = email.toLowerCase(); // Normalize email once
 
     const event = await EventModel.findOne({
@@ -170,13 +163,7 @@ class MongoEventRepository extends EventRepository {
       participants: {
         $elemMatch: {
           email: { $eq: normalizedEmail },
-          $or: [
-            { status: 'confirmed' },
-            {
-              status: 'pending',
-              verificationCodeExpiresAt: { $gt: now }
-            }
-          ]
+          status: 'confirmed'
         }
       }
     });
@@ -189,9 +176,7 @@ class MongoEventRepository extends EventRepository {
     // Note: MongoDB $elemMatch in the query ensures an event with matching participant exists,
     // but returns ALL participants in the array, so we need to find the specific one
     const participant = event.participants.find(
-      p =>
-        p.email.toLowerCase() === normalizedEmail &&
-        (p.status === 'confirmed' || (p.status === 'pending' && p.verificationCodeExpiresAt > now))
+      p => p.email.toLowerCase() === normalizedEmail && p.status === 'confirmed'
     );
 
     if (!participant) {
@@ -210,23 +195,15 @@ class MongoEventRepository extends EventRepository {
   }
 
   async findParticipantByPhone(eventId, phone) {
-    // Find participants with matching phone that are either:
-    // 1. Confirmed (always check these)
-    // 2. Pending with non-expired verification code (ignore expired pending)
-    const now = new Date(); // Store current date to avoid multiple Date() calls
+    // Find participants with matching phone that are confirmed only
+    // Pending registrations (even non-expired) should not block new registrations
 
     const event = await EventModel.findOne({
       _id: eventId,
       participants: {
         $elemMatch: {
           phone: { $eq: phone },
-          $or: [
-            { status: 'confirmed' },
-            {
-              status: 'pending',
-              verificationCodeExpiresAt: { $gt: now }
-            }
-          ]
+          status: 'confirmed'
         }
       }
     });
@@ -238,10 +215,7 @@ class MongoEventRepository extends EventRepository {
     // Find the matching participant in the returned participants array
     // Note: MongoDB $elemMatch in the query ensures an event with matching participant exists,
     // but returns ALL participants in the array, so we need to find the specific one
-    const participant = event.participants.find(
-      p =>
-        p.phone === phone && (p.status === 'confirmed' || (p.status === 'pending' && p.verificationCodeExpiresAt > now))
-    );
+    const participant = event.participants.find(p => p.phone === phone && p.status === 'confirmed');
 
     if (!participant) {
       return null;
