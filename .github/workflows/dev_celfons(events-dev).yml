@@ -56,6 +56,15 @@ jobs:
         run: |
           npm run test --if-present
       
+      - name: Verify web.config before artifact upload
+        run: |
+          echo "Verifying web.config is present before upload..."
+          if [ ! -f "web.config" ]; then
+            echo "ERROR: web.config is missing!"
+            exit 1
+          fi
+          echo "web.config verified successfully"
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +93,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+      
+      - name: Verify web.config in artifact
+        run: |
+          echo "Verifying web.config is present in deployment artifact..."
+          if [ ! -f "web.config" ]; then
+            echo "ERROR: web.config is missing from deployment artifact!"
+            exit 1
+          fi
+          echo "web.config verified successfully"
+          cat web.config
 
       - name: Install production dependencies
         run: |

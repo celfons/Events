@@ -69,6 +69,13 @@ jobs:
 
           # Confirmar novamente os artefatos de front-end
           ls -la release/public/js/react-build/ || (echo "Build do front-end não está em release/public/js/react-build/"; exit 1)
+          
+          # Verificar se web.config está presente
+          if [ ! -f "release/web.config" ]; then
+            echo "ERROR: web.config is missing from release folder!"
+            exit 1
+          fi
+          echo "web.config verified in release folder"
 
       - name: Upload artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -97,6 +104,16 @@ jobs:
         with:
           name: node-app
           path: .
+      
+      - name: Verify web.config in artifact
+        run: |
+          echo "Verifying web.config is present in deployment artifact..."
+          if [ ! -f "web.config" ]; then
+            echo "ERROR: web.config is missing from deployment artifact!"
+            exit 1
+          fi
+          echo "web.config verified successfully"
+          cat web.config
 
       - name: Login to Azure
         uses: azure/login@v2
