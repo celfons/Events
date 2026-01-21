@@ -102,7 +102,7 @@ jobs:
             exit 1
           fi
           echo "web.config verified successfully"
-          cat web.config
+          ls -lh web.config
 
       - name: Install production dependencies
         run: |

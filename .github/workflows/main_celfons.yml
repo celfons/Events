@@ -113,7 +113,7 @@ jobs:
             exit 1
           fi
           echo "web.config verified successfully"
-          cat web.config
+          ls -lh web.config
 
       - name: Login to Azure
         uses: azure/login@v2
