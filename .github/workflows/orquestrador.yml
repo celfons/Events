@@ -1,0 +1,15 @@
+name: Blueprint AI Workflow
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  process-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: celfons/blueprint-ai@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          agent-role: 'ALL'  # Use 'PO', 'DEV', 'QA', or 'ALL'
+          issue-number: ${{ github.event.issue.number }}
