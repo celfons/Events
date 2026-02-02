@@ -8,7 +8,7 @@ jobs:
   process-issue:
     runs-on: ubuntu-latest
     steps:
-      - uses: celfons/blueprint-ai@v1
+      - uses: celfons/blueprint-ai@1.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           agent-role: 'ALL'  # Use 'PO', 'DEV', 'QA', or 'ALL'
