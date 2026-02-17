@@ -11,7 +11,9 @@ describe('Footer Component', () => {
   it('renders footer with copyright text', () => {
     render(<Footer />);
     
+    const footer = screen.getByRole('contentinfo');
     const copyright = screen.getByText(/2024 Plataforma de Eventos/i);
+    expect(footer).toBeInTheDocument();
     expect(copyright).toBeInTheDocument();
   });
 });
