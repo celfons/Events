@@ -9,12 +9,10 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
 #root {
-    flex: 1;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
