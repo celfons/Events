@@ -1,0 +1,724 @@
+{
+  "_version": 2,
+  "content": {
+    "name": "Events Platform",
+    "description": "Plataforma de gerenciamento de eventos e inscrições",
+    "database_tables": [
+      {
+        "name": "user",
+        "description": "Usuários da plataforma",
+        "created_at": 1700000000,
+        "access": "private",
+        "schema": [
+          {
+            "name": "id",
+            "type": "id",
+            "nullable": false,
+            "description": "Identificador único do usuário"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp",
+            "nullable": false,
+            "description": "Data de criação"
+          },
+          {
+            "name": "username",
+            "type": "text",
+            "nullable": false,
+            "description": "Nome de usuário único",
+            "constraints": {
+              "unique": true,
+              "minlength": 3
+            }
+          },
+          {
+            "name": "email",
+            "type": "email",
+            "nullable": false,
+            "description": "Endereço de e-mail único",
+            "constraints": {
+              "unique": true
+            }
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "nullable": false,
+            "description": "Senha criptografada"
+          },
+          {
+            "name": "role",
+            "type": "enum",
+            "nullable": false,
+            "description": "Papel do usuário no sistema",
+            "options": ["user", "superuser"],
+            "default": "user"
+          },
+          {
+            "name": "is_active",
+            "type": "bool",
+            "nullable": false,
+            "description": "Indica se o usuário está ativo",
+            "default": true
+          }
+        ]
+      },
+      {
+        "name": "event",
+        "description": "Eventos gerenciados na plataforma",
+        "created_at": 1700000000,
+        "access": "public",
+        "schema": [
+          {
+            "name": "id",
+            "type": "id",
+            "nullable": false,
+            "description": "Identificador único do evento"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp",
+            "nullable": false,
+            "description": "Data de criação do registro"
+          },
+          {
+            "name": "title",
+            "type": "text",
+            "nullable": false,
+            "description": "Título do evento"
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "nullable": false,
+            "description": "Descrição detalhada do evento"
+          },
+          {
+            "name": "date_time",
+            "type": "timestamp",
+            "nullable": false,
+            "description": "Data e hora do evento"
+          },
+          {
+            "name": "total_slots",
+            "type": "int",
+            "nullable": false,
+            "description": "Total de vagas disponíveis",
+            "constraints": {
+              "min": 1
+            }
+          },
+          {
+            "name": "available_slots",
+            "type": "int",
+            "nullable": false,
+            "description": "Vagas ainda disponíveis",
+            "constraints": {
+              "min": 0
+            }
+          },
+          {
+            "name": "local",
+            "type": "text",
+            "nullable": true,
+            "description": "Local onde ocorrerá o evento"
+          },
+          {
+            "name": "is_active",
+            "type": "bool",
+            "nullable": false,
+            "description": "Indica se o evento está ativo",
+            "default": true
+          },
+          {
+            "name": "event_code",
+            "type": "text",
+            "nullable": false,
+            "description": "Código único do evento (5 caracteres maiúsculos)",
+            "constraints": {
+              "unique": true,
+              "minlength": 5,
+              "maxlength": 5
+            }
+          },
+          {
+            "name": "user_id",
+            "type": "table_reference",
+            "nullable": true,
+            "description": "Usuário que criou o evento",
+            "reference": {
+              "table": "user",
+              "field": "id"
+            }
+          }
+        ]
+      },
+      {
+        "name": "participant",
+        "description": "Inscrições de participantes em eventos",
+        "created_at": 1700000000,
+        "access": "public",
+        "schema": [
+          {
+            "name": "id",
+            "type": "id",
+            "nullable": false,
+            "description": "Identificador único da inscrição"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp",
+            "nullable": false,
+            "description": "Data de criação da inscrição"
+          },
+          {
+            "name": "event_id",
+            "type": "table_reference",
+            "nullable": false,
+            "description": "Referência ao evento",
+            "reference": {
+              "table": "event",
+              "field": "id"
+            }
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "nullable": false,
+            "description": "Nome do participante"
+          },
+          {
+            "name": "email",
+            "type": "email",
+            "nullable": false,
+            "description": "E-mail do participante"
+          },
+          {
+            "name": "phone",
+            "type": "text",
+            "nullable": false,
+            "description": "Telefone do participante"
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "nullable": false,
+            "description": "Status da inscrição",
+            "options": ["pending", "confirmed", "cancelled"],
+            "default": "pending"
+          },
+          {
+            "name": "registered_at",
+            "type": "timestamp",
+            "nullable": false,
+            "description": "Data e hora da inscrição"
+          },
+          {
+            "name": "verification_code",
+            "type": "text",
+            "nullable": true,
+            "description": "Código de verificação para confirmar a inscrição"
+          },
+          {
+            "name": "verification_code_expires_at",
+            "type": "timestamp",
+            "nullable": true,
+            "description": "Data de expiração do código de verificação"
+          },
+          {
+            "name": "confirmed_at",
+            "type": "timestamp",
+            "nullable": true,
+            "description": "Data e hora da confirmação da inscrição"
+          }
+        ]
+      }
+    ],
+    "apigroups": [
+      {
+        "name": "Auth",
+        "description": "Autenticação de usuários",
+        "apis": [
+          {
+            "name": "Login",
+            "description": "Autentica o usuário e retorna um token JWT",
+            "verb": "POST",
+            "path": "/auth/login",
+            "auth": false,
+            "input": [
+              {
+                "name": "email",
+                "type": "email",
+                "nullable": false,
+                "description": "E-mail do usuário"
+              },
+              {
+                "name": "password",
+                "type": "text",
+                "nullable": false,
+                "description": "Senha do usuário"
+              }
+            ],
+            "response": {
+              "success": {
+                "token": "text",
+                "user": {
+                  "id": "id",
+                  "username": "text",
+                  "email": "email",
+                  "role": "text"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Events",
+        "description": "Gerenciamento de eventos",
+        "apis": [
+          {
+            "name": "List Events",
+            "description": "Lista todos os eventos ativos",
+            "verb": "GET",
+            "path": "/events",
+            "auth": false,
+            "input": [],
+            "response": {
+              "success": {
+                "events": "array"
+              }
+            }
+          },
+          {
+            "name": "Get Event Details",
+            "description": "Retorna os detalhes de um evento específico",
+            "verb": "GET",
+            "path": "/events/{id}",
+            "auth": false,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "event": "object"
+              }
+            }
+          },
+          {
+            "name": "Get Event Participants",
+            "description": "Lista os participantes de um evento",
+            "verb": "GET",
+            "path": "/events/{id}/participants",
+            "auth": false,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "participants": "array"
+              }
+            }
+          },
+          {
+            "name": "List My Events",
+            "description": "Lista os eventos criados pelo usuário autenticado",
+            "verb": "GET",
+            "path": "/events/my-events",
+            "auth": true,
+            "input": [],
+            "response": {
+              "success": {
+                "events": "array"
+              }
+            }
+          },
+          {
+            "name": "Create Event",
+            "description": "Cria um novo evento (requer autenticação)",
+            "verb": "POST",
+            "path": "/events",
+            "auth": true,
+            "input": [
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": false,
+                "description": "Título do evento"
+              },
+              {
+                "name": "description",
+                "type": "text",
+                "nullable": false,
+                "description": "Descrição do evento"
+              },
+              {
+                "name": "date_time",
+                "type": "timestamp",
+                "nullable": false,
+                "description": "Data e hora do evento"
+              },
+              {
+                "name": "total_slots",
+                "type": "int",
+                "nullable": false,
+                "description": "Total de vagas"
+              },
+              {
+                "name": "local",
+                "type": "text",
+                "nullable": true,
+                "description": "Local do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "event": "object"
+              }
+            }
+          },
+          {
+            "name": "Update Event",
+            "description": "Atualiza um evento existente (somente o criador pode atualizar)",
+            "verb": "PUT",
+            "path": "/events/{id}",
+            "auth": true,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true,
+                "description": "Título do evento"
+              },
+              {
+                "name": "description",
+                "type": "text",
+                "nullable": true,
+                "description": "Descrição do evento"
+              },
+              {
+                "name": "date_time",
+                "type": "timestamp",
+                "nullable": true,
+                "description": "Data e hora do evento"
+              },
+              {
+                "name": "total_slots",
+                "type": "int",
+                "nullable": true,
+                "description": "Total de vagas"
+              },
+              {
+                "name": "local",
+                "type": "text",
+                "nullable": true,
+                "description": "Local do evento"
+              },
+              {
+                "name": "is_active",
+                "type": "bool",
+                "nullable": true,
+                "description": "Status ativo/inativo do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "event": "object"
+              }
+            }
+          },
+          {
+            "name": "Delete Event",
+            "description": "Remove um evento (somente o criador pode excluir)",
+            "verb": "DELETE",
+            "path": "/events/{id}",
+            "auth": true,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "message": "text"
+              }
+            }
+          },
+          {
+            "name": "Send Event Reminder",
+            "description": "Envia lembretes para os participantes confirmados do evento",
+            "verb": "POST",
+            "path": "/events/{id}/send-reminder",
+            "auth": true,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              }
+            ],
+            "response": {
+              "success": {
+                "total": "int",
+                "sent": "int",
+                "failed": "int"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Registrations",
+        "description": "Inscrições em eventos",
+        "apis": [
+          {
+            "name": "Register for Event",
+            "description": "Realiza a inscrição de um participante em um evento",
+            "verb": "POST",
+            "path": "/registrations",
+            "auth": false,
+            "input": [
+              {
+                "name": "event_id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false,
+                "description": "Nome do participante"
+              },
+              {
+                "name": "email",
+                "type": "email",
+                "nullable": false,
+                "description": "E-mail do participante"
+              },
+              {
+                "name": "phone",
+                "type": "text",
+                "nullable": false,
+                "description": "Telefone do participante"
+              }
+            ],
+            "response": {
+              "success": {
+                "registration": "object"
+              }
+            }
+          },
+          {
+            "name": "Cancel Registration",
+            "description": "Cancela a inscrição de um participante",
+            "verb": "POST",
+            "path": "/registrations/{id}/cancel",
+            "auth": false,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID da inscrição (participante)"
+              },
+              {
+                "name": "event_id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              },
+              {
+                "name": "email",
+                "type": "email",
+                "nullable": false,
+                "description": "E-mail do participante para confirmação"
+              }
+            ],
+            "response": {
+              "success": {
+                "message": "text"
+              }
+            }
+          },
+          {
+            "name": "Confirm Registration",
+            "description": "Confirma a inscrição com o código de verificação",
+            "verb": "POST",
+            "path": "/registrations/{id}/confirm",
+            "auth": false,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID da inscrição (participante)"
+              },
+              {
+                "name": "event_id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do evento"
+              },
+              {
+                "name": "verification_code",
+                "type": "text",
+                "nullable": false,
+                "description": "Código de verificação recebido por e-mail/WhatsApp"
+              }
+            ],
+            "response": {
+              "success": {
+                "message": "text"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Users",
+        "description": "Gerenciamento de usuários (somente superusuários)",
+        "apis": [
+          {
+            "name": "List Users",
+            "description": "Lista todos os usuários (somente superusuário)",
+            "verb": "GET",
+            "path": "/users",
+            "auth": true,
+            "input": [],
+            "response": {
+              "success": {
+                "users": "array"
+              }
+            }
+          },
+          {
+            "name": "Create User",
+            "description": "Cria um novo usuário (somente superusuário)",
+            "verb": "POST",
+            "path": "/users",
+            "auth": true,
+            "input": [
+              {
+                "name": "username",
+                "type": "text",
+                "nullable": false,
+                "description": "Nome de usuário"
+              },
+              {
+                "name": "email",
+                "type": "email",
+                "nullable": false,
+                "description": "E-mail do usuário"
+              },
+              {
+                "name": "password",
+                "type": "text",
+                "nullable": false,
+                "description": "Senha do usuário"
+              },
+              {
+                "name": "role",
+                "type": "enum",
+                "nullable": true,
+                "description": "Papel do usuário",
+                "options": ["user", "superuser"]
+              }
+            ],
+            "response": {
+              "success": {
+                "user": "object"
+              }
+            }
+          },
+          {
+            "name": "Update User",
+            "description": "Atualiza um usuário existente (somente superusuário)",
+            "verb": "PUT",
+            "path": "/users/{id}",
+            "auth": true,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do usuário"
+              },
+              {
+                "name": "username",
+                "type": "text",
+                "nullable": true,
+                "description": "Nome de usuário"
+              },
+              {
+                "name": "email",
+                "type": "email",
+                "nullable": true,
+                "description": "E-mail do usuário"
+              },
+              {
+                "name": "role",
+                "type": "enum",
+                "nullable": true,
+                "description": "Papel do usuário",
+                "options": ["user", "superuser"]
+              },
+              {
+                "name": "is_active",
+                "type": "bool",
+                "nullable": true,
+                "description": "Status ativo/inativo"
+              }
+            ],
+            "response": {
+              "success": {
+                "user": "object"
+              }
+            }
+          },
+          {
+            "name": "Delete User",
+            "description": "Remove um usuário (somente superusuário)",
+            "verb": "DELETE",
+            "path": "/users/{id}",
+            "auth": true,
+            "input": [
+              {
+                "name": "id",
+                "type": "id",
+                "nullable": false,
+                "description": "ID do usuário"
+              }
+            ],
+            "response": {
+              "success": {
+                "message": "text"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

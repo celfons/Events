@@ -9,6 +9,7 @@
     "seed": "node seed.js",
     "create-superuser": "node create-superuser.js",
     "create-default-user": "node create-default-user.js",
+    "xano:export": "node xano-export.js",
     "build:react": "webpack --mode production",
     "build:react:dev": "webpack --mode development",
     "build": "npm run build:react",
