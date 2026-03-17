@@ -252,6 +252,32 @@ Para mais informações sobre a API do WhatsApp Business:
 - [Documentação Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api)
 - [Guia de início rápido](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started)
 
+## Importar no Xano
+
+Você pode exportar o schema e os dados desta plataforma para um **workspace do Xano** (plataforma no-code de backend).
+
+### Como exportar e importar
+
+1. **Gere o arquivo de exportação** (apenas schema):
+   ```bash
+   cp xano/workspace.json xano/workspace-export.json
+   ```
+
+   Ou inclua os dados do banco de dados:
+   ```bash
+   MONGODB_URI=mongodb://localhost:27017/events node xano-export.js
+   ```
+
+2. **Importe no Xano**:
+   - Acesse [https://app.xano.com](https://app.xano.com)
+   - Vá em **Settings → Import → Import Workspace**
+   - Selecione o arquivo JSON gerado
+   - Clique em **Import**
+
+O workspace criado incluirá todas as tabelas (`user`, `event`, `participant`) e os grupos de API (Auth, Events, Registrations, Users) prontos para uso.
+
+Para instruções detalhadas, consulte [xano/README.md](xano/README.md).
+
 ## Quer contribuir?
 
 1. Faça um fork do projeto
